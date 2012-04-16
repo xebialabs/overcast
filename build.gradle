@@ -1,0 +1,119 @@
+// build.gradle for the itest-support project
+
+version = '1.0-SNAPSHOT'
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+dependencies {
+	compile('com.amazonaws:aws-java-sdk:1.2.2') {
+		exclude group: 'commons-codec', module: 'commons-codec'
+	}
+	compile 'commons-codec:commons-codec:1.5'
+	compile 'com.google.guava:guava:10.0.1'
+	compile 'net.schmizz:sshj:0.7.0'
+	compile 'org.slf4j:slf4j-api:1.6.3'
+
+	runtime 'org.slf4j:jcl-over-slf4j:1.6.3'
+	runtime 'org.slf4j:log4j-over-slf4j:1.6.3'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'http://download.java.net/maven/2/'
+	}
+	maven {
+		url 'https://oss.sonatype.org/content/repositories/releases'
+	}
+}
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+configurations {
+	compile {
+		transitive = false
+	}
+}
+
+task sourcesJar(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourcesJar, javadocJar
+}
+
+signing {
+	required { gradle.taskGraph.hasTask('uploadArchives') }
+	sign configurations.archives
+}
+
+uploadArchives {
+	if(project.hasProperty('sonatypeUsername')) {
+		repositories.mavenDeployer {
+			beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+			configuration = configurations.archives
+
+			repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+			snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+
+			pom.project {
+				name 'Cloudtest'
+				description 'A Java library to test against hosts in the cloud. '
+				packaging 'jar'
+				url 'https://github.com/xebialabs/cloudtest'
+				inceptionYear '2012'
+
+				scm {
+					url 'https://github.com/xebialabs/cloudtest'
+				}
+
+				licenses {
+					license {
+						name 'The Apache Software License, Version 2.0'
+						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+						distribution 'repo'
+					}
+				}
+
+				developers {
+					developer {
+						id 'vpartington'
+						name 'Vincent Partington'
+						url 'http://www.xebialabs.com/'
+						email 'vpartington@xebialabs.com'
+						roles {
+							role 'Developer'
+						}
+					}
+					developer {
+						id 'hierynomus'
+						name 'Jeroen van Erp'
+						url 'http://www.xebialabs.com/'
+						email 'jvanerp@xebialabs.com'
+						roles {
+							role 'Developer'
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
