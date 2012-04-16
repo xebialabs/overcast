@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.xebialabs.itest;
+package com.xebialabs.cloudhost;
 
-import static com.xebialabs.itest.ItestHostFactory.getItestProperty;
+import static com.xebialabs.cloudhost.CloudHostFactory.getCloudHostProperty;
 
-class ExistingItestHost implements ItestHost {
+class ExistingCloudHost implements CloudHost {
 
 	private final String hostname;
 
-	public ExistingItestHost(String hostLabel) {
-		this.hostname = getItestProperty(hostLabel + ".hostname", hostLabel);
+	public ExistingCloudHost(String hostLabel) {
+		this.hostname = getCloudHostProperty(hostLabel + ".hostname", hostLabel);
 	}
 
 	@Override

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.xebialabs.itest;
+package com.xebialabs.cloudhost;
 
 import java.util.Date;
 
@@ -33,20 +33,23 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.xebialabs.itest.ItestHostFactory.AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX;
-import static com.xebialabs.itest.ItestHostFactory.AMI_BOOT_SECONDS_PROPERTY_SUFFIX;
-import static com.xebialabs.itest.ItestHostFactory.AMI_INSTANCE_TYPE_PROPERTY_SUFFIX;
-import static com.xebialabs.itest.ItestHostFactory.AMI_KEY_NAME_PROPERTY_SUFFIX;
-import static com.xebialabs.itest.ItestHostFactory.AMI_SECURITY_GROUP_PROPERTY_SUFFIX;
-import static com.xebialabs.itest.ItestHostFactory.AWS_ACCESS_KEY_PROPERTY;
-import static com.xebialabs.itest.ItestHostFactory.AWS_ENDPOINT_DEFAULT;
-import static com.xebialabs.itest.ItestHostFactory.AWS_ENDPOINT_PROPERTY;
-import static com.xebialabs.itest.ItestHostFactory.AWS_SECRET_KEY_PROPERTY;
-import static com.xebialabs.itest.ItestHostFactory.getItestProperty;
-import static com.xebialabs.itest.ItestHostFactory.getRequiredItestProperty;
+import static com.xebialabs.cloudhost.CloudHostFactory.AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX;
+import static com.xebialabs.cloudhost.CloudHostFactory.AMI_BOOT_SECONDS_PROPERTY_SUFFIX;
+import static com.xebialabs.cloudhost.CloudHostFactory.AMI_INSTANCE_TYPE_PROPERTY_SUFFIX;
+import static com.xebialabs.cloudhost.CloudHostFactory.AMI_KEY_NAME_PROPERTY_SUFFIX;
+import static com.xebialabs.cloudhost.CloudHostFactory.AMI_SECURITY_GROUP_PROPERTY_SUFFIX;
+import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ACCESS_KEY_PROPERTY;
+import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ENDPOINT_DEFAULT;
+import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ENDPOINT_PROPERTY;
+import static com.xebialabs.cloudhost.CloudHostFactory.AWS_SECRET_KEY_PROPERTY;
+import static com.xebialabs.cloudhost.CloudHostFactory.getCloudHostProperty;
+import static com.xebialabs.cloudhost.CloudHostFactory.getRequiredCloudHostProperty;
 
-class Ec2ItestHost implements ItestHost {
+
+
+import static com.google.common.collect.Lists.newArrayList;
+
+class Ec2CloudHost implements CloudHost {
 
 	private final String hostLabel;
 	private final String amiId;
@@ -63,17 +66,17 @@ class Ec2ItestHost implements ItestHost {
 	private String instanceId;
 	private String publicDnsAddress;
 
-	public Ec2ItestHost(String hostLabel, String amiId) {
+	public Ec2CloudHost(String hostLabel, String amiId) {
 		this.hostLabel = hostLabel;
 		this.amiId = amiId;
-		this.awsEndpointURL = getItestProperty(AWS_ENDPOINT_PROPERTY, AWS_ENDPOINT_DEFAULT);
-		this.awsAccessKey = getRequiredItestProperty(AWS_ACCESS_KEY_PROPERTY);
-		this.awsSecretKey = getRequiredItestProperty(AWS_SECRET_KEY_PROPERTY);
-		this.amiAvailabilityZone = getItestProperty(hostLabel + AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX, null);
-		this.amiInstanceType = getRequiredItestProperty(hostLabel + AMI_INSTANCE_TYPE_PROPERTY_SUFFIX);
-		this.amiSecurityGroup = getRequiredItestProperty(hostLabel + AMI_SECURITY_GROUP_PROPERTY_SUFFIX);
-		this.amiKeyName = getRequiredItestProperty(hostLabel + AMI_KEY_NAME_PROPERTY_SUFFIX);
-		this.amiBootSeconds = Integer.valueOf(getRequiredItestProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
+		this.awsEndpointURL = getCloudHostProperty(AWS_ENDPOINT_PROPERTY, AWS_ENDPOINT_DEFAULT);
+		this.awsAccessKey = getRequiredCloudHostProperty(AWS_ACCESS_KEY_PROPERTY);
+		this.awsSecretKey = getRequiredCloudHostProperty(AWS_SECRET_KEY_PROPERTY);
+		this.amiAvailabilityZone = getCloudHostProperty(hostLabel + AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX, null);
+		this.amiInstanceType = getRequiredCloudHostProperty(hostLabel + AMI_INSTANCE_TYPE_PROPERTY_SUFFIX);
+		this.amiSecurityGroup = getRequiredCloudHostProperty(hostLabel + AMI_SECURITY_GROUP_PROPERTY_SUFFIX);
+		this.amiKeyName = getRequiredCloudHostProperty(hostLabel + AMI_KEY_NAME_PROPERTY_SUFFIX);
+		this.amiBootSeconds = Integer.valueOf(getRequiredCloudHostProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
 
 		ec2 = new AmazonEC2Client(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
 		ec2.setEndpoint(awsEndpointURL);
@@ -101,9 +104,9 @@ class Ec2ItestHost implements ItestHost {
 	}
 
 	@Override
-    public int getPort(int port) {
-	    return port;
-    }
+	public int getPort(int port) {
+		return port;
+	}
 
 	protected String runInstance() {
 		RunInstancesRequest run = new RunInstancesRequest(amiId, 1, 1);
@@ -120,7 +123,9 @@ class Ec2ItestHost implements ItestHost {
 		if (amiAvailabilityZone != null) {
 			run.withPlacement(new Placement(amiAvailabilityZone));
 		}
+		
 		RunInstancesResult result = ec2.runInstances(run);
+		
 		return result.getReservation().getInstances().get(0).getInstanceId();
 	}
 
@@ -158,7 +163,6 @@ class Ec2ItestHost implements ItestHost {
 		}
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(Ec2ItestHost.class);
+	private static final Logger logger = LoggerFactory.getLogger(Ec2CloudHost.class);
 
 }
-

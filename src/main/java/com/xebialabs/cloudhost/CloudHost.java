@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package com.xebialabs.itest;
+package com.xebialabs.cloudhost;
 
 /**
- * Represents a host that is used for an integration test.
+ * Represents a host in the cloud.
  */
-public interface ItestHost {
+public interface CloudHost {
 
 	/**
-	 * Ensures the host is available for the integration test. To be called before the integration is started.
+	 * Ensures the host is available.
 	 */
 	void setup();
 
 	/**
-	 * Releases the host resources. To be called after the integration test has finished.
+	 * Releases the host resources. 
 	 */
 	void teardown();
 
@@ -48,6 +48,5 @@ public interface ItestHost {
 	 * @return the translated port number.
 	 */
 	int getPort(int port);
-
 }
 
