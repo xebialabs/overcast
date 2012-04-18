@@ -1,7 +1,7 @@
 // build.gradle for the cloudhost project
 
 version = '1.0-SNAPSHOT'
-group = 'com.xebialabs.cloudhost'
+group = 'com.xebialabs.cloud'
 
 apply plugin: 'idea'
 apply plugin: 'java'
