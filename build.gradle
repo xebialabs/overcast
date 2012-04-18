@@ -1,6 +1,7 @@
-// build.gradle for the itest-support project
+// build.gradle for the cloudhost project
 
 version = '1.0-SNAPSHOT'
+group = 'com.xebialabs.cloudhost'
 
 apply plugin: 'idea'
 apply plugin: 'java'
