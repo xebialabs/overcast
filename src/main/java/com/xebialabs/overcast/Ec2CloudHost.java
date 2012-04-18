@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.xebialabs.cloudhost;
+package com.xebialabs.overcast;
 
 import java.util.Date;
 
@@ -33,9 +33,10 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
+import static com.xebialabs.overcast.CloudHostFactory.getCloudHostProperty;
+import static com.xebialabs.overcast.CloudHostFactory.getRequiredCloudHostProperty;
+
 import static com.google.common.collect.Lists.newArrayList;
-import static com.xebialabs.cloudhost.CloudHostFactory.getCloudHostProperty;
-import static com.xebialabs.cloudhost.CloudHostFactory.getRequiredCloudHostProperty;
 
 class Ec2CloudHost implements CloudHost {
 

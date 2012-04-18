@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.xebialabs.cloudhost;
+package com.xebialabs.overcast;
 
 /**
  * Represents a host in the cloud.

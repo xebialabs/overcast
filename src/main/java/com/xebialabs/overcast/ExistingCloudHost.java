@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.xebialabs.cloudhost;
+package com.xebialabs.overcast;
 
-import static com.xebialabs.cloudhost.CloudHostFactory.getCloudHostProperty;
+import static com.xebialabs.overcast.CloudHostFactory.getCloudHostProperty;
 
 class ExistingCloudHost implements CloudHost {
 
