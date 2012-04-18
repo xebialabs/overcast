@@ -40,17 +40,6 @@ public class CloudHostFactory {
 
 	public static final String HOSTNAME_PROPERTY_SUFFIX = ".hostname";
 
-	public static final String AMI_ID_PROPERTY_SUFFIX = ".amiId";
-	public static final String AWS_ENDPOINT_PROPERTY = "aws.endpoint";
-	public static final String AWS_ENDPOINT_DEFAULT = "https://ec2.amazonaws.com";
-	public static final String AWS_ACCESS_KEY_PROPERTY = "aws.accessKey";
-	public static final String AWS_SECRET_KEY_PROPERTY = "aws.secretKey";
-	public static final String AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX = ".amiAvailabilityZone";
-	public static final String AMI_INSTANCE_TYPE_PROPERTY_SUFFIX = ".amiInstanceType";
-	public static final String AMI_SECURITY_GROUP_PROPERTY_SUFFIX = ".amiSecurityGroup";
-	public static final String AMI_KEY_NAME_PROPERTY_SUFFIX = ".amiKeyName";
-	public static final String AMI_BOOT_SECONDS_PROPERTY_SUFFIX = ".amiBootSeconds";
-
 	public static final String TUNNEL_USERNAME_PROPERTY_SUFFIX = ".tunnel.username";
 	public static final String TUNNEL_PASSWORD_PROPERTY_SUFFIX = ".tunnel.password";
 	public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
@@ -85,7 +74,7 @@ public class CloudHostFactory {
 			return new ExistingCloudHost(label);
 		}
 
-		String amiId = getCloudHostProperty(label + AMI_ID_PROPERTY_SUFFIX);
+		String amiId = getCloudHostProperty(label + Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX);
 		if (amiId != null) {
 			if (disableEc2) {
 				throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label

@@ -33,23 +33,22 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
-import static com.xebialabs.cloudhost.CloudHostFactory.AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX;
-import static com.xebialabs.cloudhost.CloudHostFactory.AMI_BOOT_SECONDS_PROPERTY_SUFFIX;
-import static com.xebialabs.cloudhost.CloudHostFactory.AMI_INSTANCE_TYPE_PROPERTY_SUFFIX;
-import static com.xebialabs.cloudhost.CloudHostFactory.AMI_KEY_NAME_PROPERTY_SUFFIX;
-import static com.xebialabs.cloudhost.CloudHostFactory.AMI_SECURITY_GROUP_PROPERTY_SUFFIX;
-import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ACCESS_KEY_PROPERTY;
-import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ENDPOINT_DEFAULT;
-import static com.xebialabs.cloudhost.CloudHostFactory.AWS_ENDPOINT_PROPERTY;
-import static com.xebialabs.cloudhost.CloudHostFactory.AWS_SECRET_KEY_PROPERTY;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.cloudhost.CloudHostFactory.getCloudHostProperty;
 import static com.xebialabs.cloudhost.CloudHostFactory.getRequiredCloudHostProperty;
 
-
-
-import static com.google.common.collect.Lists.newArrayList;
-
 class Ec2CloudHost implements CloudHost {
+
+	public static final String AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX = ".amiAvailabilityZone";
+	public static final String AMI_BOOT_SECONDS_PROPERTY_SUFFIX = ".amiBootSeconds";
+	public static final String AMI_ID_PROPERTY_SUFFIX = ".amiId";
+	public static final String AMI_INSTANCE_TYPE_PROPERTY_SUFFIX = ".amiInstanceType";
+	public static final String AMI_KEY_NAME_PROPERTY_SUFFIX = ".amiKeyName";
+	public static final String AMI_SECURITY_GROUP_PROPERTY_SUFFIX = ".amiSecurityGroup";
+	public static final String AWS_ACCESS_KEY_PROPERTY = "aws.accessKey";
+	public static final String AWS_ENDPOINT_DEFAULT = "https://ec2.amazonaws.com";
+	public static final String AWS_ENDPOINT_PROPERTY = "aws.endpoint";
+	public static final String AWS_SECRET_KEY_PROPERTY = "aws.secretKey";
 
 	private final String hostLabel;
 	private final String amiId;
