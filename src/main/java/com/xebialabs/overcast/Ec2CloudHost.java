@@ -33,10 +33,9 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
-import static com.xebialabs.overcast.CloudHostFactory.getCloudHostProperty;
-import static com.xebialabs.overcast.CloudHostFactory.getRequiredCloudHostProperty;
-
 import static com.google.common.collect.Lists.newArrayList;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 
 class Ec2CloudHost implements CloudHost {
 
@@ -69,14 +68,14 @@ class Ec2CloudHost implements CloudHost {
 	public Ec2CloudHost(String hostLabel, String amiId) {
 		this.hostLabel = hostLabel;
 		this.amiId = amiId;
-		this.awsEndpointURL = getCloudHostProperty(AWS_ENDPOINT_PROPERTY, AWS_ENDPOINT_DEFAULT);
-		this.awsAccessKey = getRequiredCloudHostProperty(AWS_ACCESS_KEY_PROPERTY);
-		this.awsSecretKey = getRequiredCloudHostProperty(AWS_SECRET_KEY_PROPERTY);
-		this.amiAvailabilityZone = getCloudHostProperty(hostLabel + AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX, null);
-		this.amiInstanceType = getRequiredCloudHostProperty(hostLabel + AMI_INSTANCE_TYPE_PROPERTY_SUFFIX);
-		this.amiSecurityGroup = getRequiredCloudHostProperty(hostLabel + AMI_SECURITY_GROUP_PROPERTY_SUFFIX);
-		this.amiKeyName = getRequiredCloudHostProperty(hostLabel + AMI_KEY_NAME_PROPERTY_SUFFIX);
-		this.amiBootSeconds = Integer.valueOf(getRequiredCloudHostProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
+		this.awsEndpointURL = getOvercastProperty(AWS_ENDPOINT_PROPERTY, AWS_ENDPOINT_DEFAULT);
+		this.awsAccessKey = getRequiredOvercastProperty(AWS_ACCESS_KEY_PROPERTY);
+		this.awsSecretKey = getRequiredOvercastProperty(AWS_SECRET_KEY_PROPERTY);
+		this.amiAvailabilityZone = getOvercastProperty(hostLabel + AMI_AVAILABILITY_ZONE_PROPERTY_SUFFIX, null);
+		this.amiInstanceType = getRequiredOvercastProperty(hostLabel + AMI_INSTANCE_TYPE_PROPERTY_SUFFIX);
+		this.amiSecurityGroup = getRequiredOvercastProperty(hostLabel + AMI_SECURITY_GROUP_PROPERTY_SUFFIX);
+		this.amiKeyName = getRequiredOvercastProperty(hostLabel + AMI_KEY_NAME_PROPERTY_SUFFIX);
+		this.amiBootSeconds = Integer.valueOf(getRequiredOvercastProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
 
 		ec2 = new AmazonEC2Client(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
 		ec2.setEndpoint(awsEndpointURL);

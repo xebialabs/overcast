@@ -17,14 +17,14 @@
 
 package com.xebialabs.overcast;
 
-import static com.xebialabs.overcast.CloudHostFactory.getCloudHostProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 
 class ExistingCloudHost implements CloudHost {
 
 	private final String hostname;
 
 	public ExistingCloudHost(String hostLabel) {
-		this.hostname = getCloudHostProperty(hostLabel + ".hostname", hostLabel);
+		this.hostname = getOvercastProperty(hostLabel + ".hostname", hostLabel);
 	}
 
 	@Override
