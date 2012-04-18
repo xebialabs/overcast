@@ -78,11 +78,11 @@ uploadArchives {
 				name 'Cloudtest'
 				description 'A Java library to test against hosts in the cloud. '
 				packaging 'jar'
-				url 'https://github.com/xebialabs/cloudtest'
+				url 'https://github.com/xebialabs/overcast'
 				inceptionYear '2012'
 
 				scm {
-					url 'https://github.com/xebialabs/cloudtest'
+					url 'https://github.com/xebialabs/overcast'
 				}
 
 				licenses {
