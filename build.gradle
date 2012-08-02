@@ -1,6 +1,6 @@
 // build.gradle for the overcast project
 
-version = '1.1.0'
+version = '1.1.1-SNAPSHOT'
 group = 'com.xebialabs.cloud'
 
 apply plugin: 'idea'
