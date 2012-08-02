@@ -17,14 +17,18 @@
 
 package com.xebialabs.overcast;
 
+import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_DIR_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_IP_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_VM_PROPERTY_SUFFIX;
+
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 
 
 public class CloudHostFactory {
@@ -55,22 +59,42 @@ public class CloudHostFactory {
 	protected static CloudHost createCloudHost(String label, boolean disableEc2) {
 		String hostName = getOvercastProperty(label + HOSTNAME_PROPERTY_SUFFIX);
 		if (hostName != null) {
-			logger.info("Using existing host for {}", label);
-			return new ExistingCloudHost(label);
+			return createExistingCloudHost(label);
 		}
 
-		String amiId = getOvercastProperty(label + Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX);
+		String vagrantDir = getOvercastProperty(label + VAGRANT_DIR_PROPERTY_SUFFIX);
+		if(vagrantDir != null) {
+			return createVagrantCloudHost(label, vagrantDir);
+		}
+
+		String amiId = getOvercastProperty(label + AMI_ID_PROPERTY_SUFFIX);
 		if (amiId != null) {
-			if (disableEc2) {
-				throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
-						+ ", but EC2 hosts are not available.");
-			}
-			logger.info("Using Amazon EC2 for {}", label);
-			return new Ec2CloudHost(label, amiId);
+			return createEc2CloudHost(label, amiId, disableEc2);
 		}
 
-		throw new IllegalStateException("Neither a hostname (" + hostName + ") nor an AMI id (" + amiId + ") have been specified for host label " + label);
+		throw new IllegalStateException("No valid configuration has been specified for host label " + label);
 	}
+
+	private static CloudHost createExistingCloudHost(final String label) {
+	    logger.info("Using existing host for {}", label);
+	    return new ExistingCloudHost(label);
+    }
+
+	private static CloudHost createVagrantCloudHost(final String label, final String vagrantDir) {
+	    String vagrantVm = getOvercastProperty(label + VAGRANT_VM_PROPERTY_SUFFIX);
+	    String vagrantIp = getOvercastProperty(label + VAGRANT_IP_PROPERTY_SUFFIX);
+	    logger.info("Using Vagrant to create {}", label);
+	    return new VagrantCloudHost(label, vagrantDir, vagrantVm, vagrantIp);
+    }
+
+	private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
+	    if (disableEc2) {
+	    	throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
+	    			+ ", but EC2 hosts are not available.");
+	    }
+	    logger.info("Using Amazon EC2 for {}", label);
+	    return new Ec2CloudHost(label, amiId);
+    }
 
 	private static CloudHost wrapCloudHost(String label, CloudHost actualHost) {
 		String tunnelUsername = getOvercastProperty(label + TUNNEL_USERNAME_PROPERTY_SUFFIX);
