@@ -1,7 +1,8 @@
 package com.xebialabs.overcast;
 
-import static com.google.common.base.Joiner.on;
-import static com.google.common.collect.Lists.newArrayList;
+import com.google.common.collect.ObjectArrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,15 +10,15 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.google.common.base.Joiner.on;
+import static com.google.common.collect.Lists.newArrayList;
 
 class VagrantCloudHost implements CloudHost {
 
 	public static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
 
 	public static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
-	
+
 	public static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
 
 	private String hostLabel;
@@ -28,7 +29,7 @@ class VagrantCloudHost implements CloudHost {
 
 	private String vagrantIp;
 
-	private boolean createdBeforeSetup;
+	private static VagrantState initialState;
 
 	public VagrantCloudHost(String hostLabel, String vagrantDir, String vagrantVm, String vagrantIp) {
 		this.hostLabel = hostLabel;
@@ -44,30 +45,29 @@ class VagrantCloudHost implements CloudHost {
 		if (statusExitCode != 0) {
 			throw new RuntimeException("Cannot vagrant status host " + hostLabel + ": " + statusExitCode);
 		}
-		createdBeforeSetup = !statusOutput.toString().contains("not created");
 
-        if (createdBeforeSetup) {
-            logger.info("Vagrant host {} has already been created. Not upping it.", hostLabel);
-        } else {
-            logger.info("Upping vagrant host {}", hostLabel);
-            int upExitCode = vagrant("vagrant", "up");
-            if (upExitCode != 0) {
-                throw new RuntimeException("Cannot vagrant up host " + hostLabel + ": " + upExitCode);
-            }
-        }
+		initialState = VagrantState.fromStatusString(statusOutput.toString());
+
+		logger.info("Vagrant host is in state {}.", initialState.toString());
+
+		int upExitCode = vagrant(
+				ObjectArrays.concat("vagrant", VagrantState.getTransitionCommand(VagrantState.RUNNING))
+		);
+
+		if (upExitCode != 0) {
+			throw new RuntimeException("Cannot vagrant up host " + hostLabel + ": " + upExitCode);
+		}
+
 	}
 
 	@Override
 	public void teardown() {
-		if (createdBeforeSetup) {
-            logger.info("Vagrant host {} had already been created before the test started. Not destroying it.", hostLabel);
-		} else {
-			logger.info("Destroying vagrant host {}", hostLabel);
-
-			int exitCode = vagrant("vagrant", "destroy", "-f");
-			if (exitCode != 0) {
-				throw new RuntimeException("Cannot vagrant destroy host " + hostLabel + ": " + exitCode);
-			}
+		logger.info("Bringing vagrant back to {} state.", initialState.toString());
+		int exitCode = vagrant(
+				ObjectArrays.concat("vagrant", VagrantState.getTransitionCommand(initialState))
+		);
+		if (exitCode != 0) {
+			throw new RuntimeException("Cannot vagrant destroy host " + hostLabel + ": " + exitCode);
 		}
 	}
 

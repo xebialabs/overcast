@@ -18,6 +18,8 @@ dependencies {
 	compile 'net.schmizz:sshj:0.7.0'
 	compile 'org.slf4j:slf4j-api:1.6.3'
 
+	testCompile 'junit:junit:4.10'
+
 	runtime 'org.slf4j:jcl-over-slf4j:1.6.3'
 	runtime 'org.slf4j:log4j-over-slf4j:1.6.3'
 }
