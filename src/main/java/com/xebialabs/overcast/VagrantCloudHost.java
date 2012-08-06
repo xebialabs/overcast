@@ -89,9 +89,10 @@ class VagrantCloudHost implements CloudHost {
 			return vagrant.waitFor();
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-		}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
+        }
 	}
 
 	private int vagrant(final StringBuilder output, final String... command) {
@@ -102,9 +103,10 @@ class VagrantCloudHost implements CloudHost {
 			return vagrant.waitFor();
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-		}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
+        }
 	}
 
 	private Process startVagrant(final String... command) throws IOException {
