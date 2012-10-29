@@ -4,3 +4,7 @@
 .gradle
 bin
 build
+*.iml
+*.iws
+*.ipr
+.idea/
