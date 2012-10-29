@@ -21,30 +21,30 @@ import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 
 class ExistingCloudHost implements CloudHost {
 
-	private final String hostname;
+    private final String hostname;
 
-	public ExistingCloudHost(String hostLabel) {
-		this.hostname = getOvercastProperty(hostLabel + ".hostname", hostLabel);
-	}
+    public ExistingCloudHost(String hostLabel) {
+        this.hostname = getOvercastProperty(hostLabel + ".hostname", hostLabel);
+    }
 
-	@Override
-	public void setup() {
-		// no-op
-	}
+    @Override
+    public void setup() {
+        // no-op
+    }
 
-	@Override
-	public void teardown() {
-		// no-op
-	}
+    @Override
+    public void teardown() {
+        // no-op
+    }
 
-	@Override
-	public String getHostName() {
-		return hostname;
-	}
+    @Override
+    public String getHostName() {
+        return hostname;
+    }
 
-	@Override
+    @Override
     public int getPort(int port) {
-	    return port;
+        return port;
     }
 
 }

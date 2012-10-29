@@ -17,97 +17,92 @@
 
 package com.xebialabs.overcast;
 
-import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_DIR_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_IP_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_VM_PROPERTY_SUFFIX;
-
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.OvercastProperties.*;
+import static com.xebialabs.overcast.VagrantCloudHost.*;
 
 
 public class CloudHostFactory {
 
-	public static final String HOSTNAME_PROPERTY_SUFFIX = ".hostname";
+    public static final String HOSTNAME_PROPERTY_SUFFIX = ".hostname";
 
-	public static final String TUNNEL_USERNAME_PROPERTY_SUFFIX = ".tunnel.username";
-	public static final String TUNNEL_PASSWORD_PROPERTY_SUFFIX = ".tunnel" + OvercastProperties.PASSWORD_PROPERTY_SUFFIX;
-	public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
+    public static final String TUNNEL_USERNAME_PROPERTY_SUFFIX = ".tunnel.username";
+    public static final String TUNNEL_PASSWORD_PROPERTY_SUFFIX = ".tunnel" + OvercastProperties.PASSWORD_PROPERTY_SUFFIX;
+    public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
 
-	// The field logger needs to be defined up here so that the static
-	// initialized below can use the logger
-	public static Logger logger = LoggerFactory.getLogger(CloudHostFactory.class);
+    // The field logger needs to be defined up here so that the static
+    // initialized below can use the logger
+    public static Logger logger = LoggerFactory.getLogger(CloudHostFactory.class);
 
-	public static CloudHost getCloudHostWithNoTeardown(String hostLabel) {
-		return getCloudHost(hostLabel, true);
-	}
-
-	public static CloudHost getCloudHost(String hostLabel) {
-		return getCloudHost(hostLabel, false);
-	}
-
-	private static CloudHost getCloudHost(String hostLabel, boolean disableEc2) {
-		CloudHost host = createCloudHost(hostLabel, disableEc2);
-		return wrapCloudHost(hostLabel, host);
-	}
-
-	protected static CloudHost createCloudHost(String label, boolean disableEc2) {
-		String hostName = getOvercastProperty(label + HOSTNAME_PROPERTY_SUFFIX);
-		if (hostName != null) {
-			return createExistingCloudHost(label);
-		}
-
-		String vagrantDir = getOvercastProperty(label + VAGRANT_DIR_PROPERTY_SUFFIX);
-		if(vagrantDir != null) {
-			return createVagrantCloudHost(label, vagrantDir);
-		}
-
-		String amiId = getOvercastProperty(label + AMI_ID_PROPERTY_SUFFIX);
-		if (amiId != null) {
-			return createEc2CloudHost(label, amiId, disableEc2);
-		}
-
-		throw new IllegalStateException("No valid configuration has been specified for host label " + label);
-	}
-
-	private static CloudHost createExistingCloudHost(final String label) {
-	    logger.info("Using existing host for {}", label);
-	    return new ExistingCloudHost(label);
+    public static CloudHost getCloudHostWithNoTeardown(String hostLabel) {
+        return getCloudHost(hostLabel, true);
     }
 
-	private static CloudHost createVagrantCloudHost(final String label, final String vagrantDir) {
-	    String vagrantVm = getOvercastProperty(label + VAGRANT_VM_PROPERTY_SUFFIX);
-	    String vagrantIp = getOvercastProperty(label + VAGRANT_IP_PROPERTY_SUFFIX);
-	    logger.info("Using Vagrant to create {}", label);
-	    return new VagrantCloudHost(label, vagrantDir, vagrantVm, vagrantIp);
+    public static CloudHost getCloudHost(String hostLabel) {
+        return getCloudHost(hostLabel, false);
     }
 
-	private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
-	    if (disableEc2) {
-	    	throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
-	    			+ ", but EC2 hosts are not available.");
-	    }
-	    logger.info("Using Amazon EC2 for {}", label);
-	    return new Ec2CloudHost(label, amiId);
+    private static CloudHost getCloudHost(String hostLabel, boolean disableEc2) {
+        CloudHost host = createCloudHost(hostLabel, disableEc2);
+        return wrapCloudHost(hostLabel, host);
     }
 
-	private static CloudHost wrapCloudHost(String label, CloudHost actualHost) {
-		String tunnelUsername = getOvercastProperty(label + TUNNEL_USERNAME_PROPERTY_SUFFIX);
-		if (tunnelUsername == null) {
-			return actualHost;
-		}
+    protected static CloudHost createCloudHost(String label, boolean disableEc2) {
+        String hostName = getOvercastProperty(label + HOSTNAME_PROPERTY_SUFFIX);
+        if (hostName != null) {
+            return createExistingCloudHost(label);
+        }
 
-		logger.info("Starting SSH tunnels for {}", label);
+        String vagrantDir = getOvercastProperty(label + VAGRANT_DIR_PROPERTY_SUFFIX);
+        if (vagrantDir != null) {
+            return createVagrantCloudHost(label, vagrantDir);
+        }
 
-		String tunnelPassword = getRequiredOvercastProperty(label + TUNNEL_PASSWORD_PROPERTY_SUFFIX);
-		String ports = getRequiredOvercastProperty(label + TUNNEL_PORTS_PROPERTY_SUFFIX);
-		Map<Integer, Integer> portForwardMap = parsePortsProperty(ports);
-		return new TunneledCloudHost(actualHost, tunnelUsername, tunnelPassword, portForwardMap);
-	}
+        String amiId = getOvercastProperty(label + AMI_ID_PROPERTY_SUFFIX);
+        if (amiId != null) {
+            return createEc2CloudHost(label, amiId, disableEc2);
+        }
+
+        throw new IllegalStateException("No valid configuration has been specified for host label " + label);
+    }
+
+    private static CloudHost createExistingCloudHost(final String label) {
+        logger.info("Using existing host for {}", label);
+        return new ExistingCloudHost(label);
+    }
+
+    private static CloudHost createVagrantCloudHost(final String label, final String vagrantDir) {
+        String vagrantVm = getOvercastProperty(label + VAGRANT_VM_PROPERTY_SUFFIX);
+        String vagrantIp = getOvercastProperty(label + VAGRANT_IP_PROPERTY_SUFFIX);
+        logger.info("Using Vagrant to create {}", label);
+        return new VagrantCloudHost(label, vagrantDir, vagrantVm, vagrantIp);
+    }
+
+    private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
+        if (disableEc2) {
+            throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
+                    + ", but EC2 hosts are not available.");
+        }
+        logger.info("Using Amazon EC2 for {}", label);
+        return new Ec2CloudHost(label, amiId);
+    }
+
+    private static CloudHost wrapCloudHost(String label, CloudHost actualHost) {
+        String tunnelUsername = getOvercastProperty(label + TUNNEL_USERNAME_PROPERTY_SUFFIX);
+        if (tunnelUsername == null) {
+            return actualHost;
+        }
+
+        logger.info("Starting SSH tunnels for {}", label);
+
+        String tunnelPassword = getRequiredOvercastProperty(label + TUNNEL_PASSWORD_PROPERTY_SUFFIX);
+        String ports = getRequiredOvercastProperty(label + TUNNEL_PORTS_PROPERTY_SUFFIX);
+        Map<Integer, Integer> portForwardMap = parsePortsProperty(ports);
+        return new TunneledCloudHost(actualHost, tunnelUsername, tunnelPassword, portForwardMap);
+    }
 
 }
