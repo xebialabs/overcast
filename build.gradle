@@ -16,12 +16,14 @@ dependencies {
 	compile 'commons-codec:commons-codec:1.5'
 	compile 'com.google.guava:guava:10.0.1'
 	compile 'net.schmizz:sshj:0.7.0'
-	compile 'org.slf4j:slf4j-api:1.6.3'
+	compile 'org.slf4j:slf4j-api:1.7.2'
 
 	testCompile 'junit:junit:4.10'
+  testCompile 'org.mockito:mockito-core:1.9.0'
+  testCompile 'org.slf4j:slf4j-simple:1.7.2'
 
-	runtime 'org.slf4j:jcl-over-slf4j:1.6.3'
-	runtime 'org.slf4j:log4j-over-slf4j:1.6.3'
+	runtime 'org.slf4j:jcl-over-slf4j:1.7.2'
+	runtime 'org.slf4j:log4j-over-slf4j:1.7.2'
 }
 
 repositories {

@@ -1,16 +1,10 @@
 package com.xebialabs.overcast;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Joiner.on;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.ObjectArrays.concat;
+import com.xebialabs.overcast.vagrant.VagrantHelper;
+import com.xebialabs.overcast.vagrant.VagrantResponse;
 
 class VagrantCloudHost implements CloudHost {
 
@@ -20,39 +14,42 @@ class VagrantCloudHost implements CloudHost {
 
     public static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
 
-    private String hostLabel;
-
-    private String vagrantDir;
-
-    private String vagrantVm;
-
     private String vagrantIp;
+
+    private VagrantHelper vagrantHelper;
 
     private static VagrantState initialState;
 
-    public VagrantCloudHost(String hostLabel, String vagrantDir, String vagrantVm, String vagrantIp) {
-        this.hostLabel = hostLabel;
-        this.vagrantDir = vagrantDir;
-        this.vagrantVm = vagrantVm;
+    private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
+
+    public VagrantCloudHost(String vagrantIp, VagrantHelper vagrantHelper) {
         this.vagrantIp = vagrantIp;
+        this.vagrantHelper = vagrantHelper;
     }
 
     @Override
     public void setup() {
-        StringBuilder statusOutput = new StringBuilder();
-        int statusExitCode = vagrant(statusOutput, "vagrant", "status");
-        if (statusExitCode != 0) {
-            throw new RuntimeException("Cannot vagrant status host " + hostLabel + ": " + statusExitCode);
+        VagrantResponse statusResponse = vagrantHelper.doVagrant("status");
+        if (statusResponse.getReturnCode() != 0) {
+            throw new RuntimeException("Cannot vagrant status host " + vagrantHelper + ": " + statusResponse.getReturnCode());
         }
-
-        initialState = VagrantState.fromStatusString(statusOutput.toString());
+        initialState = VagrantState.fromStatusString(statusResponse.getOutput());
 
         logger.info("Vagrant host is in state {}.", initialState.toString());
+        VagrantResponse runResponse = vagrantHelper.doVagrant(VagrantState.getTransitionCommand(VagrantState.RUNNING));
 
-        int upExitCode = vagrant(concat("vagrant", VagrantState.getTransitionCommand(VagrantState.RUNNING)));
 
-        if (upExitCode != 0) {
-            throw new RuntimeException("Cannot vagrant up host " + hostLabel + ": " + upExitCode);
+        // Check for puppet errors. Not vagrant still returns 0 when puppet fails
+        // May not be needed after this PR released: https://github.com/mitchellh/vagrant/pull/1175
+        for (String line : runResponse.getOutput().split("\n\u001B")) {
+            if (line.startsWith("[1;35merr:")) {
+                logger.error("Error line in puppet output: " + line);
+                throw new RuntimeException("Puppet execution contained errors. Fix them first.");
+            }
+        }
+
+        if (runResponse.getReturnCode() != 0) {
+            throw new RuntimeException("Cannot vagrant up host " + vagrantHelper + ": " + runResponse.getReturnCode());
         }
 
     }
@@ -60,9 +57,9 @@ class VagrantCloudHost implements CloudHost {
     @Override
     public void teardown() {
         logger.info("Bringing vagrant back to {} state.", initialState.toString());
-        int exitCode = vagrant(concat("vagrant", VagrantState.getTransitionCommand(initialState)));
-        if (exitCode != 0) {
-            throw new RuntimeException("Cannot vagrant destroy host " + hostLabel + ": " + exitCode);
+        VagrantResponse vagrantResponse = vagrantHelper.doVagrant(VagrantState.getTransitionCommand(initialState));
+        if (vagrantResponse.getReturnCode() != 0) {
+            throw new RuntimeException("Cannot vagrant destroy host " + vagrantHelper + ": " + vagrantResponse.getReturnCode());
         }
     }
 
@@ -75,82 +72,5 @@ class VagrantCloudHost implements CloudHost {
     public int getPort(int port) {
         return port;
     }
-
-    private int vagrant(final String... command) {
-        try {
-            Process vagrant = startVagrant(command);
-            showProcessOutput(vagrant.getInputStream(), System.out);
-            showProcessOutput(vagrant.getErrorStream(), System.err);
-            return vagrant.waitFor();
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-        }
-    }
-
-    private int vagrant(final StringBuilder output, final String... command) {
-        try {
-            Process vagrant = startVagrant(command);
-            gatherProcessOutput(vagrant.getInputStream(), output);
-            showProcessOutput(vagrant.getErrorStream(), System.err);
-            return vagrant.waitFor();
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Cannot execute " + on(" ").join(command) + " for host " + hostLabel);
-        }
-    }
-
-    private Process startVagrant(final String... command) throws IOException {
-        ProcessBuilder pb;
-        if (vagrantVm == null) {
-            pb = new ProcessBuilder(command);
-        } else {
-            List<String> commandWithVagrantVm = newArrayList(command);
-            commandWithVagrantVm.add(vagrantVm);
-            pb = new ProcessBuilder(commandWithVagrantVm);
-        }
-        pb.directory(new File(vagrantDir));
-        return pb.start();
-    }
-
-    private void showProcessOutput(final InputStream from, final PrintStream to) {
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    for (; ; ) {
-                        int c = from.read();
-                        if (c == -1)
-                            break;
-                        to.write((char) c);
-                    }
-                } catch (IOException ignore) {
-                }
-            }
-        });
-        t.start();
-    }
-
-    private void gatherProcessOutput(final InputStream from, final StringBuilder output) {
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    for (; ; ) {
-                        int c = from.read();
-                        if (c == -1)
-                            break;
-                        output.append((char) c);
-                    }
-                } catch (IOException ignore) {
-                }
-            }
-        });
-        t.start();
-    }
-
-    private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
 }

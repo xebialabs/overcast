@@ -21,9 +21,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xebialabs.overcast.vagrant.VagrantHelper;
+
 import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.OvercastProperties.*;
-import static com.xebialabs.overcast.VagrantCloudHost.*;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_DIR_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_IP_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_VM_PROPERTY_SUFFIX;
 
 
 public class CloudHostFactory {
@@ -75,11 +81,11 @@ public class CloudHostFactory {
         return new ExistingCloudHost(label);
     }
 
-    private static CloudHost createVagrantCloudHost(final String label, final String vagrantDir) {
-        String vagrantVm = getOvercastProperty(label + VAGRANT_VM_PROPERTY_SUFFIX);
-        String vagrantIp = getOvercastProperty(label + VAGRANT_IP_PROPERTY_SUFFIX);
-        logger.info("Using Vagrant to create {}", label);
-        return new VagrantCloudHost(label, vagrantDir, vagrantVm, vagrantIp);
+    private static CloudHost createVagrantCloudHost(final String hostLabel, final String vagrantDir) {
+        String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
+        String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
+        logger.info("Using Vagrant to create {}", hostLabel);
+        return new VagrantCloudHost(vagrantIp, new VagrantHelper(hostLabel, vagrantDir, vagrantVm));
     }
 
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
