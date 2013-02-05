@@ -27,9 +27,6 @@ import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_DIR_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_IP_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.VagrantCloudHost.VAGRANT_VM_PROPERTY_SUFFIX;
 
 
 public class CloudHostFactory {
@@ -39,6 +36,11 @@ public class CloudHostFactory {
     public static final String TUNNEL_USERNAME_PROPERTY_SUFFIX = ".tunnel.username";
     public static final String TUNNEL_PASSWORD_PROPERTY_SUFFIX = ".tunnel" + OvercastProperties.PASSWORD_PROPERTY_SUFFIX;
     public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
+
+    private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
+    private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
+    private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+
 
     // The field logger needs to be defined up here so that the static
     // initialized below can use the logger

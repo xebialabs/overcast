@@ -6,13 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.xebialabs.overcast.vagrant.VagrantHelper;
 import com.xebialabs.overcast.vagrant.VagrantResponse;
 
-class VagrantCloudHost implements CloudHost {
-
-    public static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
-
-    public static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
-
-    public static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+public class VagrantCloudHost implements CloudHost {
 
     private String vagrantIp;
 
