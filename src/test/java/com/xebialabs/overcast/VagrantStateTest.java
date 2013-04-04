@@ -23,6 +23,7 @@ public class VagrantStateTest {
 
 		assertEquals(NOT_CREATED, fromStatusString("default                  not created\n"));
 		assertEquals(POWEROFF, fromStatusString("default                  poweroff\n"));
+		assertEquals(ABORTED, fromStatusString("default                  aborted\n"));
 		assertEquals(SAVED, fromStatusString("default                  saved\n"));
 	}
 

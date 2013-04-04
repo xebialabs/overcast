@@ -1,11 +1,12 @@
 package com.xebialabs.overcast;
 
 public enum VagrantState {
-    NOT_CREATED, POWEROFF, SAVED, RUNNING;
+    NOT_CREATED, POWEROFF, ABORTED, SAVED, RUNNING;
 
     public static VagrantState fromStatusString(String statusString) {
         if (statusString.contains("not created")) return NOT_CREATED;
         if (statusString.contains("poweroff")) return POWEROFF;
+        if (statusString.contains("aborted")) return ABORTED;
         if (statusString.contains("saved")) return SAVED;
         if (statusString.contains("running")) return RUNNING;
 
