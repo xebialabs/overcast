@@ -2,9 +2,12 @@ package com.xebialabs.overcast;
 
 import java.util.Map;
 import org.junit.Test;
+import org.mockito.Matchers;
 
+import static com.google.common.base.CharMatcher.isNot;
 import static com.xebialabs.overcast.OvercastProperties.*;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class OvercastPropertiesTest {
@@ -27,5 +30,13 @@ public class OvercastPropertiesTest {
         assertThat(integerIntegerMap.size(), is(2));
         assertThat(integerIntegerMap.get(22), is(2222));
         assertThat(integerIntegerMap.get(445), is(1445));
+    }
+
+    @Test
+    public void shouldReplaceEnvVariables() throws Exception {
+
+        assertThat(getOvercastProperty("unittestHost.home"), is(notNullValue()));
+        assertThat(getOvercastProperty("unittestHost.home").contains("${"), is(false));
+
     }
 }
