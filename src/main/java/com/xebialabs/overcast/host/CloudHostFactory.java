@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.host;
 
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xebialabs.overcast.vagrant.VagrantHelper;
+import com.xebialabs.overcast.OvercastProperties;
+import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 
-import static com.xebialabs.overcast.Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 
 
 public class CloudHostFactory {
@@ -40,6 +41,10 @@ public class CloudHostFactory {
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
     private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+
+    private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
+    private static final String VBOX_IP = ".vboxBoxIp";
+    private static final String VBOX_SNAPSHOT = ".vboxSnapshot";
 
 
     // The field logger needs to be defined up here so that the static
@@ -70,12 +75,23 @@ public class CloudHostFactory {
             return createVagrantCloudHost(label, vagrantDir);
         }
 
-        String amiId = getOvercastProperty(label + AMI_ID_PROPERTY_SUFFIX);
+        String amiId = getOvercastProperty(label + Ec2CloudHost.AMI_ID_PROPERTY_SUFFIX);
         if (amiId != null) {
             return createEc2CloudHost(label, amiId, disableEc2);
         }
 
+        String vboxUuid = getOvercastProperty(label + VBOX_UUID_PROPERTY_SUFFIX);
+        if (vboxUuid != null) {
+            return createVboxHost(label, vboxUuid);
+        }
+
         throw new IllegalStateException("No valid configuration has been specified for host label " + label);
+    }
+
+    private static CloudHost createVboxHost(final String label, final String vboxUuid) {
+        String vboxIp = getOvercastProperty(label + VBOX_IP);
+        String vboxSnapshot = getOvercastProperty(label + VBOX_SNAPSHOT);
+        return new VirtualboxHost(vboxIp, vboxUuid, vboxSnapshot);
     }
 
     private static CloudHost createExistingCloudHost(final String label) {
@@ -87,7 +103,7 @@ public class CloudHostFactory {
         String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
         String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
         logger.info("Using Vagrant to create {}", hostLabel);
-        return new VagrantCloudHost(vagrantIp, new VagrantHelper(hostLabel, vagrantDir, vagrantVm));
+        return new VagrantCloudHost(vagrantVm, vagrantIp, new VagrantDriver(hostLabel, atLocation(vagrantDir)));
     }
 
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {

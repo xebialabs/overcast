@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.host;
 
 import java.util.Date;
 import org.slf4j.Logger;
@@ -55,6 +55,8 @@ class Ec2CloudHost implements CloudHost {
     private AmazonEC2Client ec2;
     private String instanceId;
     private String publicDnsAddress;
+
+    private static final Logger logger = LoggerFactory.getLogger(Ec2CloudHost.class);
 
     public Ec2CloudHost(String hostLabel, String amiId) {
         this.hostLabel = hostLabel;
@@ -96,6 +98,50 @@ class Ec2CloudHost implements CloudHost {
     @Override
     public int getPort(int port) {
         return port;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public String getPublicDnsAddress() {
+        return publicDnsAddress;
+    }
+
+    public String getAmiId() {
+        return amiId;
+    }
+
+    public String getHostLabel() {
+        return hostLabel;
+    }
+
+    public String getAwsAccessKey() {
+        return awsAccessKey;
+    }
+
+    public String getAwsSecretKey() {
+        return awsSecretKey;
+    }
+
+    public String getAmiAvailabilityZone() {
+        return amiAvailabilityZone;
+    }
+
+    public String getAmiInstanceType() {
+        return amiInstanceType;
+    }
+
+    public String getAmiSecurityGroup() {
+        return amiSecurityGroup;
+    }
+
+    public String getAmiKeyName() {
+        return amiKeyName;
+    }
+
+    public int getAmiBootSeconds() {
+        return amiBootSeconds;
     }
 
     protected String runInstance() {
@@ -152,7 +198,5 @@ class Ec2CloudHost implements CloudHost {
             Thread.currentThread().interrupt();
         }
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(Ec2CloudHost.class);
 
 }

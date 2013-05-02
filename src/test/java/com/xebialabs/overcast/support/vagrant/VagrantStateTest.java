@@ -1,8 +1,8 @@
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.support.vagrant;
 
 import org.junit.Test;
 
-import static com.xebialabs.overcast.VagrantState.*;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.*;
 import static junit.framework.Assert.assertEquals;
 
 public class VagrantStateTest {

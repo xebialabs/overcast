@@ -1,16 +1,16 @@
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.support.vagrant;
 
 public enum VagrantState {
     NOT_CREATED, POWEROFF, ABORTED, SAVED, RUNNING;
 
-    public static VagrantState fromStatusString(String statusString) {
-        if (statusString.contains("not created")) return NOT_CREATED;
-        if (statusString.contains("poweroff")) return POWEROFF;
-        if (statusString.contains("aborted")) return ABORTED;
-        if (statusString.contains("saved")) return SAVED;
-        if (statusString.contains("running")) return RUNNING;
+    public static VagrantState fromStatusString(String s) {
+        if (s.contains("not created")) return NOT_CREATED;
+        if (s.contains("poweroff")) return POWEROFF;
+        if (s.contains("aborted")) return ABORTED;
+        if (s.contains("saved")) return SAVED;
+        if (s.contains("running")) return RUNNING;
 
-        throw new RuntimeException("Unknown status: " + statusString);
+        throw new RuntimeException("Unknown status: " + s);
     }
 
     public static String[] getTransitionCommand(VagrantState newState) {

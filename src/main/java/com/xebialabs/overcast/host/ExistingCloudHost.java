@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.host;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 

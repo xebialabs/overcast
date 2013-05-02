@@ -1,7 +1,7 @@
 // build.gradle for the overcast project
 
-version = '1.1.2-SNAPSHOT'
-//version = '1.1.2'
+//version = '1.1.2-SNAPSHOT'
+version = '1.1.2'
 
 group = 'com.xebialabs.cloud'
 
@@ -16,6 +16,7 @@ dependencies {
 		exclude group: 'commons-codec', module: 'commons-codec'
 	}
 	compile 'commons-codec:commons-codec:1.5'
+  compile 'commons-io:commons-io:2.4'
 	compile 'com.google.guava:guava:10.0.1'
 	compile 'net.schmizz:sshj:0.7.0'
 	compile 'org.slf4j:slf4j-api:1.7.2'

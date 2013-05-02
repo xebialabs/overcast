@@ -1,7 +1,8 @@
-package com.xebialabs.overcast;
+package com.xebialabs.overcast.support.vagrant;
 
-import com.xebialabs.overcast.vagrant.VagrantHelper;
-import com.xebialabs.overcast.vagrant.VagrantResponse;
+import com.xebialabs.overcast.command.CommandResponse;
+import com.xebialabs.overcast.host.VagrantCloudHost;
+
 import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -12,7 +13,7 @@ import static org.mockito.Mockito.when;
 public class VagrantCloudHostTest {
 
     @Mock
-    private VagrantHelper vagrantHelper;
+    private VagrantDriver vagrantDriver;
 
     @Before
     public void setUp() {
@@ -21,20 +22,20 @@ public class VagrantCloudHostTest {
 
     @Test
     public void shouldThrowNoExceptionsWhenAllGoesFine() {
-        when(vagrantHelper.doVagrant("status")).thenReturn(new VagrantResponse(0, "", "not created"));
-        when(vagrantHelper.doVagrant("up")).thenReturn(new VagrantResponse(0, "", ""));
+        when(vagrantDriver.status("vm")).thenReturn(new CommandResponse(0, "", "not created"));
+        when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(0, "", ""));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("127.0.0.1", vagrantHelper);
+        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
 
         vagrantCloudHost.setup();
     }
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowAnExceptionWhenExitCodeIsNot0() {
-        when(vagrantHelper.doVagrant("status")).thenReturn(new VagrantResponse(0, "", "not created"));
-        when(vagrantHelper.doVagrant("up")).thenReturn(new VagrantResponse(3, "", ""));
+        when(vagrantDriver.doVagrant("vm", "status")).thenReturn(new CommandResponse(0, "", "not created"));
+        when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(3, "", ""));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("127.0.0.1", vagrantHelper);
+        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
         vagrantCloudHost.setup();
     }
 
@@ -48,10 +49,10 @@ public class VagrantCloudHostTest {
                     "\u001B[0;33mwarning: /Stage[main]/Was::Config/Exec[configure-was]: Skipping because of blablabla[0m\n" +
                     "\u001B[0;36mnotice: Finished catalog run in 593.85 seconds[0m";
 
-        when(vagrantHelper.doVagrant("status")).thenReturn(new VagrantResponse(0, "", "not created"));
-        when(vagrantHelper.doVagrant("up")).thenReturn(new VagrantResponse(0, "", outputWithPuppetErrors));
+        when(vagrantDriver.doVagrant("status")).thenReturn(new CommandResponse(0, "", "not created"));
+        when(vagrantDriver.doVagrant("up")).thenReturn(new CommandResponse(0, "", outputWithPuppetErrors));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("127.0.0.1", vagrantHelper);
+        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
         vagrantCloudHost.setup();
     }
 
