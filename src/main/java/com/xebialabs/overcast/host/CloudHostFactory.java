@@ -44,7 +44,7 @@ public class CloudHostFactory {
 
     private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
     private static final String VBOX_IP = ".vboxBoxIp";
-    private static final String VBOX_SNAPSHOT = ".vboxSnapshot";
+    private static final String VBOX_SNAPSHOT = ".vboxSnapshotUuid";
 
 
     // The field logger needs to be defined up here so that the static

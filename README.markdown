@@ -7,6 +7,7 @@ A Java library to test against hosts in the cloud.
 * Setup and tear-down for
 	- Amazon EC2 hosts (Automatic host creation/destroy)
 	- Vagrant hosts (Set up to the running state, tear down to the initial state)
+	- VirtualBox hosts (Load snapshot and start, poweroff)
 	- Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
@@ -55,6 +56,14 @@ There are 2 places where Overcast tries to find properties for configuration (hi
 {my-host-label}.vagrantDir - Directory with Vagrantfile
 
 {my-host-label}.vagrantIp - IP address of the Vagrant host
+
+
+##### VirtualBox host properties
+{my-host-label}.vboxUuid - UUID of the virtual machine
+
+{my-host-label}.vboxSnapshotUuid - UUID  of the snapshot
+
+{my-host-label}.vboxIp - IP address of the virtual machine
 
 
 #### Set up and Tear down
