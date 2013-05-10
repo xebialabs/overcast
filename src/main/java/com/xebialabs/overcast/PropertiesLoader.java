@@ -1,14 +1,18 @@
 package com.xebialabs.overcast;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
+
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.io.Files.readLines;
@@ -55,17 +59,27 @@ public class PropertiesLoader {
         if (file.exists()) {
             logger.info("Loading from file {}", file.getAbsolutePath());
             String fileContent = on("\n").join(readLines(file, defaultCharset()));
-            properties.load(new ByteArrayInputStream(processed(fileContent).getBytes()));
+            properties.load(new ByteArrayInputStream(processed(fileContent, file.getName()).getBytes()));
         } else {
             logger.warn("File {} not found.", file.getAbsolutePath());
         }
     }
 
-    private static String processed(String s) {
-        for (Map.Entry<String, String> e : System.getenv().entrySet()) {
-            s = s.replace("${env." + e.getKey() + "}", e.getValue());
+    private static String processed(String s, String tplName) {
+        Map<? super Object, ? super Object> model = Maps.newHashMap();
+        model.put("env", System.getenv());
+
+        try {
+            StringWriter processedXml = new StringWriter();
+            new Template(tplName, new StringReader(s), new Configuration()).process(model, processedXml);
+            return processedXml.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (TemplateException e) {
+            throw new RuntimeException(e);
         }
-        return s;
+
+
     }
 
 }

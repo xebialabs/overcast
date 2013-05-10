@@ -20,6 +20,7 @@ dependencies {
 	compile 'com.google.guava:guava:10.0.1'
 	compile 'net.schmizz:sshj:0.7.0'
 	compile 'org.slf4j:slf4j-api:1.7.2'
+  compile 'org.freemarker:freemarker:2.3.19'
 
 	testCompile 'junit:junit:4.10'
   testCompile 'org.mockito:mockito-core:1.9.0'
@@ -27,6 +28,7 @@ dependencies {
 
 	runtime 'org.slf4j:jcl-over-slf4j:1.7.2'
 	runtime 'org.slf4j:log4j-over-slf4j:1.7.2'
+
 }
 
 repositories {

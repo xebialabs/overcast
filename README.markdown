@@ -23,6 +23,12 @@ There are 2 places where Overcast tries to find properties for configuration (hi
 
 **Home location takes precedence on project location.**
 
+Freemarker templating can be used in these files. Environment variables are available as a map inside **env** variable. Example:
+
+```
+some.property=${env.VARIABLE_NAME}
+```
+
 ##### Common properties
 {my-host-label}.hostname - Hostname. If is not set, overthere will try to create host (For Amazon hosts).
 
