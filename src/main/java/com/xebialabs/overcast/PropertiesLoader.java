@@ -39,10 +39,10 @@ public class PropertiesLoader {
 
 
     private static void loadOvercastPropertiesFromClasspath(final Properties properties) throws IOException {
-        URL resource = Resources.getResource(OVERCAST_PROPERTY_FILE);
-        if (resource != null) {
+        try {
+            URL resource = Resources.getResource(OVERCAST_PROPERTY_FILE);
             loadOvercastPropertiesFromFile(new File(resource.getFile()), properties);
-        } else {
+        } catch (IllegalArgumentException e) {
             logger.warn("File {} not found on classpath.", OVERCAST_PROPERTY_FILE);
         }
     }
