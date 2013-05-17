@@ -2,9 +2,7 @@ package com.xebialabs.overcast;
 
 import java.util.Map;
 import org.junit.Test;
-import org.mockito.Matchers;
 
-import static com.google.common.base.CharMatcher.isNot;
 import static com.xebialabs.overcast.OvercastProperties.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;

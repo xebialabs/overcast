@@ -3,7 +3,6 @@ package com.xebialabs.overcast.support.virtualbox;
 import java.util.ArrayList;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 
 import com.xebialabs.overcast.command.CommandProcessor;
 
@@ -13,7 +12,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static com.xebialabs.overcast.command.Command.aCommand;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.POWEROFF;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.SAVED;
-import static java.lang.String.format;
 
 public class VirtualboxDriver {
 

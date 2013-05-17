@@ -3,8 +3,6 @@ package com.xebialabs.overcast.command;
 import java.io.*;
 import org.apache.commons.io.input.TeeInputStream;
 
-import static java.util.Arrays.asList;
-
 public class CommandProcessor {
 
     private String execDir = ".";

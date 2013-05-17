@@ -9,7 +9,6 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Collections2.filter;
 
-@SuppressWarnings("unused")
 public class Command {
 
     private List<String> command = new ArrayList<String>();

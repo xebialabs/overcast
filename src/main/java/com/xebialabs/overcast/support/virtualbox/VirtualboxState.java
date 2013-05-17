@@ -1,9 +1,7 @@
 package com.xebialabs.overcast.support.virtualbox;
 
 import java.util.Arrays;
-import java.util.Collection;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Collections2.*;

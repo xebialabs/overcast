@@ -4,7 +4,6 @@ import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.command.CommandResponse;
 
 import static com.xebialabs.overcast.command.Command.aCommand;
-import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 
 public class VagrantDriver {
 

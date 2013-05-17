@@ -24,9 +24,10 @@ public enum VagrantState {
                 return new String[]{"suspend"};
             case RUNNING:
                 return new String[]{"up"};
+            case ABORTED:
+                // ignore
+                break;
         }
-
-        throw new RuntimeException("This never gonna happen.");
-
+        throw new RuntimeException("Unexpected state in getTransitionCommand "+newState.name());
     }
 }

@@ -7,7 +7,6 @@ import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class VagrantCloudHostTest {

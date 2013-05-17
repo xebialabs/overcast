@@ -1,7 +1,5 @@
 package com.xebialabs.overcast;
 
-import java.io.*;
-import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
