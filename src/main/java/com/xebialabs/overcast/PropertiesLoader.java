@@ -1,6 +1,7 @@
 package com.xebialabs.overcast;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 
-import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -23,36 +23,39 @@ public class PropertiesLoader {
     private static Logger logger = LoggerFactory.getLogger(PropertiesLoader.class);
 
     public static final String OVERCAST_PROPERTY_FILE = "overcast.properties";
-
+    public static final String OVERCAST_USER_DIR = ".overcast";
 
     public static Properties loadOvercastProperties() {
         try {
             Properties properties = new Properties();
-            loadOvercastPropertiesFromClasspath(properties);
-            loadOvercastPropertiesFromHomeDirectory(properties);
-            loadOvercastPropertiesFromCurrentDirectory(properties);
+            loadPropertiesFromClasspath(OVERCAST_PROPERTY_FILE, properties);
+            loadPropertiesFromPath(OVERCAST_PROPERTY_FILE, properties);
+            loadPropertiesFromPath(getUserOvercastProperties(), properties);
             return properties;
         } catch (IOException exc) {
             throw new RuntimeException("Cannot load " + OVERCAST_PROPERTY_FILE, exc);
         }
     }
 
+    private static String getUserOvercastProperties() {
+        return new File(new File(System.getProperty("user.home"), OVERCAST_USER_DIR), OVERCAST_PROPERTY_FILE).getAbsolutePath();
+    }
 
-    private static void loadOvercastPropertiesFromClasspath(final Properties properties) throws IOException {
+    public static void loadPropertiesFromClasspath(String path, final Properties properties) throws IOException {
         try {
-            URL resource = Resources.getResource(OVERCAST_PROPERTY_FILE);
-            loadOvercastPropertiesFromFile(new File(resource.getFile()), properties);
+            URL resource = Resources.getResource(path);
+            // resource.toURI().getPath() so path gets URL decoded so spaces are no issue
+            // using resource.getPath() runs into a bug with guava
+            loadOvercastPropertiesFromFile(new File(resource.toURI().getPath()), properties);
         } catch (IllegalArgumentException e) {
-            logger.warn("File {} not found on classpath.", OVERCAST_PROPERTY_FILE);
+            logger.warn("File '{}' not found on classpath.", path);
+        } catch (URISyntaxException e) {
+            logger.warn("File '{}' not found on classpath.", path);
         }
     }
 
-    private static void loadOvercastPropertiesFromCurrentDirectory(final Properties properties) throws IOException {
-        loadOvercastPropertiesFromFile(new File(OVERCAST_PROPERTY_FILE), properties);
-    }
-
-    private static void loadOvercastPropertiesFromHomeDirectory(final Properties properties) throws IOException {
-        loadOvercastPropertiesFromFile(new File(System.getProperty("user.home"), ".overcast" + File.separator + OVERCAST_PROPERTY_FILE), properties);
+    public static void loadPropertiesFromPath(String path, final Properties properties) throws IOException {
+        loadOvercastPropertiesFromFile(new File(path), properties);
     }
 
     private static void loadOvercastPropertiesFromFile(File file, Properties properties) throws IOException {
@@ -78,10 +81,7 @@ public class PropertiesLoader {
         } catch (TemplateException e) {
             throw new RuntimeException(e);
         }
-
-
     }
-
 }
 
 
