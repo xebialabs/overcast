@@ -35,4 +35,5 @@ public class VagrantStateTest {
 		assertEquals("destroy", getTransitionCommand(NOT_CREATED)[0]);
 		assertEquals("-f", getTransitionCommand(NOT_CREATED)[1]);
 	}
+
 }

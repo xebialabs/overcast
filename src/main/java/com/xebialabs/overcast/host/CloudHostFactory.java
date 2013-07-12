@@ -22,7 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.OvercastProperties;
+import com.xebialabs.overcast.command.Command;
+import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
+import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
@@ -30,6 +33,7 @@ import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 
 
+@SuppressWarnings("unused")
 public class CloudHostFactory {
 
     public static final String HOSTNAME_PROPERTY_SUFFIX = ".hostname";
@@ -41,14 +45,12 @@ public class CloudHostFactory {
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
     private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+    private static final String VAGRANT_SNAPSHOT_EXPIRATION_CMD = ".vagrantSnapshotExpirationCmd";
 
     private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
     private static final String VBOX_IP = ".vboxBoxIp";
     private static final String VBOX_SNAPSHOT = ".vboxSnapshotUuid";
 
-
-    // The field logger needs to be defined up here so that the static
-    // initialized below can use the logger
     public static Logger logger = LoggerFactory.getLogger(CloudHostFactory.class);
 
     public static CloudHost getCloudHostWithNoTeardown(String hostLabel) {
@@ -102,8 +104,17 @@ public class CloudHostFactory {
     private static CloudHost createVagrantCloudHost(final String hostLabel, final String vagrantDir) {
         String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
         String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
+        String vagrantExpirationCmd = getOvercastProperty(hostLabel + VAGRANT_SNAPSHOT_EXPIRATION_CMD);
+
         logger.info("Using Vagrant to create {}", hostLabel);
-        return new VagrantCloudHost(vagrantVm, vagrantIp, new VagrantDriver(hostLabel, atLocation(vagrantDir)));
+
+        CommandProcessor cmdProcessor = atLocation(vagrantDir);
+        VagrantDriver vagrantDriver = new VagrantDriver(hostLabel, cmdProcessor);
+        VirtualboxDriver vboxDriver = new VirtualboxDriver(cmdProcessor);
+
+        return vagrantExpirationCmd == null ?
+                new VagrantCloudHost(vagrantVm, vagrantIp, vagrantDriver) :
+                new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor);
     }
 
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {

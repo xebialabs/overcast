@@ -2,8 +2,12 @@ package com.xebialabs.overcast.command;
 
 import java.io.*;
 import org.apache.commons.io.input.TeeInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommandProcessor {
+
+    public static Logger logger = LoggerFactory.getLogger(CommandProcessor.class);
 
     private String execDir = ".";
 
@@ -22,6 +26,9 @@ public class CommandProcessor {
     }
 
     public CommandResponse run(final Command command) {
+
+        logger.debug("Executing command {}", command);
+
         try {
             Process p = new ProcessBuilder(command.asList()).directory(new File(execDir)).start();
 

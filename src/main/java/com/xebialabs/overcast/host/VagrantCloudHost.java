@@ -7,17 +7,19 @@ import com.xebialabs.overcast.command.CommandResponse;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 
+import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.POWEROFF;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
 
 public class VagrantCloudHost implements CloudHost {
 
-    private String vagrantIp;
+    protected String vagrantIp;
 
-    private String vagrantVm;
+    protected String vagrantVm;
 
-    private VagrantDriver vagrantDriver;
+    protected VagrantDriver vagrantDriver;
 
-    private static VagrantState initialState;
+    private VagrantState initialState;
 
     private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
@@ -29,16 +31,22 @@ public class VagrantCloudHost implements CloudHost {
 
     @Override
     public void setup() {
-        CommandResponse statusResponse = vagrantDriver.status(vagrantVm);
-        initialState = VagrantState.fromStatusString(statusResponse.getOutput());
+        initialState = vagrantDriver.state(vagrantVm);
         logger.info("Vagrant host is in state {}.", initialState.toString());
         vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(VagrantState.RUNNING));
     }
 
     @Override
     public void teardown() {
-        logger.info("Bringing vagrant back to {} state.", initialState.toString());
-        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(initialState));
+        VagrantState nextState;
+        if (initialState != null) {
+            logger.info("Bringing vagrant back to {} state.", initialState.toString());
+            nextState = initialState;
+        } else {
+            logger.warn("No initial state was captured. Destroying the VM.");
+            nextState = NOT_CREATED;
+        }
+        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(nextState));
     }
 
     @Override

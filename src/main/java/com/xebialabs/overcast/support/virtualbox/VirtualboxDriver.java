@@ -1,11 +1,12 @@
 package com.xebialabs.overcast.support.virtualbox;
 
-import java.util.ArrayList;
+import java.util.Map;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 
 import com.xebialabs.overcast.command.CommandProcessor;
 
+import static com.google.common.base.Splitter.on;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -24,19 +25,19 @@ public class VirtualboxDriver {
     /**
      * Fetches VM state.
      */
-    public VirtualboxState vmState(String vmUuid) {
-        return VirtualboxState.fromStatusString(execute("showvminfo", vmUuid));
+    public VirtualboxState vmState(String vm) {
+        return VirtualboxState.fromStatusString(execute("showvminfo", vm));
     }
 
     /**
-     * Checks if VM exists.
+     * Checks if VM exists. Accepts UUID or VM name as an argument.
      */
-    public boolean vmExists(final String uuid) {
-        ArrayList<String> lines = newArrayList(Splitter.on("\n").split(execute("list", "vms")));
-        return filter(lines, new Predicate<String>() {
+    public boolean vmExists(final String vm) {
+        return filter(newArrayList(on("\n").split(execute("list", "vms"))), new Predicate<String>() {
             @Override
-            public boolean apply(final String input) {
-                return input.endsWith("{" + uuid + "}");
+            public boolean apply(final String i) {
+                System.out.println(i);
+                return i.endsWith("{" + vm + "}") || i.startsWith("\"" + vm + "\"");
             }
         }).size() == 1;
     }
@@ -44,19 +45,31 @@ public class VirtualboxDriver {
     /**
      * Shuts down if running, restores the snapshot and starts VM.
      */
-    public void loadSnapshot(final String vmUuid, final String snapshotUuid) {
-        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vmUuid))) {
-            powerOff(vmUuid);
+    public void loadSnapshot(String vm, String snapshotUuid) {
+        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vm))) {
+            powerOff(vm);
         }
-        execute("snapshot", vmUuid, "restore", snapshotUuid);
-        execute("startvm", vmUuid);
+        execute("snapshot", vm, "restore", snapshotUuid);
+        execute("startvm", vm);
+    }
+
+    /**
+     * Shuts down if running, restores the latest snapshot and starts VM.
+     */
+    public void loadLatestSnapshot(final String vm) {
+        Map<String,String> split = Splitter.on('\n').omitEmptyStrings()
+                .withKeyValueSeparator("=")
+                .split(execute("snapshot", vm, "list", "--machinereadable"));
+        String quotedId = split.get("CurrentSnapshotUUID");
+
+        loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));
     }
 
     /**
      * Shuts down VM.
      */
-    public void powerOff(final String vmUuid) {
-        execute("controlvm", vmUuid, "poweroff");
+    public void powerOff(final String vm) {
+        execute("controlvm", vm, "poweroff");
     }
 
     /**
@@ -64,5 +77,23 @@ public class VirtualboxDriver {
      */
     public String execute(String... command) {
         return commandProcessor.run(aCommand("VBoxManage").withArguments(command)).getOutput();
+    }
+
+    /**
+     * Sets extra data on the VM
+     */
+    public void setExtraData(String vm, String k, String v) {
+        execute("setextradata", vm, k, v);
+    }
+
+    public String getExtraData(String vm, String k) {
+        final String prefix = "Value: ";
+
+        String v = execute("getextradata", vm, k).trim();
+        return v.equals("No value set!") ? null : v.substring(prefix.length());
+    }
+
+    public void createSnapshot(String vm, String name) {
+        execute("snapshot", vm, "take", name, "--description", "'Snapshot taken by Overcast.'");
     }
 }

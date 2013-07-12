@@ -25,8 +25,9 @@ public enum VagrantState {
             case RUNNING:
                 return new String[]{"up"};
             case ABORTED:
-                // ignore
-                break;
+                break; // ignore
+            default:
+                throw new IllegalArgumentException(String.format("The state %s is not known", newState));
         }
         throw new RuntimeException("Unexpected state in getTransitionCommand "+newState.name());
     }

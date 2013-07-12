@@ -7,6 +7,7 @@ import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
 import static org.mockito.Mockito.when;
 
 public class VagrantCloudHostTest {
@@ -21,7 +22,7 @@ public class VagrantCloudHostTest {
 
     @Test
     public void shouldThrowNoExceptionsWhenAllGoesFine() {
-        when(vagrantDriver.status("vm")).thenReturn(new CommandResponse(0, "", "not created"));
+        when(vagrantDriver.state("vm")).thenReturn(NOT_CREATED);
         when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(0, "", ""));
 
         VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);

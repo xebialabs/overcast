@@ -15,7 +15,6 @@ public class VagrantDriver {
         this.commandProcessor = commandProcessor;
     }
 
-
     /**
      * Executes vagrant command which means that arguments passed here will be prepended with "vagrant"
      * @param vagrantCommand arguments for <i><vagrant</i> command
@@ -25,6 +24,10 @@ public class VagrantDriver {
         CommandResponse response = commandProcessor.run(
                 aCommand("vagrant").withArguments(vagrantCommand).withOptions(vagrantVm)
         );
+
+        if(!response.isSuccessful()) {
+            throw new RuntimeException("Errors during vagrant execution: \n" + response.getErrors());
+        }
 
         // Check for puppet errors. Not vagrant still returns 0 when puppet fails
         // May not be needed after this PR released: https://github.com/mitchellh/vagrant/pull/1175
@@ -39,6 +42,10 @@ public class VagrantDriver {
 
     public CommandResponse status(String vm) {
         return doVagrant(vm, "status");
+    }
+
+    public VagrantState state(String vm) {
+        return VagrantState.fromStatusString(status(vm).getOutput());
     }
 
     @Override
