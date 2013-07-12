@@ -11,11 +11,11 @@ import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionC
 
 public class VagrantCloudHost implements CloudHost {
 
-    private String vagrantIp;
+    protected String vagrantIp;
 
-    private String vagrantVm;
+    protected String vagrantVm;
 
-    private VagrantDriver vagrantDriver;
+    protected VagrantDriver vagrantDriver;
 
     private static VagrantState initialState;
 

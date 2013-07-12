@@ -6,6 +6,8 @@ import com.google.common.base.Splitter;
 
 import com.xebialabs.overcast.command.CommandProcessor;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -24,19 +26,19 @@ public class VirtualboxDriver {
     /**
      * Fetches VM state.
      */
-    public VirtualboxState vmState(String vmUuid) {
-        return VirtualboxState.fromStatusString(execute("showvminfo", vmUuid));
+    public VirtualboxState vmState(String vm) {
+        return VirtualboxState.fromStatusString(execute("showvminfo", vm));
     }
 
     /**
      * Checks if VM exists.
      */
-    public boolean vmExists(final String uuid) {
+    public boolean vmExists(final String vm) {
         ArrayList<String> lines = newArrayList(Splitter.on("\n").split(execute("list", "vms")));
         return filter(lines, new Predicate<String>() {
             @Override
             public boolean apply(final String input) {
-                return input.endsWith("{" + uuid + "}");
+                return input.endsWith("{" + vm + "}");
             }
         }).size() == 1;
     }
@@ -44,19 +46,19 @@ public class VirtualboxDriver {
     /**
      * Shuts down if running, restores the snapshot and starts VM.
      */
-    public void loadSnapshot(final String vmUuid, final String snapshotUuid) {
-        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vmUuid))) {
-            powerOff(vmUuid);
+    public void loadSnapshot(final String vm, final String snapshotUuid) {
+        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vm))) {
+            powerOff(vm);
         }
-        execute("snapshot", vmUuid, "restore", snapshotUuid);
-        execute("startvm", vmUuid);
+        execute("snapshot", vm, "restore", snapshotUuid);
+        execute("startvm", vm);
     }
 
     /**
      * Shuts down VM.
      */
-    public void powerOff(final String vmUuid) {
-        execute("controlvm", vmUuid, "poweroff");
+    public void powerOff(final String vm) {
+        execute("controlvm", vm, "poweroff");
     }
 
     /**
@@ -64,5 +66,19 @@ public class VirtualboxDriver {
      */
     public String execute(String... command) {
         return commandProcessor.run(aCommand("VBoxManage").withArguments(command)).getOutput();
+    }
+
+    /**
+     * Sets extra data on the VM
+     * @param vm
+     * @param expirationTagPropertyKey
+     * @param someSha
+     */
+    public void setExtraData(final String vm, final String expirationTagPropertyKey, final String someSha) {
+        throw new NotImplementedException();
+    }
+
+    public String getExtraData(final String vm, final String expirationTagPropertyKey) {
+        throw new NotImplementedException();
     }
 }

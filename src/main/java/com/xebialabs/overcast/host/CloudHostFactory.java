@@ -41,6 +41,7 @@ public class CloudHostFactory {
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
     private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+    private static final String VAGRANT_SNAPSHOT_EXPIRATION_CMD = ".vagrantSnapshotExpirationCmd";
 
     private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
     private static final String VBOX_IP = ".vboxBoxIp";
@@ -102,7 +103,9 @@ public class CloudHostFactory {
     private static CloudHost createVagrantCloudHost(final String hostLabel, final String vagrantDir) {
         String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
         String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
+
         logger.info("Using Vagrant to create {}", hostLabel);
+
         return new VagrantCloudHost(vagrantVm, vagrantIp, new VagrantDriver(hostLabel, atLocation(vagrantDir)));
     }
 
