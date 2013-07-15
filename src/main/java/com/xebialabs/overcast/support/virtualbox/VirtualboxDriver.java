@@ -50,7 +50,7 @@ public class VirtualboxDriver {
             powerOff(vm);
         }
         execute("snapshot", vm, "restore", snapshotUuid);
-        execute("startvm", vm);
+        start(vm);
     }
 
     /**
@@ -70,6 +70,10 @@ public class VirtualboxDriver {
      */
     public void powerOff(final String vm) {
         execute("controlvm", vm, "poweroff");
+    }
+
+    public void start(String vm) {
+        execute("startvm", vm, "--type", "headless");
     }
 
     /**

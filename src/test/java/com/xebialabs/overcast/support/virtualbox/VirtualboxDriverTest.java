@@ -45,7 +45,7 @@ public class VirtualboxDriverTest {
     private static final Command vmInfo = Command.fromString("VBoxManage showvminfo 4407a6e4-c966-49d4-959a-50c87fffa0ac");
     private static final Command powerOff = Command.fromString("VBoxManage controlvm 4407a6e4-c966-49d4-959a-50c87fffa0ac poweroff");
     private static final Command restore = Command.fromString("VBoxManage snapshot 4407a6e4-c966-49d4-959a-50c87fffa0ac restore baf3d83d-eb55-4733-a215-450cf090cc77");
-    private static final Command start = Command.fromString("VBoxManage startvm 4407a6e4-c966-49d4-959a-50c87fffa0ac");
+    private static final Command start = Command.fromString("VBoxManage startvm 4407a6e4-c966-49d4-959a-50c87fffa0ac --type headless");
     private static final Command snapshotList = Command.fromString("VBoxManage snapshot 4407a6e4-c966-49d4-959a-50c87fffa0ac list --machinereadable");
     private static final Command getExtraData = Command.fromString("VBoxManage getextradata windows12 someKey");
 
