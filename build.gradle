@@ -121,6 +121,15 @@ uploadArchives {
 							role 'Developer'
 						}
 					}
+					developer {
+						id 'mkotsur'
+						name 'Mike Kotsur'
+						url 'http://www.xebialabs.com/'
+						email 'mkotsur@xebialabs.com'
+						roles {
+							role 'Developer'
+						}
+					}
 				}
 			}
 		}
