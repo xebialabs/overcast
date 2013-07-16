@@ -1,0 +1,17 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--name", "overcast_itest"]
+  end
+
+  config.vm.box = "precise32"
+  config.vm.box_url = "http://files.vagrantup.com/precise32.box"
+
+  config.vm.define "overcast_itest" do |oi|
+    oi.vm.network :private_network, ip: "10.10.200.200"
+  end
+
+end

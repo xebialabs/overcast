@@ -64,6 +64,16 @@ artifacts {
 	archives sourcesJar, javadocJar
 }
 
+project.tasks.add("itest", Test).configure {
+  description = "Run the integration tests."
+  includes = ["**/*Itest.*"]
+  testResultsDir = project.file("${project.buildDir}/itest-results")
+}
+
+project.tasks.getByName("test").configure {
+  excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
+}
+
 signing {
 	required { gradle.taskGraph.hasTask('uploadArchives') }
 	sign configurations.archives
