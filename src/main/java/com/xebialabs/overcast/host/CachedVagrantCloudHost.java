@@ -1,7 +1,10 @@
 package com.xebialabs.overcast.host;
 
+import java.net.SocketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
 
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
@@ -15,6 +18,8 @@ import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 class CachedVagrantCloudHost extends VagrantCloudHost {
 
     public final static String EXPIRATION_TAG_PROPERTY_KEY = "overcastExpirationTag";
+    public static final int CONNECTION_ATTEMPTS = 100;
+    public static final int CONNECTION_RETRY_DELAY = 2000;
 
     private Command expirationCmd;
 
@@ -63,11 +68,28 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
             virtualboxDriver.loadLatestSnapshot(vagrantVm);
             logger.info("Waiting for the VM to become accessible via SSH");
 
-            OverthereConnection c = connectionBuilder.connect();
-            try {
-                c.execute(CmdLine.build("hostname"));
-            } finally {
-                c.close();
+            boolean connected = false;
+            int currentAttempt = 1;
+
+            while(!connected || currentAttempt < CONNECTION_ATTEMPTS) {
+                try {
+                    OverthereConnection c = connectionBuilder.connect();
+                    try {
+                        c.execute(CmdLine.build("hostname"));
+                        connected = true;
+                    } finally {
+                        c.close();
+                    }
+                } catch (RuntimeIOException re) {
+                    currentAttempt++;
+                    logger.info(re.getMessage());
+                    logger.info("Proceeding with attempt {}", currentAttempt);
+                    try {
+                        Thread.sleep(CONNECTION_RETRY_DELAY);
+                    } catch (InterruptedException se) {
+                        Throwables.propagate(se);
+                    }
+                }
             }
 
         } else {
