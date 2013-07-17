@@ -71,7 +71,7 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
             boolean connected = false;
             int currentAttempt = 1;
 
-            while(!connected || currentAttempt < CONNECTION_ATTEMPTS) {
+            while(!connected && currentAttempt < CONNECTION_ATTEMPTS) {
                 try {
                     OverthereConnection c = connectionBuilder.connect();
                     try {
