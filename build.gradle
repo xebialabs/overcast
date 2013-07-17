@@ -1,7 +1,7 @@
 // build.gradle for the overcast project
 
-version = '1.1.7'
-//version = '1.1.6' // Last released version
+version = '1.1.8-SNAPSHOT'
+//version = '1.1.7' // Last released version
 
 group = 'com.xebialabs.cloud'
 
