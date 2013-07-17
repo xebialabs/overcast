@@ -26,6 +26,13 @@ import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import com.xebialabs.overthere.ConnectionOptions;
+import com.xebialabs.overthere.OperatingSystemFamily;
+import com.xebialabs.overthere.Overthere;
+import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.ssh.SshConnectionBuilder;
+import com.xebialabs.overthere.ssh.SshConnectionType;
+import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
@@ -112,9 +119,20 @@ public class CloudHostFactory {
         VagrantDriver vagrantDriver = new VagrantDriver(hostLabel, cmdProcessor);
         VirtualboxDriver vboxDriver = new VirtualboxDriver(cmdProcessor);
 
-        return vagrantExpirationCmd == null ?
-                new VagrantCloudHost(vagrantVm, vagrantIp, vagrantDriver) :
-                new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor);
+        if (vagrantExpirationCmd == null) {
+            return new VagrantCloudHost(vagrantVm, vagrantIp, vagrantDriver);
+        } else {
+            ConnectionOptions options = new ConnectionOptions();
+            options.set(ConnectionOptions.ADDRESS, vagrantIp);
+            options.set(ConnectionOptions.USERNAME, "vagrant");
+            options.set(ConnectionOptions.PASSWORD, "vagrant");
+            options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.UNIX);
+            options.set(SshConnectionBuilder.CONNECTION_TYPE, SshConnectionType.SFTP);
+
+            SshConnectionBuilder b = new SshConnectionBuilder("ssh", options, new DefaultAddressPortMapper());
+            return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor, b);
+        }
+
     }
 
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {

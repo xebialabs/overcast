@@ -12,6 +12,8 @@ import com.xebialabs.overcast.command.NonZeroCodeException;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 
 import static com.xebialabs.overcast.host.CachedVagrantCloudHost.EXPIRATION_TAG_PROPERTY_KEY;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
@@ -36,6 +38,12 @@ public class CachedVagrantCloudHostTest {
     private VagrantDriver vagrantDriver;
 
     @Mock
+    private OverthereConnectionBuilder cb;
+
+    @Mock
+    private OverthereConnection connection;
+
+    @Mock
     private VirtualboxDriver virtualboxDriver;
 
     @Mock
@@ -48,8 +56,11 @@ public class CachedVagrantCloudHostTest {
     @Before
     public void setUp() {
         initMocks(this);
+
+        when(cb.connect()).thenReturn(connection);
+
         myCommand = Command.fromString("my-command");
-        cloudHost = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor);
+        cloudHost = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor, cb);
     }
 
     @Test(expected = RuntimeException.class)
@@ -124,7 +135,7 @@ public class CachedVagrantCloudHostTest {
         when(virtualboxDriver.getExtraData("myvm", EXPIRATION_TAG_PROPERTY_KEY)).thenReturn(null);
         when(vagrantDriver.state("myvm")).thenReturn(VagrantState.RUNNING);
 
-        VagrantCloudHost ch = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor);
+        VagrantCloudHost ch = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor, cb);
         ch.teardown();
 
         verify(vagrantDriver).doVagrant("myvm", "destroy", "-f");

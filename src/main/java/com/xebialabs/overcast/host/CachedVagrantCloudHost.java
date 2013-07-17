@@ -9,6 +9,8 @@ import com.xebialabs.overcast.command.NonZeroCodeException;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import com.xebialabs.overthere.*;
+import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 
 class CachedVagrantCloudHost extends VagrantCloudHost {
 
@@ -20,13 +22,16 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
 
     private CommandProcessor commandProcessor;
 
+    private OverthereConnectionBuilder connectionBuilder;
+
     private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
-    public CachedVagrantCloudHost(String vagrantVm, String vagrantIp, Command expirationCmd, VagrantDriver vagrantDriver, VirtualboxDriver virtualboxDriver, CommandProcessor commandProcessor) {
-        super(vagrantVm, vagrantIp, vagrantDriver);
-        this.virtualboxDriver = virtualboxDriver;
-        this.expirationCmd = expirationCmd;
+    public CachedVagrantCloudHost(String vm, String ip, Command cmd, VagrantDriver vagrantDriver, VirtualboxDriver vboxDriver, CommandProcessor commandProcessor, final OverthereConnectionBuilder cb) {
+        super(vm, ip, vagrantDriver);
+        this.virtualboxDriver = vboxDriver;
+        this.expirationCmd = cmd;
         this.commandProcessor = commandProcessor;
+        this.connectionBuilder = cb;
     }
 
     @Override
@@ -57,7 +62,14 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
             logger.info("Cache hit. Loading the latest snapshot of the VM");
             virtualboxDriver.loadLatestSnapshot(vagrantVm);
             logger.info("Waiting for the VM to become accessible via SSH");
-            vagrantDriver.doVagrant(vagrantVm, "ssh", "-c", "'hostname'");
+
+            OverthereConnection c = connectionBuilder.connect();
+            try {
+                c.execute(CmdLine.build("hostname"));
+            } finally {
+                c.close();
+            }
+
         } else {
             logger.info("Expiration tag does not match. Recreating the VM");
             vagrantDriver.doVagrant(vagrantVm, "destroy", "-f");
