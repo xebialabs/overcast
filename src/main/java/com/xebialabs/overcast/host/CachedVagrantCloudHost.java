@@ -1,6 +1,5 @@
 package com.xebialabs.overcast.host;
 
-import java.net.SocketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

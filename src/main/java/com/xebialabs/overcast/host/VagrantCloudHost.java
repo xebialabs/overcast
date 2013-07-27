@@ -3,12 +3,10 @@ package com.xebialabs.overcast.host;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xebialabs.overcast.command.CommandResponse;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.POWEROFF;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
 
 public class VagrantCloudHost implements CloudHost {

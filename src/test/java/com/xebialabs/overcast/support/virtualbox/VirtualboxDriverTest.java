@@ -1,6 +1,5 @@
 package com.xebialabs.overcast.support.virtualbox;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;

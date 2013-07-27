@@ -11,7 +11,6 @@ import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.OperatingSystemFamily;
-import com.xebialabs.overthere.Overthere;
 import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
