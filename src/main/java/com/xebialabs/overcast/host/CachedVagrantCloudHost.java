@@ -11,6 +11,7 @@ import com.xebialabs.overcast.command.NonZeroCodeException;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
 import com.xebialabs.overthere.*;
 import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 
@@ -107,8 +108,13 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
             super.teardown();
         } else {
             logger.info("Found expiration tag {}", tag);
-            logger.info("Powering off the VM");
-            virtualboxDriver.powerOff(vagrantVm);
+            VirtualboxState state = virtualboxDriver.vmState(vagrantVm);
+            if (VirtualboxState.RUNNING == state) {
+                logger.info("Powering off VM '{}'", vagrantVm);
+                virtualboxDriver.powerOff(vagrantVm);
+            } else {
+                logger.info("VM '{}' already shut down (state={}).", vagrantVm, state);
+            }
         }
     }
 

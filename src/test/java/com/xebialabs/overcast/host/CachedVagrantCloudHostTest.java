@@ -12,6 +12,7 @@ import com.xebialabs.overcast.command.NonZeroCodeException;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 
@@ -118,6 +119,7 @@ public class CachedVagrantCloudHostTest {
     @Test
     public void shouldCreateSnapshotAndPowerOffWhenTagExists() {
         when(virtualboxDriver.getExtraData("myvm", EXPIRATION_TAG_PROPERTY_KEY)).thenReturn(SOME_OTHER_SHA);
+        when(virtualboxDriver.vmState("myvm")).thenReturn(VirtualboxState.RUNNING);
 
         cloudHost.teardown();
 
@@ -127,6 +129,26 @@ public class CachedVagrantCloudHostTest {
         verify(commandProcessor, never()).run(myCommand);
 
         // We should do the stuff via VBoxManage only
+        verify(vagrantDriver, never()).doVagrant(anyString(), anyString());
+    }
+
+    @Test
+    public void shouldNotPowerOffWhenAborted() {
+        when(virtualboxDriver.vmState("myvm")).thenReturn(VirtualboxState.ABORTED);
+
+        cloudHost.teardown();
+
+        verify(virtualboxDriver, never()).powerOff("myvm");
+        verify(vagrantDriver, never()).doVagrant(anyString(), anyString());
+    }
+
+    @Test
+    public void shouldNotPowerOffWhenOff() {
+        when(virtualboxDriver.vmState("myvm")).thenReturn(VirtualboxState.POWEROFF);
+
+        cloudHost.teardown();
+
+        verify(virtualboxDriver, never()).powerOff("myvm");
         verify(vagrantDriver, never()).doVagrant(anyString(), anyString());
     }
 
