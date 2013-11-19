@@ -1,13 +1,13 @@
 /* License added by: GRADLE-LICENSE-PLUGIN
  *
  * Copyright 2008-2012 XebiaLabs
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@
 package com.xebialabs.overcast.host;
 
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,6 @@ import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.OperatingSystemFamily;
-import com.xebialabs.overthere.Overthere;
-import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
@@ -39,8 +38,6 @@ import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastPrope
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 
-
-@SuppressWarnings("unused")
 public class CloudHostFactory {
 
     public static final String HOSTNAME_PROPERTY_SUFFIX = ".hostname";
@@ -94,6 +91,11 @@ public class CloudHostFactory {
             return createVboxHost(label, vboxUuid);
         }
 
+        String kvmBaseDomain = getOvercastProperty(label + LibvirtHost.LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX);
+        if (kvmBaseDomain != null) {
+            return createLibvirtHost(label, kvmBaseDomain);
+        }
+
         throw new IllegalStateException("No valid configuration has been specified for host label " + label);
     }
 
@@ -132,16 +134,20 @@ public class CloudHostFactory {
             SshConnectionBuilder b = new SshConnectionBuilder("ssh", options, new DefaultAddressPortMapper());
             return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor, b);
         }
-
     }
 
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
         if (disableEc2) {
             throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
-                    + ", but EC2 hosts are not available.");
+                + ", but EC2 hosts are not available.");
         }
         logger.info("Using Amazon EC2 for {}", label);
         return new Ec2CloudHost(label, amiId);
+    }
+
+    private static CloudHost createLibvirtHost(final String label, final String baseDomain) {
+        logger.info("Using Libvirt base domain {} for {}", baseDomain, label);
+        return new LibvirtHost(label, baseDomain);
     }
 
     private static CloudHost wrapCloudHost(String label, CloudHost actualHost) {
@@ -157,5 +163,4 @@ public class CloudHostFactory {
         Map<Integer, Integer> portForwardMap = parsePortsProperty(ports);
         return new TunneledCloudHost(actualHost, tunnelUsername, tunnelPassword, portForwardMap);
     }
-
 }
