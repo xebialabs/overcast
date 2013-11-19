@@ -12,138 +12,138 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 dependencies {
-	compile('com.amazonaws:aws-java-sdk:1.3.30') {
-		exclude group: 'commons-codec', module: 'commons-codec'
-	}
-	compile 'commons-codec:commons-codec:1.5'
-  compile 'commons-io:commons-io:2.4'
-	compile 'com.google.guava:guava:10.0.1'
-	compile 'net.schmizz:sshj:0.7.0'
-	compile 'com.xebialabs.overthere:overthere:2.2.0'
-	compile 'org.slf4j:slf4j-api:1.7.2'
-  compile 'org.freemarker:freemarker:2.3.19'
+    compile 'com.amazonaws:aws-java-sdk:1.3.30'
+    compile 'commons-codec:commons-codec:1.5'
+    compile 'commons-io:commons-io:2.4'
+    compile 'com.google.guava:guava:10.0.1'
+    compile 'net.schmizz:sshj:0.7.0'
+    compile 'com.xebialabs.overthere:overthere:2.2.0'
+    compile 'org.slf4j:slf4j-api:1.7.2'
+    compile 'org.freemarker:freemarker:2.3.19'
 
-	testCompile 'junit:junit:4.10'
-  testCompile 'org.mockito:mockito-core:1.9.0'
-  testCompile 'org.slf4j:slf4j-simple:1.7.2'
+    testCompile 'junit:junit:4.10'
+    testCompile 'org.mockito:mockito-core:1.9.0'
 
-	runtime 'org.slf4j:jcl-over-slf4j:1.7.2'
-	runtime 'org.slf4j:log4j-over-slf4j:1.7.2'
-
+    testRuntime 'ch.qos.logback:logback-classic:1.0.9'
+    testRuntime 'org.slf4j:jcl-over-slf4j:1.7.2'
+    testRuntime 'org.slf4j:log4j-over-slf4j:1.7.2'
 }
 
+configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
+
 repositories {
-	mavenCentral()
-	maven {
-		url 'http://download.java.net/maven/2/'
-	}
-	maven {
-		url 'https://oss.sonatype.org/content/repositories/releases'
-	}
+    mavenCentral()
+    maven {
+        url 'http://download.java.net/maven/2/'
+    }
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/releases'
+    }
 }
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 configurations {
-	compile {
-		transitive = false
-	}
+    compile {
+        transitive = false
+    }
 }
 
 task sourcesJar(type: Jar) {
-	from sourceSets.main.allSource
-	classifier = 'sources'
+    from sourceSets.main.allSource
+    classifier = 'sources'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = 'javadoc'
-	from javadoc.destinationDir
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 artifacts {
-	archives sourcesJar, javadocJar
+    archives sourcesJar, javadocJar
 }
 
-project.tasks.add("itest", Test).configure {
-  description = "Run the integration tests."
-  includes = ["**/*Itest.*"]
-  testResultsDir = project.file("${project.buildDir}/itest-results")
+project.tasks.create("itest", Test).configure {
+    description = "Run the integration tests."
+    group = 'Test'
+    includes = ["**/*Itest.*"]
+    testResultsDir = project.file("${project.buildDir}/itest-results")
 }
 
 project.tasks.getByName("test").configure {
-  excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
+    excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
 }
 
 signing {
-	required { gradle.taskGraph.hasTask('uploadArchives') }
-	sign configurations.archives
+    required { gradle.taskGraph.hasTask('uploadArchives') }
+    sign configurations.archives
 }
 
 uploadArchives {
-	if(project.hasProperty('sonatypeUsername')) {
-		repositories.mavenDeployer {
-			beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+    if(project.hasProperty('sonatypeUsername')) {
+        repositories.mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
 
-			configuration = configurations.archives
+            configuration = configurations.archives
 
-			repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
-			}
-			snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
-			}
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
 
-			pom.project {
-				name 'Cloudtest'
-				description 'A Java library to test against hosts in the cloud. '
-				packaging 'jar'
-				url 'https://github.com/xebialabs/overcast'
-				inceptionYear '2012'
+            pom.project {
+                name 'Cloudtest'
+                description 'A Java library to test against hosts in the cloud. '
+                packaging 'jar'
+                url 'https://github.com/xebialabs/overcast'
+                inceptionYear '2012'
 
-				scm {
-					url 'https://github.com/xebialabs/overcast'
-				}
+                scm {
+                    url 'https://github.com/xebialabs/overcast'
+                }
 
-				licenses {
-					license {
-						name 'The Apache Software License, Version 2.0'
-						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-						distribution 'repo'
-					}
-				}
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
 
-				developers {
-					developer {
-						id 'vpartington'
-						name 'Vincent Partington'
-						url 'http://www.xebialabs.com/'
-						email 'vpartington@xebialabs.com'
-						roles {
-							role 'Developer'
-						}
-					}
-					developer {
-						id 'hierynomus'
-						name 'Jeroen van Erp'
-						url 'http://www.xebialabs.com/'
-						email 'jvanerp@xebialabs.com'
-						roles {
-							role 'Developer'
-						}
-					}
-					developer {
-						id 'mkotsur'
-						name 'Mike Kotsur'
-						url 'http://www.xebialabs.com/'
-						email 'mkotsur@xebialabs.com'
-						roles {
-							role 'Developer'
-						}
-					}
-				}
-			}
-		}
-	}
+                developers {
+                    developer {
+                        id 'vpartington'
+                        name 'Vincent Partington'
+                        url 'http://www.xebialabs.com/'
+                        email 'vpartington@xebialabs.com'
+                        roles {
+                            role 'Developer'
+                        }
+                    }
+                    developer {
+                        id 'hierynomus'
+                        name 'Jeroen van Erp'
+                        url 'http://www.xebialabs.com/'
+                        email 'jvanerp@xebialabs.com'
+                        roles {
+                            role 'Developer'
+                        }
+                    }
+                    developer {
+                        id 'mkotsur'
+                        name 'Mike Kotsur'
+                        url 'http://www.xebialabs.com/'
+                        email 'mkotsur@xebialabs.com'
+                        roles {
+                            role 'Developer'
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
