@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.SshIpLookupStrategy;
+import com.xebialabs.overcast.support.libvirt.StaticIpLookupStrategy;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
@@ -82,6 +83,8 @@ class LibvirtHost implements CloudHost {
     protected IpLookupStrategy determineIpLookupStrategy(String hostLabel, String strategy) {
         if ("SSH".equals(strategy)) {
             return SshIpLookupStrategy.create(hostLabel);
+        } else if ("static".equals(strategy)) {
+            return StaticIpLookupStrategy.create(hostLabel);
         } else {
             throw new RuntimeException(String.format("Unsupported IP lookup strategy: '%s'", strategy));
         }

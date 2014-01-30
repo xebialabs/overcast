@@ -47,8 +47,25 @@ public class LibVirtHostItest {
     }
 
     @Test
-    public void shouldBootHost() {
-        LibvirtHost itestHost = getCloudHost("overcastItestHost");
+    public void shouldBootHostWithSshIpLookupStrategy() {
+        LibvirtHost itestHost = getCloudHost("overcastLibVirtItestDhcpHost");
+        assumeNotNull(itestHost);
+
+        try {
+            itestHost.setup();
+
+            assertThat(itestHost.getHostName(), matchesPattern("\\d+\\.\\d+\\.\\d+\\.\\d+"));
+            assertThat(itestHost.getClone(), notNullValue());
+            assertThat(itestHost.getClone().getState(), equalTo(DomainState.VIR_DOMAIN_RUNNING));
+        } finally {
+            itestHost.teardown();
+            assertThat(itestHost.getClone(), nullValue());
+        }
+    }
+
+    @Test
+    public void shouldBootHostWithStaticIp() {
+        LibvirtHost itestHost = getCloudHost("overcastItestStaticIpHost");
         assumeNotNull(itestHost);
 
         try {
