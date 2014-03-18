@@ -152,9 +152,17 @@ uploadArchives {
                             role 'Developer'
                         }
                     }
+                    developer {
+                        id 'rklaren'
+                        name 'Ric Klaren'
+                        url 'http://www.xebialabs.com/'
+                        email 'rklaren@xebialabs.com'
+                        roles {
+                            role 'Developer'
+                        }
+                    }
                 }
             }
         }
     }
 }
-
