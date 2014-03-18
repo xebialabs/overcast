@@ -23,7 +23,7 @@ public enum VagrantState {
             case SAVED:
                 return new String[]{"suspend"};
             case RUNNING:
-                return new String[]{"up"};
+                return new String[]{"up", "--provision"};
             case ABORTED:
                 break; // ignore
             default:
