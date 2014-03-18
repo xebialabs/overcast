@@ -80,9 +80,11 @@ some.property=${env.VARIABLE_NAME}
 
 {my-host-label}.networkDeviceId - name of the network device that should be used for IP to MAC lookup. For example `br0`.
 
-{my-host-label}.ipLookupStrategy=SSH - name of a strategy used to figure out the IP of the clone (SSH only for now)
+{my-host-label}.ipLookupStrategy - name of a strategy used to figure out the IP of the clone, static or SSH.
 
-{my-host-label}.SSH.url - URL for overthere to connect to the system that knows about the MAC to IP mapping. For instance: ssh://user@edhcpserver?os=UNIX&connectionType=SFTP&privateKeyFile=/home/user/.ssh/id_rsa&passphrase=bigsecret
+{my-host-label}.static.ip - When `ipLookupStrategy` is static, the static IP the created host is expected to have.
+
+{my-host-label}.SSH.url - URL for overthere to connect to the system that knows about the MAC to IP mapping. For instance: `ssh://user@edhcpserver?os=UNIX&connectionType=SFTP&privateKeyFile=/home/user/.ssh/id_rsa&passphrase=bigsecret`
 
 {my-host-label}.SSH.command - Command to execute on the system to lookup the IP. For example for dnsmasq: ```grep {0} /var/lib/misc/dnsmasq.leases | cut -d " " -f 3```. {0} is expanded to the MAC address.
 
@@ -107,12 +109,12 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 #### From maven repo
 
-[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.1.1](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.1.1)
+[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.2.1](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.2.1)
 
 	<dependency>
     	<groupId>com.xebialabs.cloud</groupId>
     	<artifactId>overcast</artifactId>
-    	<version>1.1.1</version>
+    	<version>1.2.1</version>
     </dependency>
 
 #### From sources
@@ -125,4 +127,4 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 The libvirt implementation uses backing store images. This means that the domain being cloned needs to be shutdown. When cloning a system all disks of the base system are cloned using a backing store, and thrown away upon teardown, thus leaving the original system unchanged.
 
-Currently only base systems with bridged networks are supported. You have to specify the name of the bridge and a command to lookup the IP on the DHCP server giving the system it's IP address. The IP can then be retrieved using the ```getHostName()``` method on the ```CloudHost```.
+Machines can use static IP's using `{host}.ipLookupStrategy=static`. It is up to you that you do not start more than one. It is also possible to use DHCP using `{host}.ipLookupStrategy=SSH`. Currently only base systems with bridged networks are supported. You have to specify the name of the bridge and a command to lookup the IP on the DHCP server giving the system it's IP address. The IP can then be retrieved using the ```getHostName()``` method on the ```CloudHost```.
