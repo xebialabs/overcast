@@ -82,7 +82,7 @@ public class CachedVagrantCloudHostTest {
         cloudHost.setup();
 
         InOrder inOrder = inOrder(vagrantDriver, virtualboxDriver);
-        inOrder.verify(vagrantDriver).doVagrant("myvm", "up");
+        inOrder.verify(vagrantDriver).doVagrant("myvm", "up", "--provision");
         inOrder.verify(virtualboxDriver).setExtraData("myvm", EXPIRATION_TAG_PROPERTY_KEY, SOME_SHA);
         inOrder.verify(virtualboxDriver).createSnapshot("myvm", SOME_SHA);
     }
@@ -99,7 +99,7 @@ public class CachedVagrantCloudHostTest {
 
         InOrder inOrder = inOrder(vagrantDriver, virtualboxDriver);
         inOrder.verify(vagrantDriver).doVagrant("myvm", "destroy", "-f");
-        inOrder.verify(vagrantDriver).doVagrant("myvm", "up");
+        inOrder.verify(vagrantDriver).doVagrant("myvm", "up", "--provision");
         inOrder.verify(virtualboxDriver).setExtraData("myvm", EXPIRATION_TAG_PROPERTY_KEY, SOME_SHA);
         inOrder.verify(virtualboxDriver).createSnapshot("myvm", SOME_SHA);
     }
