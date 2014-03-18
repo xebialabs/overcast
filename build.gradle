@@ -79,7 +79,7 @@ project.tasks.create("itest", Test).configure {
     description = "Run the integration tests."
     group = 'Test'
     includes = ["**/*Itest.*"]
-    testResultsDir = project.file("${project.buildDir}/itest-results")
+    reports.junitXml.destination = project.file("${project.buildDir}/itest-results")
 }
 
 project.tasks.getByName("test").configure {
