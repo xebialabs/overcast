@@ -64,6 +64,11 @@ some.property=${env.VARIABLE_NAME}
 
 {my-host-label}.vagrantIp - IP address of the Vagrant host
 
+{my-host-label}.vagrantVm - Name of the Vagrant host
+
+{my-host-label}.vagrantOs - OS type of the Vagrant host (WINDOWS, UNIX)
+
+{my-host-label}.vagrantSnapshotExpirationCmd - Command used to expire the snapshot image of the Vagrant host
 
 ##### VirtualBox host properties
 {my-host-label}.vboxUuid - UUID of the virtual machine
