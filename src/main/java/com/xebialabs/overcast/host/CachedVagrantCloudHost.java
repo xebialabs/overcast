@@ -66,7 +66,7 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
         if (expirationTag.equals(virtualboxDriver.getExtraData(vagrantVm, EXPIRATION_TAG_PROPERTY_KEY))) {
             logger.info("Cache hit. Loading the latest snapshot of the VM");
             virtualboxDriver.loadLatestSnapshot(vagrantVm);
-            logger.info("Waiting for the VM to become accessible via SSH");
+            logger.info("Waiting for the VM to become accessible...");
 
             boolean connected = false;
             int currentAttempt = 1;

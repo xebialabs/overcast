@@ -29,6 +29,9 @@ import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.OperatingSystemFamily;
+import com.xebialabs.overthere.cifs.CifsConnectionBuilder;
+import com.xebialabs.overthere.cifs.CifsConnectionType;
+import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
@@ -50,6 +53,7 @@ public class CloudHostFactory {
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
     private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
     private static final String VAGRANT_SNAPSHOT_EXPIRATION_CMD = ".vagrantSnapshotExpirationCmd";
+    private static final String VAGRANT_OS_PROPERTY_SUFFIX = ".vagrantOs";
 
     private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
     private static final String VBOX_IP = ".vboxBoxIp";
@@ -114,6 +118,7 @@ public class CloudHostFactory {
         String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
         String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
         String vagrantExpirationCmd = getOvercastProperty(hostLabel + VAGRANT_SNAPSHOT_EXPIRATION_CMD);
+        String vagrantOs = getOvercastProperty(hostLabel + VAGRANT_OS_PROPERTY_SUFFIX, OperatingSystemFamily.UNIX.toString());
 
         logger.info("Using Vagrant to create {}", hostLabel);
 
@@ -128,11 +133,20 @@ public class CloudHostFactory {
             options.set(ConnectionOptions.ADDRESS, vagrantIp);
             options.set(ConnectionOptions.USERNAME, "vagrant");
             options.set(ConnectionOptions.PASSWORD, "vagrant");
-            options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.UNIX);
-            options.set(SshConnectionBuilder.CONNECTION_TYPE, SshConnectionType.SFTP);
 
-            SshConnectionBuilder b = new SshConnectionBuilder("ssh", options, new DefaultAddressPortMapper());
-            return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor, b);
+            OverthereConnectionBuilder cb = null;
+            if(OperatingSystemFamily.WINDOWS.toString().equals(vagrantOs)) {
+                options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.WINDOWS);
+                options.set(SshConnectionBuilder.CONNECTION_TYPE, CifsConnectionType.WINRM_INTERNAL);
+
+                cb = new CifsConnectionBuilder("winrm", options, new DefaultAddressPortMapper());
+            } else {
+                options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.UNIX);
+                options.set(SshConnectionBuilder.CONNECTION_TYPE, SshConnectionType.SFTP);
+
+                cb = new SshConnectionBuilder("ssh", options, new DefaultAddressPortMapper());
+            }
+            return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor, cb);
         }
     }
 
