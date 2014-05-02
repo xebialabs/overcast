@@ -5,6 +5,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigParseOptions;
+import com.typesafe.config.ConfigSyntax;
+import com.typesafe.config.ConfigValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
@@ -62,10 +68,20 @@ public class PropertiesLoader {
         if (file.exists()) {
             logger.info("Loading from file {}", file.getAbsolutePath());
             String fileContent = on("\n").join(readLines(file, defaultCharset()));
-            properties.load(new ByteArrayInputStream(processed(fileContent, file.getName()).getBytes()));
+            String processedFileContent = processed(fileContent, file.getName());
+
+            ConfigParseOptions options = getOptions(file);
+            Config config = ConfigFactory.parseString(processedFileContent, options);
+            for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
+                properties.setProperty(entry.getKey(), entry.getValue().unwrapped().toString());
+            }
         } else {
             logger.warn("File {} not found.", file.getAbsolutePath());
         }
+    }
+
+    private static ConfigParseOptions getOptions(File file) {
+        return ConfigParseOptions.defaults().setSyntax(ConfigSyntax.PROPERTIES);
     }
 
     private static String processed(String s, String tplName) {

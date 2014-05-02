@@ -29,6 +29,8 @@ dependencies {
     compile 'org.apache.httpcomponents:httpcore:4.2.1'
     compile 'org.apache.httpcomponents:httpclient:4.2.1'
 
+    compile 'com.typesafe:config:1.2.0'
+
     testCompile 'junit:junit:4.10'
     testCompile 'org.mockito:mockito-core:1.9.0'
 
