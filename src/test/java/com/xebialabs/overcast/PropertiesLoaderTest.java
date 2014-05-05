@@ -43,19 +43,20 @@ public class PropertiesLoaderTest {
     @Test
     public void shouldLoadConfigFromFile() {
         Config config = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf");
+        boolean isWin = System.getProperty("os.name").contains("Windows");
         assertThat(config, notNullValue());
-        assertThat(config.entrySet().size(), is(4));
+        assertThat(config.entrySet().size(), is(isWin ? 4 : 5));
         assertThat(config.hasPath("some.nested.namespace.stringproperty"), is(true));
         assertThat(config.getString("some.nested.namespace.stringproperty"), is("somevalue"));
         assertThat(config.hasPath("some.intprop"), is(true));
         assertThat(config.getInt("some.intprop"), is(42));
         assertThat(config.getInt("another.namespace.copiedValue"), is(42));
-        if (System.getProperty("os.name").contains("Windows")) {
+        if (isWin) {
             assertThat(config.getString("another.namespace.winHome"), is(System.getenv("HOMEDRIVE")+System.getenv("HOMEPATH")));
             assertThat(config.hasPath("another.namespace.unixHome"), is(false));
         } else {
             assertThat(config.getString("another.namespace.unixHome"), is(System.getenv("HOME")));
-            assertThat(config.hasPath("another.namespace.winHome"), is(false));
+            assertThat(config.getString("another.namespace.winHome"), is(""));
         }
     }
 
