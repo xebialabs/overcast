@@ -2,7 +2,6 @@ package com.xebialabs.overcast;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,59 +28,85 @@ public class PropertiesLoader {
     private static Logger logger = LoggerFactory.getLogger(PropertiesLoader.class);
 
     public static final String OVERCAST_PROPERTY_FILE = "overcast.properties";
+    public static final String OVERCAST_CONF_FILE = "overcast.conf";
     public static final String OVERCAST_USER_DIR = ".overcast";
 
-    public static Properties loadOvercastProperties() {
-        try {
-            Properties properties = new Properties();
-            loadPropertiesFromClasspath(OVERCAST_PROPERTY_FILE, properties);
-            loadPropertiesFromPath(OVERCAST_PROPERTY_FILE, properties);
-            loadPropertiesFromPath(getUserOvercastProperties(), properties);
-            return properties;
-        } catch (IOException exc) {
-            throw new RuntimeException("Cannot load " + OVERCAST_PROPERTY_FILE, exc);
-        }
-    }
-
-    private static String getUserOvercastProperties() {
+    private static String getUserOvercastPropertiesPath() {
         return new File(new File(System.getProperty("user.home"), OVERCAST_USER_DIR), OVERCAST_PROPERTY_FILE).getAbsolutePath();
     }
 
-    public static void loadPropertiesFromClasspath(String path, final Properties properties) throws IOException {
+    private static String getUserOvercastConfPath() {
+        return new File(new File(System.getProperty("user.home"), OVERCAST_USER_DIR), OVERCAST_CONF_FILE).getAbsolutePath();
+    }
+
+    public static Properties loadOvercastProperties() {
+        Properties properties = new Properties();
+        insertConfigIntoProperties(loadOvercastConfig(), properties);
+        return properties;
+    }
+
+    public static Config loadOvercastConfig() {
+        return loadOvercastConfigFromFile(getUserOvercastConfPath())
+                .withFallback(loadOvercastConfigFromFile(getUserOvercastPropertiesPath()))
+                .withFallback(loadOvercastConfigFromFile(OVERCAST_CONF_FILE))
+                .withFallback(loadOvercastConfigFromFile(OVERCAST_PROPERTY_FILE))
+                .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE))
+                .withFallback(loadOvercastConfigFromClasspath(OVERCAST_PROPERTY_FILE));
+    }
+
+    public static Config loadOvercastConfigFromClasspath(String path) {
         try {
-            URL resource = Resources.getResource(path);
             // resource.toURI().getPath() so path gets URL decoded so spaces are no issue
             // using resource.getPath() runs into a bug with guava
-            loadOvercastPropertiesFromFile(new File(resource.toURI().getPath()), properties);
+            return loadOvercastConfigFromFile(Resources.getResource(path).toURI().getPath());
         } catch (IllegalArgumentException e) {
             logger.warn("File '{}' not found on classpath.", path);
         } catch (URISyntaxException e) {
             logger.warn("File '{}' not found on classpath.", path);
         }
+        return ConfigFactory.empty();
     }
 
-    public static void loadPropertiesFromPath(String path, final Properties properties) throws IOException {
-        loadOvercastPropertiesFromFile(new File(path), properties);
-    }
+    public static Config loadOvercastConfigFromFile(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            logger.warn("File {} not found.", file.getAbsolutePath());
+            return ConfigFactory.empty();
+        }
 
-    private static void loadOvercastPropertiesFromFile(File file, Properties properties) throws IOException {
-        if (file.exists()) {
-            logger.info("Loading from file {}", file.getAbsolutePath());
-            String fileContent = on("\n").join(readLines(file, defaultCharset()));
-            String processedFileContent = processed(fileContent, file.getName());
-
-            ConfigParseOptions options = getOptions(file);
-            Config config = ConfigFactory.parseString(processedFileContent, options);
-            for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
-                properties.setProperty(entry.getKey(), entry.getValue().unwrapped().toString());
+        logger.info("Loading from file {}", file.getAbsolutePath());
+        if (file.getName().toLowerCase().endsWith(".properties")) {
+            try {
+                return readConfigFromProcessedFile(file);
+            } catch (IOException e) {
+                logger.warn("Could not read {}: {}", file.getAbsolutePath(), e.getMessage());
+                logger.trace("Exception while reading file", e);
+                return ConfigFactory.empty();
             }
         } else {
-            logger.warn("File {} not found.", file.getAbsolutePath());
+            return ConfigFactory.parseFile(file).resolve();
         }
     }
 
-    private static ConfigParseOptions getOptions(File file) {
-        return ConfigParseOptions.defaults().setSyntax(ConfigSyntax.PROPERTIES);
+    public static void loadPropertiesFromClasspath(String path, final Properties properties) {
+        insertConfigIntoProperties(loadOvercastConfigFromClasspath(path), properties);
+    }
+
+    public static void loadPropertiesFromPath(String path, final Properties properties) {
+        insertConfigIntoProperties(loadOvercastConfigFromFile(path), properties);
+    }
+
+    private static void insertConfigIntoProperties(Config config, Properties properties) {
+        for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
+            properties.setProperty(entry.getKey(), entry.getValue().unwrapped().toString());
+        }
+    }
+
+    private static Config readConfigFromProcessedFile(File file) throws IOException {
+        String fileContent = on("\n").join(readLines(file, defaultCharset()));
+        String processedFileContent = processed(fileContent, file.getName());
+        ConfigParseOptions options = ConfigParseOptions.defaults().setSyntax(ConfigSyntax.PROPERTIES);
+        return ConfigFactory.parseString(processedFileContent, options);
     }
 
     private static String processed(String s, String tplName) {

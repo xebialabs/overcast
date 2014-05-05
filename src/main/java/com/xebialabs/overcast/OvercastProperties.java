@@ -14,16 +14,21 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
  * Methods to load and access the {@code overcast.properties} file.
  */
 public class OvercastProperties {
-
     public static final String PASSWORD_PROPERTY_SUFFIX = ".password";
 
     private static Logger logger = LoggerFactory.getLogger(OvercastProperties.class);
 
-
     private static Properties overcastProperties;
 
-    static {
-        overcastProperties = PropertiesLoader.loadOvercastProperties();
+    private static Properties getOvercastProperties() {
+        if (overcastProperties == null) {
+            overcastProperties = PropertiesLoader.loadOvercastProperties();
+        }
+        return overcastProperties;
+    }
+
+    public static void reloadOvercastProperties() {
+        overcastProperties = null;
     }
 
     public static String getOvercastProperty(String key) {
@@ -33,7 +38,7 @@ public class OvercastProperties {
     public static String getOvercastProperty(String key, String defaultValue) {
         String value = System.getProperty(key);
         if (value == null) {
-            value = overcastProperties.getProperty(key, defaultValue);
+            value = getOvercastProperties().getProperty(key, defaultValue);
         }
         if (logger.isTraceEnabled()) {
             if (value == null) {

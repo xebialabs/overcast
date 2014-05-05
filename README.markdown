@@ -16,19 +16,27 @@ A Java library to test against hosts in the cloud.
 ### Usage
 
 #### Setup your host
-There are 2 places where Overcast tries to find properties for configuration (higher position in list - higher precedence):
+There are several places where Overcast tries to find properties for configuration (higher position in list - higher precedence):
 
-* System.getProperty()
-* ~/.overcast/overcast.properties
-* src/test/resources/overcast.properties
+* `System.getProperty()`
+* `<HOMEDIR>/.overcast/overcast.conf`
+* `<HOMEDIR>/.overcast/overcast.properties`
+* `<WORKDIR>/overcast.conf`
+* `<WORKDIR>/overcast.properties`
+* `<CLASSPATH>/overcast.conf`
+* `<CLASSPATH>/overcast.properties`
 
-**Home location takes precedence on project location.**
+**Note: home location takes precedence on project location.** This allows developers to adapt settings to their local setup without changing the project defaults.
 
-Freemarker templating can be used in these files. Environment variables are available as a map inside **env** variable. Example:
+The `overthere.conf` files are now the preferred format, and should be specified in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset), a more flexible JSON superset that allows comments, substitution, file inclusion and more.
+
+The old-style `overthere.properties` files should have regular Java properties syntax, except that Freemarker templating can be used in these files. Environment variables are available as a map inside the **env** variable. Example:
 
 ```
 some.property=${env.VARIABLE_NAME}
 ```
+
+**Note: the `overthere.properties` format is now deprecated, and support for this will be removed in future.**
 
 ##### Common properties
 {my-host-label}.hostname - Hostname. If is not set, overthere will try to create host (For Amazon hosts).
