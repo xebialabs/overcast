@@ -7,7 +7,7 @@ A Java library to test against hosts in the cloud.
 * Setup and tear-down for
 	- Amazon EC2 hosts (Automatic host creation/destroy)
 	- Vagrant hosts (Set up to the running state, tear down to the initial state)
-	- VirtualBox hosts (Load snapshot and start, poweroff)
+	- VirtualBox hosts (Load snapshot and start, power off)
 	- Libvirt managed KVM hosts (Fast clone using backing store, only bridged networking supported)
 	- Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
@@ -15,10 +15,10 @@ A Java library to test against hosts in the cloud.
 
 ### Usage
 
-#### Setup your host
-There are several places where Overcast tries to find properties for configuration (higher position in list - higher precedence):
+#### Set up your host
+Overcast looks for configuration properties in this order:
 
-* `System.getProperty()`
+1. `System.getProperty()`
 * `<HOMEDIR>/.overcast/overcast.conf`
 * `<HOMEDIR>/.overcast/overcast.properties`
 * `<WORKDIR>/overcast.conf`
@@ -26,17 +26,17 @@ There are several places where Overcast tries to find properties for configurati
 * `<CLASSPATH>/overcast.conf`
 * `<CLASSPATH>/overcast.properties`
 
-**Note: home location takes precedence on project location.** This allows developers to adapt settings to their local setup without changing the project defaults.
+**Note: The home location takes precedence over the project location.** This allows developers to adapt settings to their local setup without changing the project defaults.
 
-The `overcast.conf` files are now the preferred format, and should be specified in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset), a more flexible JSON superset that allows comments, substitution, file inclusion and more.
+The `overcast.conf` files are the preferred format. Specify them in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset); this is a flexible JSON superset that allows comments, substitution, file inclusion, and more.
 
-The old-style `overcast.properties` files should have regular Java properties syntax, except that Freemarker templating can be used in these files. Environment variables are available as a map inside the **env** variable. Example:
+**Note: The `overcast.properties` format is deprecated, and support for it will be removed in the future.**
+
+The old-style `overcast.properties` files must have regular Java properties syntax, although you can use Freemarker templating in these files. Environment variables are available as a map in the **env** variable. For example:
 
 ```
 some.property=${env.VARIABLE_NAME}
 ```
-
-**Note: the `overcast.properties` format is now deprecated, and support for this will be removed in future.**
 
 ##### Common properties
 {my-host-label}.hostname - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
