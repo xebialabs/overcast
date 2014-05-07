@@ -77,7 +77,7 @@ public class PropertiesLoader {
         logger.info("Loading from file {}", file.getAbsolutePath());
         if (file.getName().toLowerCase().endsWith(".properties")) {
             try {
-                logger.warn("The overthere.properties format is deprecated - please convert to overthere.conf format.");
+                logger.warn("The overcast.properties format is deprecated - please convert to overcast.conf format.");
                 return readConfigFromProcessedFile(file);
             } catch (IOException e) {
                 logger.warn("Could not read {}: {}", file.getAbsolutePath(), e.getMessage());

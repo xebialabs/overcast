@@ -28,18 +28,18 @@ There are several places where Overcast tries to find properties for configurati
 
 **Note: home location takes precedence on project location.** This allows developers to adapt settings to their local setup without changing the project defaults.
 
-The `overthere.conf` files are now the preferred format, and should be specified in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset), a more flexible JSON superset that allows comments, substitution, file inclusion and more.
+The `overcast.conf` files are now the preferred format, and should be specified in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset), a more flexible JSON superset that allows comments, substitution, file inclusion and more.
 
-The old-style `overthere.properties` files should have regular Java properties syntax, except that Freemarker templating can be used in these files. Environment variables are available as a map inside the **env** variable. Example:
+The old-style `overcast.properties` files should have regular Java properties syntax, except that Freemarker templating can be used in these files. Environment variables are available as a map inside the **env** variable. Example:
 
 ```
 some.property=${env.VARIABLE_NAME}
 ```
 
-**Note: the `overthere.properties` format is now deprecated, and support for this will be removed in future.**
+**Note: the `overcast.properties` format is now deprecated, and support for this will be removed in future.**
 
 ##### Common properties
-{my-host-label}.hostname - Hostname. If is not set, overthere will try to create host (For Amazon hosts).
+{my-host-label}.hostname - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
 
 ##### Tunneled properties
 {my-host-label}.tunnel.username - Tunnel username
