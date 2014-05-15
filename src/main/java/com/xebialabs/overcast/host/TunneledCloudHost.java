@@ -1,13 +1,13 @@
 /* License added by: GRADLE-LICENSE-PLUGIN
  *
  * Copyright 2008-2012 XebiaLabs
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,15 +20,22 @@ package com.xebialabs.overcast.host;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.List;
 import java.util.Map;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 class TunneledCloudHost implements CloudHost {
+    private static Logger logger = LoggerFactory.getLogger(TunneledCloudHost.class);
 
     private final CloudHost actualHost;
     private final String username;
@@ -36,12 +43,62 @@ class TunneledCloudHost implements CloudHost {
     private final Map<Integer, Integer> portForwardMap;
 
     private SSHClient client;
+    private final List<PortForwarder> portForwarders;
+
+    private static class PortForwarder {
+        private final Thread thread;
+        private final ServerSocket socket;
+
+        private PortForwarder(Thread thread, ServerSocket socket) {
+            this.thread = thread;
+            this.socket = socket;
+        }
+
+        public String getName() {
+            return thread.getName();
+        }
+
+        public static PortForwarder create(SSHClient client, String remoteHostName, String localHost, int localPort, String remoteHost, int remotePort) throws IOException {
+            final LocalPortForwarder.Parameters params = new LocalPortForwarder.Parameters(localHost, localPort, remoteHost, remotePort);
+
+            ServerSocket ss = new ServerSocket();
+            ss.setReuseAddress(true);
+            ss.bind(new InetSocketAddress(localHost, localPort));
+
+            final LocalPortForwarder forwarder = client.newLocalPortForwarder(params, ss);
+            Thread forwarderThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        forwarder.listen();
+                    } catch (IOException ignore) {
+                    }
+                }
+            }, "SSH port forwarder thread from local port " + localPort + " to " + remoteHostName + ":" + remotePort);
+            forwarderThread.setDaemon(true);
+
+            logger.info("Starting {}", forwarderThread.getName());
+            forwarderThread.start();
+
+            return new PortForwarder(forwarderThread, ss);
+        }
+
+        public void close() {
+            try {
+                thread.interrupt();
+                socket.close();
+            } catch (IOException e) {
+                logger.debug("Ignoring exception while closing forwarding socket.", e);
+            }
+        }
+    }
 
     TunneledCloudHost(CloudHost actualHost, String username, String password, Map<Integer, Integer> portForwardMap) {
         this.actualHost = actualHost;
         this.username = username;
         this.password = password;
         this.portForwardMap = portForwardMap;
+        this.portForwarders = Lists.newArrayList();
     }
 
     @Override
@@ -54,28 +111,13 @@ class TunneledCloudHost implements CloudHost {
         try {
             client.connect(actualHost.getHostName(), 22);
             client.authPassword(username, password);
+
             for (Map.Entry<Integer, Integer> forwardedPort : portForwardMap.entrySet()) {
                 int remotePort = forwardedPort.getKey();
                 int localPort = forwardedPort.getValue();
 
-                final LocalPortForwarder.Parameters params = new LocalPortForwarder.Parameters("localhost", localPort, "localhost", remotePort);
-                final ServerSocket ss = new ServerSocket();
-                ss.setReuseAddress(true);
-                ss.bind(new InetSocketAddress(params.getLocalHost(), params.getLocalPort()));
-
-                final LocalPortForwarder forwarder = client.newLocalPortForwarder(params, ss);
-                Thread forwarderThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            forwarder.listen();
-                        } catch (IOException ignore) {
-                        }
-                    }
-                }, "SSH port forwarder thread from local port " + localPort + " to " + actualHost.getHostName() + ":" + remotePort);
-                forwarderThread.setDaemon(true);
-                CloudHostFactory.logger.info("Starting {}", forwarderThread.getName());
-                forwarderThread.start();
+                PortForwarder forwarder = PortForwarder.create(client, actualHost.getHostName(), "localhost", localPort, "localhost", remotePort);
+                portForwarders.add(forwarder);
             }
         } catch (IOException exc) {
             throw new RuntimeException("Cannot set up tunnels to " + actualHost.getHostName(), exc);
@@ -84,7 +126,13 @@ class TunneledCloudHost implements CloudHost {
 
     @Override
     public void teardown() {
+        for (PortForwarder pf : portForwarders) {
+            logger.info("Stopping portforwarder {}", pf.getName());
+            pf.close();
+        }
+
         try {
+            logger.info("Disconnecting client {}", client);
             client.disconnect();
         } catch (IOException ignored) {
             //
@@ -103,5 +151,4 @@ class TunneledCloudHost implements CloudHost {
         checkArgument(portForwardMap.containsKey(port), "Port %d is not tunneled", port);
         return portForwardMap.get(port);
     }
-
 }
