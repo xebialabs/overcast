@@ -18,7 +18,7 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'com.google.guava:guava:10.0.1'
     compile 'net.schmizz:sshj:0.7.0'
-    compile 'com.xebialabs.overthere:overthere:2.4.1'
+    compile 'com.xebialabs.overthere:overthere:2.4.3'
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'org.freemarker:freemarker:2.3.19'
 
