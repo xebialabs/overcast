@@ -5,11 +5,11 @@ A Java library to test against hosts in the cloud.
 ### Features
 
 * Setup and tear-down for
-	- Amazon EC2 hosts (Automatic host creation/destroy)
-	- Vagrant hosts (Set up to the running state, tear down to the initial state)
-	- VirtualBox hosts (Load snapshot and start, power off)
-	- Libvirt managed KVM hosts (Fast clone using backing store, only bridged networking supported)
-	- Tunneled cloud hosts (Reaching target host via ssh tunnel)
+   - Amazon EC2 hosts (Automatic host creation/destroy)
+   - Vagrant hosts (Set up to the running state, tear down to the initial state)
+   - VirtualBox hosts (Load snapshot and start, power off)
+   - Libvirt managed KVM hosts (Fast clone using backing store, only bridged networking supported)
+   - Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
 
@@ -20,23 +20,12 @@ Overcast looks for configuration properties in this order:
 
 1. `System.getProperty()`
 * `<HOMEDIR>/.overcast/overcast.conf`
-* `<HOMEDIR>/.overcast/overcast.properties`
 * `<WORKDIR>/overcast.conf`
-* `<WORKDIR>/overcast.properties`
 * `<CLASSPATH>/overcast.conf`
-* `<CLASSPATH>/overcast.properties`
 
 **Note: The home location takes precedence over the project location.** This allows developers to adapt settings to their local setup without changing the project defaults.
 
-The `overcast.conf` files are the preferred format. Specify them in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset); this is a flexible JSON superset that allows comments, substitution, file inclusion, and more.
-
-**Note: The `overcast.properties` format is deprecated, and support for it will be removed in the future.**
-
-The old-style `overcast.properties` files must have regular Java properties syntax, although you can use Freemarker templating in these files. Environment variables are available as a map in the **env** variable. For example:
-
-```
-some.property=${env.VARIABLE_NAME}
-```
+The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset); this is a flexible JSON superset that allows comments, substitution, file inclusion, and more.
 
 ##### Common properties
 {my-host-label}.hostname - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
@@ -105,15 +94,15 @@ some.property=${env.VARIABLE_NAME}
 
 #### Set up and Tear down
 
-	@BeforeClass
-	public static void doInitHost() {
-		CloudHostFactory.getCloudHost("{my-host-label}").setup();
-	}
+   @BeforeClass
+   public static void doInitHost() {
+      CloudHostFactory.getCloudHost("{my-host-label}").setup();
+   }
 
-	@AfterClass
-	public static void doTeardownHost() {
-		CloudHostFactory.getCloudHost("{my-host-label}").teardown();
-	}
+   @AfterClass
+   public static void doTeardownHost() {
+      CloudHostFactory.getCloudHost("{my-host-label}").teardown();
+   }
 
 Also Overcast is used for integration tests of [Overthere](https://github.com/xebialabs/overthere).
 
@@ -132,7 +121,7 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 #### From sources
 
-	gradle build
+   gradle build
 
 ### Notes for setting up test systems
 

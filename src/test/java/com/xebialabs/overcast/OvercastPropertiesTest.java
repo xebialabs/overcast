@@ -1,9 +1,12 @@
 package com.xebialabs.overcast;
 
 import java.util.Map;
+
 import org.junit.Test;
 
-import static com.xebialabs.overcast.OvercastProperties.*;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -32,9 +35,7 @@ public class OvercastPropertiesTest {
 
     @Test
     public void shouldReplaceEnvVariables() throws Exception {
-
         assertThat(getOvercastProperty("unittestHost.home"), is(notNullValue()));
         assertThat(getOvercastProperty("unittestHost.home").contains("${"), is(false));
-
     }
 }
