@@ -55,8 +55,9 @@ public class SshIpLookupStrategy implements IpLookupStrategy {
         cmdLine.addRaw(fragment);
         log.info("Executing '{}'", cmdLine);
 
-        OverthereConnection connection = overthereConnectionFromURI(url);
+        OverthereConnection connection = null;
         try {
+            connection = overthereConnectionFromURI(url);
             int seconds = timeout;
             while (seconds > 0) {
                 CapturingOverthereExecutionOutputHandler outputHandler = capturingHandler();
@@ -75,10 +76,17 @@ public class SshIpLookupStrategy implements IpLookupStrategy {
                 log.debug("Found IP={} for MAC={}", line, mac);
                 return outputHandler.getOutputLines().get(0);
             }
-            throw new RuntimeException("No IP found for MAC: " + mac);
+        } catch (RuntimeException e) {
+            String message = String.format("Error looking up MAC '%s' on host '%s'", mac, url.getHost());
+            log.error(message, e);
+            throw new IpLookupException(message, e);
         } finally {
-            connection.close();
+            if (connection != null) {
+                connection.close();
+            }
         }
+        String message = String.format("No IP found for MAC '%s' on host '%s'", mac, url.getHost());
+        throw new IpNotFoundException(message);
     }
 
     private static void sleep(final int seconds) {
