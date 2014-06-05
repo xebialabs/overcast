@@ -41,7 +41,6 @@ public class PropertiesLoaderTest {
         Config config = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf");
         boolean isWin = System.getProperty("os.name").contains("Windows");
         assertThat(config, notNullValue());
-        assertThat(config.entrySet().size(), is(isWin ? 7 : 8));
         assertThat(config.hasPath("some.nested.namespace.stringproperty"), is(true));
         assertThat(config.getString("some.nested.namespace.stringproperty"), is("somevalue"));
         assertThat(config.hasPath("some.intprop"), is(true));

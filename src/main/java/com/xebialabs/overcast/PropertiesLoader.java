@@ -24,7 +24,9 @@ public class PropertiesLoader {
     public static Config loadOvercastConfig() {
         return loadOvercastConfigFromFile(getUserOvercastConfPath())
                 .withFallback(loadOvercastConfigFromFile(OVERCAST_CONF_FILE))
-                .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE));
+                .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE))
+                .withFallback(ConfigFactory.systemProperties())
+                .resolve();
     }
 
     public static Config loadOvercastConfigFromClasspath(String path) {

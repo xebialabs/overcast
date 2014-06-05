@@ -1,8 +1,11 @@
 package com.xebialabs.overcast;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Test;
+
+import com.typesafe.config.Config;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
@@ -34,7 +37,20 @@ public class OvercastPropertiesTest {
     }
 
     @Test
-    public void shouldReplaceEnvVariables() throws Exception {
+    public void testHaveSystemProperties() throws IOException {
+        Config cfg = PropertiesLoader.loadOvercastConfig();
+        assertThat(cfg.getString("user.dir"), is(System.getProperty("user.dir")));
+    }
+
+    @Test
+    public void testSubstitution() throws Exception {
+        assertThat(getOvercastProperty("some.bar"), is("foo"));
+        // to document that no substitution is done inside a string...
+        assertThat(getOvercastProperty("some.boz"), is("${value}"));
+    }
+
+    @Test
+    public void testReplaceEnvVariables() throws Exception {
         assertThat(getOvercastProperty("unittestHost.home"), is(notNullValue()));
         assertThat(getOvercastProperty("unittestHost.home").contains("${"), is(false));
     }
