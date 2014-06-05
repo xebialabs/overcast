@@ -14,31 +14,31 @@ public class PropertiesLoaderTest {
 
     @Test
     public void shouldLoadPropertiesFromPathWithSpace() throws IOException {
-        Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/with space/test.conf");
+        Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/with space/test.conf").resolve();
         assertThat(cfg.getString("foo"), is("bar"));
     }
 
     @Test
     public void shouldLoadPropertiesFromClassPathWithSpace() throws IOException {
-        Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("with space/test.conf");
+        Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("with space/test.conf").resolve();
         assertThat(cfg.getString("foo"), is("bar"));
     }
 
     @Test
     public void shouldLoadPropertiesFromPath() throws IOException {
-        Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/overcast.conf");
+        Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/overcast.conf").resolve();
         assertThat(cfg.getString("unittestHost.someProp"), is("someValue"));
     }
 
     @Test
     public void shouldLoadPropertiesFromClassPath() throws IOException {
-        Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf");
+        Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf").resolve();
         assertThat(cfg.getString("unittestHost.someProp"), is("someValue"));
     }
 
     @Test
     public void shouldLoadConfigFromClassPath() {
-        Config config = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf");
+        Config config = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf").resolve();
         boolean isWin = System.getProperty("os.name").contains("Windows");
         assertThat(config, notNullValue());
         assertThat(config.hasPath("some.nested.namespace.stringproperty"), is(true));
