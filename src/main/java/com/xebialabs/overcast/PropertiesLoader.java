@@ -29,7 +29,8 @@ public class PropertiesLoader {
                 .resolve();
     }
 
-    public static Config loadOvercastConfigFromClasspath(String path) {
+    /** Load {@link Config} from 'file' but do not resolve it. */
+    static Config loadOvercastConfigFromClasspath(String path) {
         try {
             // resource.toURI().getPath() so path gets URL decoded so spaces are no issue
             // using resource.getPath() runs into a bug with guava
@@ -42,14 +43,15 @@ public class PropertiesLoader {
         return ConfigFactory.empty();
     }
 
-    public static Config loadOvercastConfigFromFile(String path) {
-        File file = new File(path);
-        if (!file.exists()) {
-            logger.warn("File {} not found.", file.getAbsolutePath());
+    /** Load {@link Config} from 'file' but do not resolve it. */
+    static Config loadOvercastConfigFromFile(String file) {
+        File f = new File(file);
+        if (!f.exists()) {
+            logger.warn("File {} not found.", f.getAbsolutePath());
             return ConfigFactory.empty();
         }
 
-        logger.info("Loading from file {}", file.getAbsolutePath());
-        return ConfigFactory.parseFile(file).resolve();
+        logger.info("Loading from file {}", f.getAbsolutePath());
+        return ConfigFactory.parseFile(f);
     }
 }
