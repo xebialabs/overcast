@@ -110,7 +110,12 @@ public class DomainWrapper {
                 log.info("Detected '{}' bridged '{}' mac '{}'", interfaceType, bridge, mac);
                 macs.put(bridge, mac);
             } else if ("network".equals(interfaceType)) {
-                log.warn("Ignoring network of type {}", interfaceType);
+                Element macElement = iface.getChild("mac");
+                String mac = macElement.getAttribute("address").getValue();
+                Element sourceElement = iface.getChild("source");
+                String network = sourceElement.getAttribute("network").getValue();
+                log.info("Detected '{}' network '{}' mac '{}'", interfaceType, network, mac);
+                macs.put(network, mac);
             } else {
                 log.warn("Ignoring network of type {}", interfaceType);
             }
