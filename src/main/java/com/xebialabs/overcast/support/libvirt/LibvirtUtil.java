@@ -1,11 +1,17 @@
 package com.xebialabs.overcast.support.libvirt;
 
+import java.util.List;
+
+import org.jdom2.Document;
 import org.libvirt.Connect;
+import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class LibvirtUtil {
     private static final Logger log = LoggerFactory.getLogger(LibvirtUtil.class);
@@ -46,5 +52,43 @@ public class LibvirtUtil {
             }
         }
         return null;
+    }
+
+    public static Document loadDomainXml(Domain domain) {
+        try {
+            return JDomUtil.stringToDocument(domain.getXMLDesc(0));
+        } catch (IllegalArgumentException e) {
+            throw new LibvirtRuntimeException("Unable to parse domain xml", e);
+        } catch (LibvirtException e) {
+            throw new LibvirtRuntimeException("Unable to parse domain xml", e);
+        }
+    }
+
+    /** Get list of the inactive domains. */
+    public static List<Domain> getDefinedDomains(Connect libvirt) {
+        try {
+            List<Domain> domains = newArrayList();
+            String[] domainNames = libvirt.listDefinedDomains();
+            for (String name : domainNames) {
+                domains.add(libvirt.domainLookupByName(name));
+            }
+            return domains;
+        } catch (LibvirtException e) {
+            throw new LibvirtRuntimeException("Unable to list defined domains", e);
+        }
+    }
+
+    /** Get list of the active domains. */
+    public static List<Domain> getRunningDomains(Connect libvirt) {
+        try {
+            List<Domain> domains = newArrayList();
+            int[] ids = libvirt.listDomains();
+            for (int id : ids) {
+                domains.add(libvirt.domainLookupByID(id));
+            }
+            return domains;
+        } catch (LibvirtException e) {
+            throw new LibvirtRuntimeException("Unable to list defined domains", e);
+        }
     }
 }

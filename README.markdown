@@ -8,10 +8,15 @@ A Java library to test against hosts in the cloud.
    - Amazon EC2 hosts (Automatic host creation/destroy)
    - Vagrant hosts (Set up to the running state, tear down to the initial state)
    - VirtualBox hosts (Load snapshot and start, power off)
-   - Libvirt managed KVM hosts (Fast clone using backing store, only bridged networking supported)
+   - Libvirt managed KVM hosts (Fast clones using backing store, provisioning)
    - Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
+
+### Requirements
+
+- Virtualbox version >= 4.2
+- Qemu/KVM version that supports domain metadata (QEMU-KVM 1.4.2 (Fedora 19), 2.0.0 (Ubuntu LTS 14))
 
 ### Usage
 
@@ -28,7 +33,7 @@ Overcast looks for configuration properties in this order:
 The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset); this is a flexible JSON superset that allows comments, substitution, file inclusion, and more.
 
 ##### Common properties
-{my-host-label}.hostname - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
+`{my-host-label}.hostname` - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
 
 ##### Tunneled properties
 {my-host-label}.tunnel.username - Tunnel username
@@ -78,31 +83,35 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 ##### Libvirt host properties
 {my-host-label}.libvirtURL - URL of libvirt e.g. qemu+ssh://user@linux-box/system
 
-{my-host-label}.libvirtBaseDomain - name of the domain to clone
+{my-host-label}.baseDomain - name of the domain to clone
 
-{my-host-label}.networkDeviceId - name of the network device that should be used for IP to MAC lookup. For example `br0`.
+{my-host-label}.network - name of the network device that should be used for IP to MAC lookup. For example `br0`.
 
 {my-host-label}.ipLookupStrategy - name of a strategy used to figure out the IP of the clone, static or SSH.
 
 {my-host-label}.static.ip - When `ipLookupStrategy` is static, the static IP the created host is expected to have.
 
-{my-host-label}.SSH.url - URL for overthere to connect to the system that knows about the MAC to IP mapping. For instance: `ssh://user@edhcpserver?os=UNIX&connectionType=SFTP&privateKeyFile=/home/user/.ssh/id_rsa&passphrase=bigsecret`
+{my-host-label}.SSH.url - URL for overthere to connect to the system that knows about the MAC to IP mapping. For instance: `ssh://user@dhcpserver?os=UNIX&connectionType=SFTP&privateKeyFile=/home/user/.ssh/id_rsa&passphrase=bigsecret`
 
-{my-host-label}.SSH.command - Command to execute on the system to lookup the IP. For example for dnsmasq: ```grep {0} /var/lib/misc/dnsmasq.leases | cut -d " " -f 3```. {0} is expanded to the MAC address.
+{my-host-label}.SSH.command - command to execute on the system to lookup the IP. For example for dnsmasq: ```grep {0} /var/lib/misc/dnsmasq.leases | cut -d " " -f 3```. {0} is expanded to the MAC address.
 
-{my-host-label}.SSH.timeout - Number of seconds to try the above command to find the IP.
+{my-host-label}.SSH.timeout - number of seconds to try the above command to find the IP.
+
+{my-host-label}.provision.url - URL for overthere to connect to the created system. For instance: `ssh://user@{0}?os=UNIX&connectionType=SCP&privateKeyFile="${user.home}"/.ssh/id_rsa&passphrase=bigsecret`. {0} will be replaced by the IP the system got.
+
+{my-host-label}.provision.cmd - Command to run to provision the system.
 
 #### Set up and Tear down
 
-   @BeforeClass
-   public static void doInitHost() {
-      CloudHostFactory.getCloudHost("{my-host-label}").setup();
-   }
+    @BeforeClass
+    public static void doInitHost() {
+       CloudHostFactory.getCloudHost("{my-host-label}").setup();
+    }
 
-   @AfterClass
-   public static void doTeardownHost() {
-      CloudHostFactory.getCloudHost("{my-host-label}").teardown();
-   }
+    @AfterClass
+    public static void doTeardownHost() {
+       CloudHostFactory.getCloudHost("{my-host-label}").teardown();
+    }
 
 Also Overcast is used for integration tests of [Overthere](https://github.com/xebialabs/overthere).
 
@@ -111,12 +120,12 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 #### From maven repo
 
-[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.3.0](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/1.3.0)
+[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.0.0](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.0.0)
 
     <dependency>
         <groupId>com.xebialabs.cloud</groupId>
         <artifactId>overcast</artifactId>
-        <version>1.3.0</version>
+        <version>2.0.0</version>
     </dependency>
 
 #### From sources
@@ -129,7 +138,11 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 The libvirt implementation uses backing store images. This means that the domain being cloned needs to be shut down. When cloning a system all disks of the base system are cloned using a backing store, and thrown away upon teardown, thus leaving the original system unchanged.
 
-Machines can use static IP's using `{host}.ipLookupStrategy=static`. It is up to you that you do not start more than one. It is also possible to use DHCP using `{host}.ipLookupStrategy=SSH`. You have to specify the name of the Virtual Network in libvirt or the name of the bridge the domain is connected to and a command to lookup the IP on the DHCP server giving the system it's IP address. The IP can then be retrieved using the ```getHostName()``` method on the ```CloudHost```.
+Machines can use static IP's using `{host}.ipLookupStrategy=static`. It is up to you that you do not
+start more than one. It is also possible to use DHCP using `{host}.ipLookupStrategy=SSH`.
+You have to specify the name of the Virtual Network in libvirt or the name of the bridge the domain
+is connected to and a command to lookup the IP on the DHCP server giving the system it's IP address.
+The IP can then be retrieved using the ```getHostName()``` method on the ```CloudHost```.
 
 ##### NAT network
 Due to the way NAT works the machine would only be accessible from the Libvirt (KVM) host. Example settings for a (NAT) network named `my_nat_network`:

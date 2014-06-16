@@ -33,18 +33,20 @@ public interface CloudHost {
     void teardown();
 
     /**
-     * Returns the name of the host to connect to. Can only be called after {@link #setup()} has been invoked.
+     * Returns the name or IP address of the host to connect to. Can only be called after {@link #setup()} has been
+     * invoked.
      *
      * @return the host name.
      */
     String getHostName();
 
     /**
-     * Translates a target port number to the port number to connect to. Can only be called after {@link #setup()} has been invoked.
+     * Translates a target port number to the port number to connect to. Can only be called after {@link #setup()} has
+     * been invoked.
      *
-     * @param port the target port number
+     * @param port
+     *            the target port number
      * @return the translated port number.
      */
     int getPort(int port);
 }
-

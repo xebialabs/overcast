@@ -30,7 +30,6 @@ import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.SshIpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.StaticIpLookupStrategy;
 
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 
 class LibvirtHost implements CloudHost {
@@ -41,46 +40,47 @@ class LibvirtHost implements CloudHost {
     public static final String LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX = ".libvirtStartTimeout";
     public static final String LIBVIRT_START_TIMEOUT_DEFAULT = "30";
 
-    public static final String LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX = ".libvirtBootDelay";
+    public static final String LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX = ".bootDelay";
     public static final String LIBVIRT_BOOT_DELAY_DEFAULT = "0";
 
-    public static final String LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX = ".libvirtBaseDomain";
-    public static final String LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX = ".networkDeviceId";
+    public static final String LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX = ".baseDomain";
+    public static final String LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX = ".network";
     public static final String LIBVIRT_IP_LOOKUP_STRATEGY_PROPERTY_SUFFIX = ".ipLookupStrategy";
 
     public static final String LIBVIRT_URL_DEFAULT = "qemu:///system";
     public static final String LIBVIRT_BOOT_SECONDS_DEFAULT = "60";
 
-    private String libvirtURL = null;
-    private final int startTimeout;
+    private int startTimeout;
     private int bootDelay;
 
-    private final String networkDeviceId;
+    private final String networkName;
 
-    private Connect libvirt;
-    private final DomainWrapper libvirtBaseDomain;
+    protected Connect libvirt;
+    private final DomainWrapper baseDomain;
+    private final String baseDomainName;
 
     private DomainWrapper clone;
     private String hostIp;
     private IpLookupStrategy ipLookupStrategy;
 
-    public LibvirtHost(String hostLabel, String libvirtBaseDomain) {
-        this.libvirtURL = getOvercastProperty(hostLabel + LIBVIRT_URL_PROPERTY_SUFFIX, LIBVIRT_URL_DEFAULT);
-        this.startTimeout = Integer.valueOf(getOvercastProperty(hostLabel + LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX, LIBVIRT_START_TIMEOUT_DEFAULT));
-        this.bootDelay = Integer.valueOf(getOvercastProperty(hostLabel + LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX, LIBVIRT_BOOT_DELAY_DEFAULT));
+    public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay) {
+        this.libvirt = libvirt;
+        this.baseDomainName = baseDomainName;
+        this.startTimeout = startTimeout;
+        this.bootDelay = bootDelay;
+        this.networkName = networkName;
+        this.ipLookupStrategy = ipLookupStrategy;
 
-        this.networkDeviceId = getOvercastProperty(hostLabel + LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX);
-        String strategy = getRequiredOvercastProperty(hostLabel + LIBVIRT_IP_LOOKUP_STRATEGY_PROPERTY_SUFFIX);
-        ipLookupStrategy = determineIpLookupStrategy(hostLabel, strategy);
         try {
-            this.libvirt = new Connect(libvirtURL, false);
-            this.libvirtBaseDomain = DomainWrapper.newWrapper(libvirt.domainLookupByName(libvirtBaseDomain));
+            this.baseDomain = DomainWrapper.newWrapper(libvirt.domainLookupByName(baseDomainName));
         } catch (LibvirtException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected IpLookupStrategy determineIpLookupStrategy(String hostLabel, String strategy) {
+    public static IpLookupStrategy determineIpLookupStrategy(String hostLabel) {
+        String strategy = getRequiredOvercastProperty(hostLabel + LIBVIRT_IP_LOOKUP_STRATEGY_PROPERTY_SUFFIX);
+
         if ("SSH".equals(strategy)) {
             return SshIpLookupStrategy.create(hostLabel);
         } else if ("static".equals(strategy)) {
@@ -90,17 +90,26 @@ class LibvirtHost implements CloudHost {
         }
     }
 
+    public Connect getLibvirt() {
+        return libvirt;
+    }
+
     @Override
     public void setup() {
+        if (baseDomain.getState() != DomainState.VIR_DOMAIN_SHUTOFF) {
+            throw new IllegalStateException(String.format("baseDomain '%s' must be shut off before it can be cloned.", baseDomainName));
+        }
         clone = createClone();
-        hostIp = waitUntilRunningAndGetIP();
+        hostIp = waitUntilRunningAndGetIP(clone);
         bootDelay();
     }
 
     @Override
     public void teardown() {
-        clone.destroyWithDisks();
-        clone = null;
+        if (clone != null) {
+            clone.destroyWithDisks();
+            clone = null;
+        }
     }
 
     @Override
@@ -117,14 +126,18 @@ class LibvirtHost implements CloudHost {
         return clone;
     }
 
-    protected DomainWrapper createClone() {
-        String baseName = libvirtBaseDomain.getName();
-        String cloneName = baseName + "-" + UUID.randomUUID();
-        logger.info("Creating clone '{}' from base domain '{}'", cloneName, baseName);
-        return libvirtBaseDomain.cloneWithBackingStore(cloneName);
+    public String getBaseDomainName() {
+        return baseDomainName;
     }
 
-    protected String waitUntilRunningAndGetIP() {
+    protected DomainWrapper createClone() {
+        String baseName = baseDomain.getName();
+        String cloneName = baseName + "-" + UUID.randomUUID().toString();
+        logger.info("Creating clone '{}' from base domain '{}'", cloneName, baseName);
+        return baseDomain.cloneWithBackingStore(cloneName);
+    }
+
+    protected String waitUntilRunningAndGetIP(DomainWrapper clone) {
         String name = clone.getName();
         int seconds = startTimeout;
         DomainState state = DomainState.VIR_DOMAIN_NOSTATE;
@@ -135,15 +148,13 @@ class LibvirtHost implements CloudHost {
             seconds--;
         }
         if (state != DomainState.VIR_DOMAIN_RUNNING) {
-            logger.error("Clone '{}' not running after {}s (state={})", name, startTimeout, state);
-        } else {
-            logger.info("Clone '{}' running determining IP", name, startTimeout, state);
+            String msg = String.format("Clone '%s' not running after %d seconds (state=%s)", name, startTimeout, state);
+            throw new RuntimeException(msg);
         }
-        if (networkDeviceId != null) {
-            String mac = clone.getMac(networkDeviceId);
-            return ipLookupStrategy.lookup(mac);
-        }
-        throw new RuntimeException("Unable to determine IP address for host " + name);
+        logger.info("Clone '{}' running determining IP", name, startTimeout, state);
+
+        String mac = clone.getMac(networkName);
+        return ipLookupStrategy.lookup(mac);
     }
 
     private void bootDelay() {

@@ -7,6 +7,8 @@ import java.text.MessageFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 import com.xebialabs.overthere.CmdLine;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
@@ -50,10 +52,12 @@ public class SshIpLookupStrategy implements IpLookupStrategy {
 
     @Override
     public String lookup(String mac) {
+        Preconditions.checkNotNull(mac, "Need a MAC to lookup the IP of a host.");
+
         CmdLine cmdLine = new CmdLine();
         String fragment = MessageFormat.format(command, mac);
         cmdLine.addRaw(fragment);
-        log.info("Executing '{}'", cmdLine);
+        log.info("Will use command '{}' to detect IP", cmdLine);
 
         OverthereConnection connection = null;
         try {
@@ -69,7 +73,7 @@ public class SshIpLookupStrategy implements IpLookupStrategy {
                 if (outputHandler.getOutputLines().isEmpty()) {
                     sleep(1);
                     seconds--;
-                    log.debug("No IP found after will try for {} seconds", seconds);
+                    log.debug("No IP found yet, will try for {} seconds", seconds);
                     continue;
                 }
                 String line = outputHandler.getOutputLines().get(0);

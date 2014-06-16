@@ -5,10 +5,14 @@ version = '2.0.0-SNAPSHOT'
 
 group = 'com.xebialabs.cloud'
 
-apply plugin: 'idea'
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+}
+
 apply plugin: 'signing'
 
 dependencies {
@@ -20,7 +24,7 @@ dependencies {
     compile 'com.xebialabs.overthere:overthere:2.4.3'
     compile 'org.slf4j:slf4j-api:1.7.2'
 
-    compile 'org.libvirt:libvirt:0.4.9'
+    compile 'org.libvirt:libvirt:0.5.1'
     // JNA version is pretty important only 3.3.0 seen working so far
     compile 'net.java.dev.jna:jna:3.3.0'
     compile 'org.jdom:jdom2:2.0.5'
@@ -29,6 +33,8 @@ dependencies {
 
     compile 'com.typesafe:config:1.2.0'
 
+    testCompile 'org.hamcrest:hamcrest-core:1.3'
+    testCompile 'org.hamcrest:hamcrest-library:1.3'
     testCompile 'junit:junit:4.10'
     testCompile 'org.mockito:mockito-core:1.9.0'
 
@@ -37,27 +43,40 @@ dependencies {
     testRuntime 'org.slf4j:log4j-over-slf4j:1.7.2'
 }
 
-configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
+allprojects {
+    configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
 
-repositories {
-    mavenCentral()
-    maven {
-        url 'http://download.java.net/maven/2/'
-    }
-    maven {
-        url 'https://oss.sonatype.org/content/repositories/releases'
-    }
-    maven {
-         url 'http://www.libvirt.org/maven2/'
-    }
-}
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+    configurations {
+        compile {
+            transitive = false
+        }
+    }
 
-configurations {
-    compile {
-        transitive = false
+    repositories {
+        mavenCentral()
+        maven {
+            url 'http://download.java.net/maven/2/'
+        }
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/releases'
+        }
+        maven {
+             url 'http://www.libvirt.org/maven2/'
+        }
+    }
+
+    project.tasks.create("itest", Test).configure {
+        description = "Run the integration tests."
+        group = 'Test'
+        includes = ["**/*Itest.*"]
+        testResultsDir = project.file("${project.buildDir}/itest-results")
+    }
+
+    project.tasks.getByName("test").configure {
+        excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
     }
 }
 
@@ -73,17 +92,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 artifacts {
     archives sourcesJar, javadocJar
-}
-
-project.tasks.create("itest", Test).configure {
-    description = "Run the integration tests."
-    group = 'Test'
-    includes = ["**/*Itest.*"]
-    testResultsDir = project.file("${project.buildDir}/itest-results")
-}
-
-project.tasks.getByName("test").configure {
-    excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
 }
 
 signing {
