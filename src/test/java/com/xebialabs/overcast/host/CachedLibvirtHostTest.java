@@ -18,7 +18,7 @@ public class CachedLibvirtHostTest {
         + "<parent_domain>parentDomain</parent_domain>"
         + "<provisioned_with>provcmd</provisioned_with>"
         + "<provisioned_checksum>expire</provisioned_checksum>"
-        + "<creation_time>2014-06-13T12:28:49+02</creation_time>"
+        + "<creation_time>2014-06-13T12:28:49Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -27,7 +27,7 @@ public class CachedLibvirtHostTest {
         +"<metadata>"
         + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
         + "<parent_domain>staleDomain</parent_domain>"
-        + "<creation_time>2014-06-13T12:28:49+02</creation_time>"
+        + "<creation_time>2014-06-13T12:28:49Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -36,7 +36,7 @@ public class CachedLibvirtHostTest {
         +"<metadata>"
         + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
         + "<parent_domain>someOtherParent</parent_domain>"
-        + "<creation_time>2014-06-13T12:28:49+02</creation_time>"
+        + "<creation_time>2014-06-13T12:28:49Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";

@@ -7,12 +7,11 @@ import junit.framework.Assert;
 import org.jdom2.Document;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-
-import static org.hamcrest.CoreMatchers.nullValue;
 import static com.xebialabs.overcast.support.libvirt.JDomUtil.documentToRawString;
 import static com.xebialabs.overcast.support.libvirt.JDomUtil.stringToDocument;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MetadataTest {
@@ -31,7 +30,7 @@ public class MetadataTest {
             + "<parent_domain>basedom</parent_domain>"
             + "<provisioned_with>provcmd</provisioned_with>"
             + "<provisioned_checksum>expire</provisioned_checksum>"
-            + "<creation_time>1970-01-01T01:00:00+01</creation_time>"
+            + "<creation_time>1970-01-01T01:00:00Z</creation_time>"
             + "</overcast_metadata>"
             + "</metadata>"
             + "</domain>";
@@ -45,7 +44,7 @@ public class MetadataTest {
         + "<parent_domain>basedom2</parent_domain>"
         + "<provisioned_with>provcmd2</provisioned_with>"
         + "<provisioned_checksum>expire2</provisioned_checksum>"
-        + "<creation_time>2009-02-14T00:31:31+01</creation_time>"
+        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -57,7 +56,7 @@ public class MetadataTest {
         + "<metadata>"
         + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
         + "<parent_domain>basedom2</parent_domain>"
-        + "<creation_time>2009-02-14T00:31:31+01</creation_time>"
+        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -105,7 +104,7 @@ public class MetadataTest {
             + "<metadata>"
             + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
             + "<parent_domain>basedom2</parent_domain>"
-            + "<creation_time>2009-02-14T00:31:31+01</creation_time>"
+            + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
             + "</overcast_metadata>"
             + "</metadata>"
             + "</domain>");
@@ -129,7 +128,7 @@ public class MetadataTest {
             + "<parent_domain>basedom2</parent_domain>"
             + "<provisioned_with>provcmd2</provisioned_with>"
             + "<provisioned_checksum>expire2</provisioned_checksum>"
-            + "<creation_time>2009-02-14T00:31:31+01</creation_time>"
+            + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
             + "</overcast_metadata>"
             + "</metadata>"
             + "</domain>");

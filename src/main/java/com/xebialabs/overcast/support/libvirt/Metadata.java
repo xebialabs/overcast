@@ -37,7 +37,7 @@ import static com.xebialabs.overcast.support.libvirt.JDomUtil.getElementText;
  * </pre>
  */
 public final class Metadata {
-    private static final String XML_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
+    private static final String XML_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     public static final String METADATA_NS_V1 = "http://www.xebialabs.com/overcast/metadata/v1";
     public static final String METADATA = "metadata";
     public static final String OVERCAST_METADATA = "overcast_metadata";
