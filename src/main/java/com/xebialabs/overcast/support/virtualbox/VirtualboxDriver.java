@@ -1,6 +1,7 @@
 package com.xebialabs.overcast.support.virtualbox;
 
 import java.util.Map;
+
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 
@@ -32,12 +33,11 @@ public class VirtualboxDriver {
     /**
      * Checks if VM exists. Accepts UUID or VM name as an argument.
      */
-    public boolean vmExists(final String vm) {
+    public boolean vmExists(final String vmOrUuid) {
         return filter(newArrayList(on("\n").split(execute("list", "vms"))), new Predicate<String>() {
             @Override
             public boolean apply(final String i) {
-                System.out.println(i);
-                return i.endsWith("{" + vm + "}") || i.startsWith("\"" + vm + "\"");
+                return i.endsWith("{" + vmOrUuid + "}") || i.startsWith("\"" + vmOrUuid + "\"");
             }
         }).size() == 1;
     }
