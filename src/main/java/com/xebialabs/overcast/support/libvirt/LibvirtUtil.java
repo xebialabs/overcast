@@ -13,8 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-public class LibvirtUtil {
+public final class LibvirtUtil {
     private static final Logger log = LoggerFactory.getLogger(LibvirtUtil.class);
+
+    private LibvirtUtil() {
+    }
 
     /** Look up a disk image's {@link StorageVol} in the {@link StoragePool}s attached to connection. */
     public static StorageVol findVolume(Connect connection, String path) throws LibvirtException {
