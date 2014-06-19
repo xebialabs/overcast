@@ -38,13 +38,16 @@ import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.LibvirtRuntimeException;
 import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
+import com.xebialabs.overcast.support.libvirt.LoggingOutputHandler;
 import com.xebialabs.overcast.support.libvirt.Metadata;
 import com.xebialabs.overthere.CmdLine;
 import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.OverthereExecutionOutputHandler;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
 
 import static com.xebialabs.overcast.OverthereUtil.overthereConnectionFromURI;
 import static com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler.capturingHandler;
+import static com.xebialabs.overthere.util.MultipleOverthereExecutionOutputHandler.multiHandler;
 
 public class CachedLibvirtHost extends LibvirtHost {
     private static final Logger logger = LoggerFactory.getLogger(CachedLibvirtHost.class);
@@ -65,8 +68,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     CachedLibvirtHost(String hostLabel, Connect libvirt,
         String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, String provisionUrl, String provisionCmd,
         String cacheExpirationCmd, CommandProcessor cmdProcessor,
-        int startTimeout, int bootDelay
-    ) {
+        int startTimeout, int bootDelay) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
         this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
@@ -86,7 +88,13 @@ public class CachedLibvirtHost extends LibvirtHost {
             logger.info("No cached domain creating provisioned clone");
             super.setup();
             String ip = super.getHostName();
-            provisionHost(ip);
+            try {
+                provisionHost(ip);
+            } catch (RuntimeException e) {
+                logger.error("Failed to provision clone from '{}' cleaning up", this.getBaseDomainName());
+                // super.getClone().destroyWithDisks();
+                throw e;
+            }
 
             DomainWrapper clone = super.getClone();
             clone.acpiShutdown();
@@ -142,7 +150,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     protected void deleteStaleDomain(DomainWrapper staleDomain) throws LibvirtException {
         String staleDomainName = staleDomain.getName();
 
-        if(isDomainSafeToDelete(libvirt, staleDomainName)) {
+        if (isDomainSafeToDelete(libvirt, staleDomainName)) {
             try {
                 logger.info("Destroying stale domain '{}'", staleDomainName);
                 staleDomain.destroyWithDisks();
@@ -224,16 +232,31 @@ public class CachedLibvirtHost extends LibvirtHost {
         try {
             String finalUrl = MessageFormat.format(provisionUrl, ip);
             connection = overthereConnectionFromURI(finalUrl);
-            CapturingOverthereExecutionOutputHandler outputHandler = capturingHandler();
-            CapturingOverthereExecutionOutputHandler errorOutputHandler = capturingHandler();
-            connection.execute(outputHandler, errorOutputHandler, cmdLine);
 
-            if (!errorOutputHandler.getOutputLines().isEmpty()) {
-                logger.debug("Provisioning stdout: {}", outputHandler.getOutputLines());
-                logger.debug("Provisioning stderr: {}", errorOutputHandler.getOutputLines());
-                throw new RuntimeException("Had stderror: " + errorOutputHandler.getOutput());
+            CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
+            CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
+
+            OverthereExecutionOutputHandler stdOutHandler = stdOutCapture;
+            OverthereExecutionOutputHandler stdErrHandler = stdErrCapture;
+
+            if (logger.isInfoEnabled()) {
+                OverthereExecutionOutputHandler stdout = new LoggingOutputHandler(logger, "out");
+                stdOutHandler = multiHandler(stdOutCapture, stdout);
+
+                OverthereExecutionOutputHandler stderr = new LoggingOutputHandler(logger, "err");
+                stdErrHandler = multiHandler(stdErrCapture, stderr);
             }
-            logger.debug("Provisioning output: {}", outputHandler.getOutputLines());
+
+            int exitCode = connection.execute(stdOutHandler, stdErrHandler, cmdLine);
+            if (exitCode != 0) {
+                throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with exit code %d", getBaseDomainName(), exitCode));
+            }
+
+            // doesn't seem to work, we don't get stderr returned overthere/sshj bug?
+            if (!stdErrCapture.getOutputLines().isEmpty()) {
+                throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with output to stderr: %s", getBaseDomainName(),
+                    stdErrCapture.getOutput()));
+            }
         } finally {
             if (connection != null) {
                 connection.close();

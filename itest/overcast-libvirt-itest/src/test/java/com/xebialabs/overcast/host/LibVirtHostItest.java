@@ -3,6 +3,8 @@ package com.xebialabs.overcast.host;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jdom2.Document;
@@ -17,6 +19,7 @@ import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 import com.xebialabs.overcast.OvercastProperties;
@@ -28,6 +31,8 @@ import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
 import com.xebialabs.overcast.support.libvirt.Metadata;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -83,7 +88,7 @@ public class LibVirtHostItest {
             if (md == null) {
                 continue;
             }
-            if(baseBoxes.contains(md.getParentDomain())) {
+            if (baseBoxes.contains(md.getParentDomain())) {
                 cached.add(domain);
             }
         }
@@ -110,7 +115,17 @@ public class LibVirtHostItest {
             all.addAll(running);
             List<Domain> cached = findCachedDomains(all, baseBoxes);
             if (!cached.isEmpty()) {
-                throw new RuntimeException("Still cached domains present: " + cached);
+                List<String> names = transform(cached, new Function<Domain, String>() {
+                    @Override
+                    public String apply(Domain domain) {
+                        try {
+                            return domain.getName();
+                        } catch (LibvirtException e) {
+                            throw new RuntimeException("Error getting domain names.", e);
+                        }
+                    }
+                });
+                throw new RuntimeException("Still cached domains present: " + names);
             }
         } finally {
             if (libvirt != null) {
@@ -184,6 +199,41 @@ public class LibVirtHostItest {
     @Test
     public void shouldBootStaticHostWithCache() throws LibvirtException {
         cachedHostCachedTest("overcastItestProvisionedStaticIpHost");
+    }
+
+    @Test
+    public void shouldDetectFailedProvisioningOnExitCode() throws LibvirtException {
+        failedProvisonTest("overcastLibVirtItestBridgedDhcpHostFailedOnExit", "exit code");
+    }
+
+    // disabled: stderr doesn't seem to work @Test
+    public void shouldDetectFailedProvisioningOnStdErr() throws LibvirtException {
+        failedProvisonTest("overcastLibVirtItestBridgedDhcpHostFailedOnStdErr", "output to stderr");
+    }
+
+    private void failedProvisonTest(String host, String expectedMessage) throws LibvirtException {
+        CachedLibvirtHost itestHost = (CachedLibvirtHost) getCloudHost(host);
+        assertThat(itestHost, notNullValue());
+        final String baseName = itestHost.getBaseDomainName();
+
+        List<Domain> cached = findCached(baseName);
+        assertThat(cached, hasSize(0));
+
+        try {
+            itestHost.setup();
+            Assert.fail("Host should have failed setup!");
+        } catch (RuntimeException e) {
+            // bad style... have to clean up exceptions coming out of the library
+            assertThat(e.getMessage(), containsString(expectedMessage));
+
+            // ensure there's no clones running of the base box
+            List<Domain> running = LibvirtUtil.getRunningDomains(libvirt);
+            final String basebox = OvercastProperties.getRequiredOvercastProperty("overcastItest.basebox");
+            List<Domain> clones = findCachedDomains(running, Sets.newHashSet(basebox));
+            assertThat("There should not be a partially provisioned clone around.", clones, hasSize(0));
+        } finally {
+            itestHost.teardown();
+        }
     }
 
     private void cachedHostCachedTest(String hostKey) throws LibvirtException {
