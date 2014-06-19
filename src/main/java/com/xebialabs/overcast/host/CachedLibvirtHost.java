@@ -92,7 +92,7 @@ public class CachedLibvirtHost extends LibvirtHost {
                 provisionHost(ip);
             } catch (RuntimeException e) {
                 logger.error("Failed to provision clone from '{}' cleaning up", this.getBaseDomainName());
-                // super.getClone().destroyWithDisks();
+                super.getClone().destroyWithDisks();
                 throw e;
             }
 
