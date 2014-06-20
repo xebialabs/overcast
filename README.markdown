@@ -70,7 +70,7 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.vagrantOs - OS type of the Vagrant host (WINDOWS, UNIX)
 
-{my-host-label}.vagrantSnapshotExpirationCmd - Command used to expire the snapshot image of the Vagrant host
+{my-host-label}.vagrantSnapshotExpirationCmd - Command used to expire the snapshot image of the Vagrant host, it will be executed in the `vagrantDir`.
 
 ##### VirtualBox host properties
 {my-host-label}.vboxUuid - UUID of the virtual machine
