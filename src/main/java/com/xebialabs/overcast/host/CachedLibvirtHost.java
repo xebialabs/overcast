@@ -55,10 +55,12 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     public static final String PROVISION_CMD = ".provision.cmd";
     public static final String PROVISION_URL = ".provision.url";
-    public static final String CACHE_EXPIRATION_CMD = ".provision.expirationCmd";
+    public static final String CACHE_EXPIRATION_CMD = ".provision.expirationTag.cmd";
+    public static final String CACHE_EXPIRATION_URL = ".provision.expirationTag.url";
 
     private final String provisionCmd;
     private final String provisionUrl;
+    private final String cacheExpirationUrl;
     private final String cacheExpirationCmd;
     private CommandProcessor cmdProcessor;
 
@@ -66,12 +68,15 @@ public class CachedLibvirtHost extends LibvirtHost {
     private String provisionedCloneIp;
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
-        String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, String provisionUrl, String provisionCmd,
-        String cacheExpirationCmd, CommandProcessor cmdProcessor,
+        String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
+        String provisionUrl, String provisionCmd,
+        String cacheExpirationUrl, String cacheExpirationCmd,
+        CommandProcessor cmdProcessor,
         int startTimeout, int bootDelay) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
         this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
+        this.cacheExpirationUrl = cacheExpirationUrl;
         this.cacheExpirationCmd = checkArgument(cacheExpirationCmd, "cacheExpirationCmd");
         this.cmdProcessor = cmdProcessor;
     }
@@ -198,7 +203,37 @@ public class CachedLibvirtHost extends LibvirtHost {
     }
 
     protected String getExpirationTag() {
-        logger.info("Executing expiration command: {}", cacheExpirationCmd);
+        logger.info("Executing expiration tag command: {}", cacheExpirationCmd);
+        if (cacheExpirationUrl == null) {
+            return getLocalExpirationTag();
+        } else {
+            return getRemoteExpirationTag();
+        }
+    }
+
+    private String getRemoteExpirationTag() {
+        OverthereConnection connection = null;
+        try {
+            connection = overthereConnectionFromURI(cacheExpirationUrl);
+
+            CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
+            CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
+            CmdLine cmd = new CmdLine();
+            cmd.addRaw(cacheExpirationCmd);
+            int exitCode = connection.execute(stdOutCapture, stdErrCapture, cmd);
+            if (exitCode != 0) {
+                // TODO message
+                throw new RuntimeException(String.format("Error getting expiration tag exit code %d", exitCode));
+            }
+            return stdOutCapture.getOutput();
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    private String getLocalExpirationTag() {
         try {
             String expirationTag = cmdProcessor.run(Command.fromString(cacheExpirationCmd)).getOutput().trim();
             return expirationTag;

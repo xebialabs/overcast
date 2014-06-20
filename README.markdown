@@ -101,6 +101,10 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.provision.cmd - Command to run to provision the system.
 
+{my-host-label}.provision.expirationTag.cmd - Command to run to determine the expiration tag of a cached provisioning operation. Runs locally in the current directory. If an overthere URL is specified it will run the command remotely.
+
+{my-host-label}.provision.expirationTag.url - URL for overthere to connect to a machine hosting the scripts that were used to provision an image.
+
 #### Set up and Tear down
 
     @BeforeClass

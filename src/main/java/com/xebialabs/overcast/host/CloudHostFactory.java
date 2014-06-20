@@ -45,6 +45,7 @@ import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastPrope
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
@@ -134,10 +135,11 @@ public class CloudHostFactory {
                 return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay);
             } else {
                 String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
+                String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
                 String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
 
                 CommandProcessor cmdProcessor = atCurrentDir();
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay);
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);
