@@ -4,6 +4,7 @@ A Java library to test against hosts in the cloud.
 
 ### Features
 
+* Decouple test and test machine setup.
 * Setup and tear-down for
    - Amazon EC2 hosts (Automatic host creation/destroy)
    - Vagrant hosts (Set up to the running state, tear down to the initial state)
@@ -12,10 +13,12 @@ A Java library to test against hosts in the cloud.
    - Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
+* Caching of provisioned hosts (vagrant and KVM) with expiration checks
 
 ### Requirements
 
 - Virtualbox version >= 4.2
+- Vagrant version >= 1.2.7
 - Qemu/KVM version that supports domain metadata (QEMU-KVM 1.4.2 (Fedora 19), 2.0.0 (Ubuntu LTS 14))
 
 ### Usage
@@ -33,7 +36,7 @@ Overcast looks for configuration properties in this order:
 The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.com/typesafehub/config#using-hocon-the-json-superset); this is a flexible JSON superset that allows comments, substitution, file inclusion, and more.
 
 ##### Common properties
-`{my-host-label}.hostname` - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
+{my-host-label}.hostname - Hostname. If is not set, overcast will try to create host (For Amazon hosts).
 
 ##### Tunneled properties
 {my-host-label}.tunnel.username - Tunnel username
