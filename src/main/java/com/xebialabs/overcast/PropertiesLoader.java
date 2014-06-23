@@ -22,11 +22,10 @@ public class PropertiesLoader {
     }
 
     public static Config loadOvercastConfig() {
-        return loadOvercastConfigFromFile(getUserOvercastConfPath())
-                .withFallback(loadOvercastConfigFromFile(OVERCAST_CONF_FILE))
-                .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE))
-                .withFallback(ConfigFactory.systemProperties())
-                .resolve();
+        return ConfigFactory.systemProperties()
+            .withFallback(loadOvercastConfigFromFile(getUserOvercastConfPath()))
+            .withFallback(loadOvercastConfigFromFile(OVERCAST_CONF_FILE))
+            .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE)).resolve();
     }
 
     /** Load {@link Config} from 'file' but do not resolve it. */

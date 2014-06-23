@@ -40,14 +40,12 @@ public class OvercastProperties {
     }
 
     public static String getOvercastProperty(String key, String defaultValue) {
-        String value = System.getProperty(key);
-        if (value == null) {
-            Config overcastConfig = getOvercastConfig();
-            if (overcastConfig.hasPath(key)) {
-                value = overcastConfig.getString(key);
-            } else {
-                value = defaultValue;
-            }
+        String value;
+        Config overcastConfig = getOvercastConfig();
+        if (overcastConfig.hasPath(key)) {
+            value = overcastConfig.getString(key);
+        } else {
+            value = defaultValue;
         }
         if (logger.isTraceEnabled()) {
             if (value == null) {

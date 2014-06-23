@@ -1,8 +1,10 @@
 package com.xebialabs.overcast;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.typesafe.config.Config;
@@ -15,6 +17,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class OvercastPropertiesTest {
+
+    @Before
+    public void setup() {
+        System.setProperty("user.home", new File("src/test/resources/fake-home").getAbsolutePath());
+    }
 
     @Test
     public void testGetOvercastProperty() throws Exception {
@@ -53,5 +60,30 @@ public class OvercastPropertiesTest {
     public void testReplaceEnvVariables() throws Exception {
         assertThat(getOvercastProperty("unittestHost.home"), is(notNullValue()));
         assertThat(getOvercastProperty("unittestHost.home").contains("${"), is(false));
+    }
+
+    @Test
+    public void testSystemHasPrecedenceOverRest() {
+        System.setProperty("precedenceTestValue", "valueFromEnv");
+        OvercastProperties.reloadOvercastProperties();
+
+        assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromEnv"));
+    }
+
+    @Test
+    public void testHomeDirHasPrecedenceOverClasspath() {
+        System.clearProperty("precedenceTestValue");
+        OvercastProperties.reloadOvercastProperties();
+
+        assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromHome"));
+    }
+
+    @Test
+    public void testWorkDirHasPrecedenceOverClasspath() {
+        System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
+        System.clearProperty("precedenceTestValue");
+        OvercastProperties.reloadOvercastProperties();
+
+        assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromWork"));
     }
 }
