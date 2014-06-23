@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -30,6 +31,7 @@ public class OvercastProperties {
     }
 
     public static void reloadOvercastProperties() {
+        ConfigFactory.invalidateCaches();
         overcastProperties = null;
     }
 
