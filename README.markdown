@@ -102,6 +102,8 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.provision.url - URL for overthere to connect to the created system. For instance: `ssh://user@{0}?os=UNIX&connectionType=SCP&privateKeyFile="${user.home}"/.ssh/id_rsa&passphrase=bigsecret`. {0} will be replaced by the IP the system got.
 
+{my-host-label}.provision.bootDelay - Boot delay to use after the system has been provisioned.
+
 {my-host-label}.provision.cmd - Command to run to provision the system.
 
 {my-host-label}.provision.expirationTag.cmd - Command to run to determine the expiration tag of a cached provisioning operation. Runs locally in the current directory. If an overthere URL is specified it will run the command remotely.

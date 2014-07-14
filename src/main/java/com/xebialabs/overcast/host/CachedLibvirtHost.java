@@ -57,6 +57,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     public static final String PROVISION_URL = ".provision.url";
     public static final String CACHE_EXPIRATION_CMD = ".provision.expirationTag.cmd";
     public static final String CACHE_EXPIRATION_URL = ".provision.expirationTag.url";
+    public static final String PROVISIONED_BOOT_DELAY = ".provision.bootDelay";
 
     private final String provisionCmd;
     private final String provisionUrl;
@@ -66,18 +67,20 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     private DomainWrapper provisionedClone;
     private String provisionedCloneIp;
+    private int provisionedbootDelay;
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
         String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
         String provisionUrl, String provisionCmd,
         String cacheExpirationUrl, String cacheExpirationCmd,
         CommandProcessor cmdProcessor,
-        int startTimeout, int bootDelay) {
+        int startTimeout, int bootDelay, int provisionedbootDelay) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
         this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
         this.cacheExpirationUrl = cacheExpirationUrl;
         this.cacheExpirationCmd = checkArgument(cacheExpirationCmd, "cacheExpirationCmd");
+        this.provisionedbootDelay = provisionedbootDelay;
         this.cmdProcessor = cmdProcessor;
     }
 
@@ -115,6 +118,8 @@ public class CachedLibvirtHost extends LibvirtHost {
         }
 
         provisionedCloneIp = waitUntilRunningAndGetIP(provisionedClone);
+
+        bootDelay(provisionedbootDelay);
     }
 
     protected DomainWrapper findFirstCachedDomain() {

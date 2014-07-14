@@ -49,6 +49,7 @@ import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX;
@@ -137,9 +138,10 @@ public class CloudHostFactory {
                 String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
                 String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
                 String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
+                int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
 
                 CommandProcessor cmdProcessor = atCurrentDir();
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay);
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);

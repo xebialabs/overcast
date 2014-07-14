@@ -101,7 +101,7 @@ class LibvirtHost implements CloudHost {
         }
         clone = createClone();
         hostIp = waitUntilRunningAndGetIP(clone);
-        bootDelay();
+        bootDelay(bootDelay);
     }
 
     @Override
@@ -157,9 +157,9 @@ class LibvirtHost implements CloudHost {
         return ipLookupStrategy.lookup(mac);
     }
 
-    private void bootDelay() {
+    protected void bootDelay(int delaySeconds) {
         logger.info("Waiting {} seconds for VM to boot up", bootDelay);
-        sleep(bootDelay);
+        sleep(delaySeconds);
     }
 
     private static void sleep(final int seconds) {
