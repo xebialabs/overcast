@@ -17,6 +17,7 @@
 
 package com.xebialabs.overcast.host;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.libvirt.Connect;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
+import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.SshIpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.StaticIpLookupStrategy;
@@ -46,6 +48,7 @@ class LibvirtHost implements CloudHost {
     public static final String LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX = ".baseDomain";
     public static final String LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX = ".network";
     public static final String LIBVIRT_IP_LOOKUP_STRATEGY_PROPERTY_SUFFIX = ".ipLookupStrategy";
+    public static final String LIBVIRT_FS_MAPPING_SUFFIX = ".fsMapping";
 
     public static final String LIBVIRT_URL_DEFAULT = "qemu:///system";
     public static final String LIBVIRT_BOOT_SECONDS_DEFAULT = "60";
@@ -63,13 +66,16 @@ class LibvirtHost implements CloudHost {
     private String hostIp;
     private IpLookupStrategy ipLookupStrategy;
 
-    public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay) {
+    private List<Filesystem> filesystemMappings;
+
+    public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay, List<Filesystem> filesystemMappings) {
         this.libvirt = libvirt;
         this.baseDomainName = baseDomainName;
         this.startTimeout = startTimeout;
         this.bootDelay = bootDelay;
         this.networkName = networkName;
         this.ipLookupStrategy = ipLookupStrategy;
+        this.filesystemMappings = filesystemMappings;
 
         try {
             this.baseDomain = DomainWrapper.newWrapper(libvirt.domainLookupByName(baseDomainName));
@@ -134,7 +140,7 @@ class LibvirtHost implements CloudHost {
         String baseName = baseDomain.getName();
         String cloneName = baseName + "-" + UUID.randomUUID().toString();
         logger.info("Creating clone '{}' from base domain '{}'", cloneName, baseName);
-        return baseDomain.cloneWithBackingStore(cloneName);
+        return baseDomain.cloneWithBackingStore(cloneName, filesystemMappings);
     }
 
     protected String waitUntilRunningAndGetIP(DomainWrapper clone) {
@@ -158,7 +164,7 @@ class LibvirtHost implements CloudHost {
     }
 
     protected void bootDelay(int delaySeconds) {
-        logger.info("Waiting {} seconds for VM to boot up", bootDelay);
+        logger.info("Waiting {} seconds for VM to boot up", delaySeconds);
         sleep(delaySeconds);
     }
 

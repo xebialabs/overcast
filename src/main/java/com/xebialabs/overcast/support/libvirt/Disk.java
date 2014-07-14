@@ -1,11 +1,7 @@
 package com.xebialabs.overcast.support.libvirt;
 
 import java.io.IOException;
-import java.io.StringWriter;
 
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
@@ -14,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
+
+import com.xebialabs.overcast.support.libvirt.jdom.DiskXml;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
@@ -77,23 +75,7 @@ public class Disk {
 
     public StorageVol createCloneWithBackingStore(String name) {
         try {
-            Element volume = new Element("volume");
-            volume.addContent(new Element("name").setText(name));
-            volume.addContent(new Element("allocation").setText("0"));
-            volume.addContent(new Element("capacity").setText("" + getInfo().capacity));
-            Element target = new Element("target");
-            volume.addContent(target);
-            target.addContent(new Element("format").setAttribute("type", format));
-            target.addContent(new Element("compat").setText("1.1"));
-            Element backingStore = new Element("backingStore");
-            volume.addContent(backingStore);
-            backingStore.addContent(new Element("path").setText(file));
-            backingStore.addContent(new Element("format").setAttribute("type", format));
-
-            StringWriter vsw = new StringWriter();
-            XMLOutputter xout = new XMLOutputter(Format.getPrettyFormat());
-            xout.output(volume, vsw);
-            String volumeXml = vsw.toString();
+            String volumeXml = DiskXml.cloneVolumeXml(this, name);
             log.debug("Creating volume with xml={}", volumeXml);
             StorageVol vol = getStoragePool().storageVolCreateXML(volumeXml, 0);
             return vol;

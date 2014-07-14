@@ -110,6 +110,12 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.provision.expirationTag.url - URL for overthere to connect to a machine hosting the scripts that were used to provision an image.
 
+{my-host-label}.fsMapping.{target}.hostPath - upon cloning create a Filesystem mapping between hostPath and `target` in the host.
+
+{my-host-label}.fsMapping.{target}.accessMode - Access mode, one of passthrough, mapped, squash (default: passthrough)
+
+{my-host-label}.fsMapping.{target}.readOnly - Whether the mount will be readOnly (default: true)
+
 #### Set up and Tear down
 
     @BeforeClass
@@ -186,3 +192,24 @@ Example settings for a host connected to a bridge named `br0`. Assuming a DHCP s
 ##### Routed network
 
 A routed network is similar to a bridged network with the difference that `networkDeviceId` should be set to the name of the routed network.
+
+##### File system mapping
+
+With entries in the `{host}.fsMapping` section it is possible to mount directories from the host in the created domain. For instance like:
+
+    my-host {
+        ...
+        fsMapping {
+            vagrant { hostPath = ${itest.vagrantDir}"/itest/vagrant", readOnly = true }
+            data    { hostPath = ${itest.dataDir}, readOnly = true, accessMode = "mapped" }
+        }
+    }
+
+These mappings can be mounted on the domain with fstab entries like:
+
+    data            /data               9p    ro,trans=virtio
+    vagrant         /vagrant            9p    ro,trans=virtio
+
+For details on the accessMode variants see: [http://libvirt.org/formatdomain.html#elementsFilesystems](http://libvirt.org/formatdomain.html#elementsFilesystems).
+
+It may be necessary to add the 9p file system drivers to the initrd image of the base domain image.

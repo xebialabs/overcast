@@ -35,6 +35,7 @@ import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.command.NonZeroCodeException;
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
+import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.LibvirtRuntimeException;
 import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
@@ -74,8 +75,10 @@ public class CachedLibvirtHost extends LibvirtHost {
         String provisionUrl, String provisionCmd,
         String cacheExpirationUrl, String cacheExpirationCmd,
         CommandProcessor cmdProcessor,
-        int startTimeout, int bootDelay, int provisionedbootDelay) {
-        super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay);
+        int startTimeout, int bootDelay, int provisionedbootDelay,
+        List<Filesystem> filesystemMappings
+    ) {
+        super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
         this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
         this.cacheExpirationUrl = cacheExpirationUrl;

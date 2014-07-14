@@ -206,6 +206,36 @@ public class LibVirtHostItest {
         failedProvisonTest("overcastLibVirtItestBridgedDhcpHostFailedOnExit", "exit code");
     }
 
+    @Test
+    public void shouldCreateHostWithFsMapping() throws LibvirtException {
+        CachedLibvirtHost itestHost = (CachedLibvirtHost) getCloudHost("overcastLibVirtItestHostWithFsMapping");
+        assertThat(itestHost, notNullValue());
+        final String baseName = itestHost.getBaseDomainName();
+        String cacheName = "unset";
+
+        try {
+            itestHost.setup();
+
+            // the test succeeds if the provisioning succeeds
+            // since the mounting will fail if the mapping is not done
+
+            List<Domain> cached = findCached(baseName);
+            assertThat(cached, hasSize(1));
+            cacheName = cached.get(0).getName();
+
+            assertThat(itestHost.getHostName(), matchesPattern("\\d+\\.\\d+\\.\\d+\\.\\d+"));
+        } finally {
+            itestHost.teardown();
+        }
+
+        assertThat("Cache name should be initialized", cacheName, not(equalTo("unset")));
+        Domain cache = findDomain(cacheName);
+
+        // clean up after ourselves
+        DomainWrapper.newWrapper(cache).destroyWithDisks();
+    }
+
+
     // disabled: stderr doesn't seem to work @Test
     public void shouldDetectFailedProvisioningOnStdErr() throws LibvirtException {
         failedProvisonTest("overcastLibVirtItestBridgedDhcpHostFailedOnStdErr", "output to stderr");

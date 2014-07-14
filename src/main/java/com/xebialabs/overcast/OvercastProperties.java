@@ -1,13 +1,21 @@
 package com.xebialabs.overcast;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigUtil;
+import com.typesafe.config.ConfigValue;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -34,6 +42,30 @@ public class OvercastProperties {
         ConfigFactory.invalidateCaches();
         overcastProperties = null;
     }
+
+    /** Get set of property names directly below path. */
+    public static Set<String> getOvercastPropertyNames(final String path) {
+        Set<String> names = Sets.newHashSet();
+
+        Config overcastConfig = getOvercastConfig();
+        if (!overcastConfig.hasPath(path)) {
+            return names;
+        }
+
+        Config cfg = overcastConfig.getConfig(path);
+
+        Collection<String> tmp = Collections2.transform(cfg.entrySet(), new Function<Entry<String, ConfigValue>, String>() {
+            @Override
+            public String apply(Entry<String, ConfigValue> mapping) {
+                String key = mapping.getKey();
+                return ConfigUtil.splitPath(key).get(0);
+            }
+        });
+        names.addAll(tmp);
+
+        return names;
+    }
+
 
     public static String getOvercastProperty(String key) {
         return getOvercastProperty(key, null);

@@ -17,16 +17,22 @@
 
 package com.xebialabs.overcast.host;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 import com.xebialabs.overcast.OvercastProperties;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
+import com.xebialabs.overcast.support.libvirt.Filesystem;
+import com.xebialabs.overcast.support.libvirt.Filesystem.AccessMode;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.LibvirtRuntimeException;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
@@ -41,17 +47,19 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_FS_MAPPING_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX;
@@ -128,12 +136,19 @@ public class CloudHostFactory {
             int startTimeout = Integer.valueOf(getOvercastProperty(label + LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX, LIBVIRT_START_TIMEOUT_DEFAULT));
             int bootDelay = Integer.valueOf(getOvercastProperty(label + LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX, LIBVIRT_BOOT_DELAY_DEFAULT));
             String networkName = getOvercastProperty(label + LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX);
+
+            List<Filesystem> fsMappings = Lists.newArrayList();
+            Set<String> mappingNames = getOvercastPropertyNames(label + LIBVIRT_FS_MAPPING_SUFFIX);
+            for (String mapping : mappingNames) {
+                fsMappings.add(createFilesystem(mapping, label + LIBVIRT_FS_MAPPING_SUFFIX + "." + mapping));
+            }
+
             IpLookupStrategy ipLookupStrategy = LibvirtHost.determineIpLookupStrategy(label);
 
             String provisionCmd = getOvercastProperty(label + PROVISION_CMD);
 
             if (provisionCmd == null) {
-                return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay);
+                return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay, fsMappings);
             } else {
                 String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
                 String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
@@ -141,11 +156,18 @@ public class CloudHostFactory {
                 int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
 
                 CommandProcessor cmdProcessor = atCurrentDir();
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay);
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay, fsMappings);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);
         }
+    }
+
+    private static Filesystem createFilesystem(String target, String path) {
+        String source = getRequiredOvercastProperty(path + ".hostPath");
+        AccessMode accessMode = AccessMode.valueOf(getOvercastProperty(path + ".accessMode", AccessMode.PASSTHROUGH.toString()));
+        boolean readOnly = Boolean.valueOf(getOvercastProperty(path + ".readOnly", "true"));
+        return new Filesystem(source, target, accessMode, readOnly);
     }
 
     private static CloudHost createVboxHost(final String label, final String vboxUuid) {
