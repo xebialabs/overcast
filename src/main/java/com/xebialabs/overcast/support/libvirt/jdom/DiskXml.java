@@ -17,6 +17,7 @@ import org.libvirt.StorageVol;
 import com.google.common.collect.Lists;
 
 import com.xebialabs.overcast.support.libvirt.Disk;
+import com.xebialabs.overcast.support.libvirt.JDomUtil;
 import com.xebialabs.overcast.support.libvirt.LibvirtRuntimeException;
 import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
 
@@ -85,6 +86,6 @@ public final class DiskXml {
         backingStore.addContent(new Element("path").setText(backingDisk.file));
         backingStore.addContent(new Element("format").setAttribute("type", backingDisk.format));
 
-        return Util.prettyPrint(volume);
+        return JDomUtil.elementToString(volume);
     }
 }

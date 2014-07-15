@@ -53,4 +53,15 @@ public final class JDomUtil {
     public static String documentToRawString(Document xml) throws IOException {
         return documentToString(xml, Format.getRawFormat().setOmitDeclaration(true)).trim();
     }
+
+    public static String elementToString(Element element, Format format) throws IOException {
+        StringWriter vsw = new StringWriter();
+        XMLOutputter xout = new XMLOutputter(format);
+        xout.output(element, vsw);
+        return vsw.toString();
+    }
+
+    public static String elementToString(Element element) throws IOException {
+        return elementToString(element, Format.getPrettyFormat());
+    }
 }

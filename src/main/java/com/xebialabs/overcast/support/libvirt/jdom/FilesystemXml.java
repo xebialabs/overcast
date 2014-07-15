@@ -10,8 +10,6 @@ import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
@@ -19,8 +17,6 @@ import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.Filesystem.AccessMode;
 
 public final class FilesystemXml {
-    private static Logger logger = LoggerFactory.getLogger(FilesystemXml.class);
-
     private static final String XPATH_FILESYSTEM = "/domain/devices/filesystem[@type='mount']";
 
     private FilesystemXml() {
@@ -58,7 +54,6 @@ public final class FilesystemXml {
         XPathExpression<Element> fsExpr = xpf.compile(XPATH_FILESYSTEM, Filters.element());
         List<Element> filesystems = fsExpr.evaluate(domainXml);
         for (Element fs : filesystems) {
-            logger.debug("Found existing filesystem: {}", Util.prettyPrint(fs));
             Attribute accessMode = fs.getAttribute("accessmode");
             String source = fs.getChild("source").getAttribute("dir").getValue();
             String target = fs.getChild("target").getAttribute("dir").getValue();
