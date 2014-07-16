@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+import com.xebialabs.overcast.OverthereUtil;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.command.NonZeroCodeException;
@@ -44,6 +45,7 @@ import com.xebialabs.overcast.support.libvirt.Metadata;
 import com.xebialabs.overthere.CmdLine;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.OverthereExecutionOutputHandler;
+import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
 
 import static com.xebialabs.overcast.OverthereUtil.overthereConnectionFromURI;
@@ -56,6 +58,7 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     public static final String PROVISION_CMD = ".provision.cmd";
     public static final String PROVISION_URL = ".provision.url";
+    public static final String COPY_SPEC = ".provision.copy";
     public static final String CACHE_EXPIRATION_CMD = ".provision.expirationTag.cmd";
     public static final String CACHE_EXPIRATION_URL = ".provision.expirationTag.url";
     public static final String PROVISIONED_BOOT_DELAY = ".provision.bootDelay";
@@ -65,6 +68,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     private final String cacheExpirationUrl;
     private final String cacheExpirationCmd;
     private CommandProcessor cmdProcessor;
+    private final List<String> copySpec;
 
     private DomainWrapper provisionedClone;
     private String provisionedCloneIp;
@@ -76,8 +80,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         String cacheExpirationUrl, String cacheExpirationCmd,
         CommandProcessor cmdProcessor,
         int startTimeout, int bootDelay, int provisionedbootDelay,
-        List<Filesystem> filesystemMappings
-    ) {
+        List<Filesystem> filesystemMappings, List<String> copySpec) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
         this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
@@ -85,6 +88,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         this.cacheExpirationCmd = checkArgument(cacheExpirationCmd, "cacheExpirationCmd");
         this.provisionedbootDelay = provisionedbootDelay;
         this.cmdProcessor = cmdProcessor;
+        this.copySpec = copySpec;
     }
 
     private String checkArgument(String arg, String argName) {
@@ -99,6 +103,8 @@ public class CachedLibvirtHost extends LibvirtHost {
             logger.info("No cached domain creating provisioned clone");
             super.setup();
             String ip = super.getHostName();
+
+            copyFiles(ip, copySpec);
             try {
                 provisionHost(ip);
             } catch (RuntimeException e) {
@@ -265,6 +271,20 @@ public class CachedLibvirtHost extends LibvirtHost {
         return base.cloneWithBackingStore(cloneName);
     }
 
+    protected OverthereConnection getRemoteConnection(String ip) {
+        String finalUrl = MessageFormat.format(provisionUrl, ip);
+        return overthereConnectionFromURI(finalUrl);
+    }
+
+    protected void copyFiles(String ip, List<String> copySpec) {
+        if (copySpec.isEmpty()) {
+            return;
+        }
+        OverthereConnection lc = LocalConnection.getLocalConnection();
+        OverthereConnection rc = getRemoteConnection(ip);
+        OverthereUtil.copyFiles(lc, rc, copySpec);
+    }
+
     protected void provisionHost(String ip) {
         CmdLine cmdLine = new CmdLine();
         String fragment = MessageFormat.format(provisionCmd, ip);
@@ -273,8 +293,7 @@ public class CachedLibvirtHost extends LibvirtHost {
 
         OverthereConnection connection = null;
         try {
-            String finalUrl = MessageFormat.format(provisionUrl, ip);
-            connection = overthereConnectionFromURI(finalUrl);
+            connection = getRemoteConnection(ip);
 
             CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
             CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();

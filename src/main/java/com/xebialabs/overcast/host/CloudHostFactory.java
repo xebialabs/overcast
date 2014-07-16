@@ -17,6 +17,7 @@
 
 package com.xebialabs.overcast.host;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
@@ -57,6 +59,7 @@ import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.COPY_SPEC;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_FS_MAPPING_SUFFIX;
@@ -154,9 +157,10 @@ public class CloudHostFactory {
                 String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
                 String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
                 int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
-
+                List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.<String> emptyList());
                 CommandProcessor cmdProcessor = atCurrentDir();
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay, fsMappings);
+
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay, fsMappings, copySpec);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);

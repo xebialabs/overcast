@@ -1,6 +1,7 @@
 package com.xebialabs.overcast;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -76,6 +77,24 @@ public class OvercastProperties {
         Config overcastConfig = getOvercastConfig();
         if (overcastConfig.hasPath(key)) {
             value = overcastConfig.getString(key);
+        } else {
+            value = defaultValue;
+        }
+        if (logger.isTraceEnabled()) {
+            if (value == null) {
+                logger.trace("Overcast property {} is null", key);
+            } else {
+                logger.trace("Overcast property {}={}", key, key.endsWith(PASSWORD_PROPERTY_SUFFIX) ? "********" : value);
+            }
+        }
+        return value;
+    }
+
+    public static List<String> getOvercastListProperty(String key, List<String> defaultValue) {
+        List<String> value;
+        Config overcastConfig = getOvercastConfig();
+        if (overcastConfig.hasPath(key)) {
+            value = overcastConfig.getStringList(key);
         } else {
             value = defaultValue;
         }
