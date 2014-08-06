@@ -86,6 +86,8 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 ##### Libvirt host properties
 {my-host-label}.libvirtURL - URL of libvirt e.g. qemu+ssh://user@linux-box/system
 
+{my-host-label}.libvirtStartTimeout - The libvirt domain must go into running state before this timeout (default: 30)
+
 {my-host-label}.baseDomain - name of the domain to clone
 
 {my-host-label}.network - name of the network device that should be used for IP to MAC lookup. For example `br0`.
