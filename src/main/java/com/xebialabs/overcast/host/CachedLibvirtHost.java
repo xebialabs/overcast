@@ -277,8 +277,7 @@ public class CachedLibvirtHost extends LibvirtHost {
             cmd.addRaw(cacheExpirationCmd);
             int exitCode = connection.execute(stdOutCapture, stdErrCapture, cmd);
             if (exitCode != 0) {
-                // TODO message
-                throw new RuntimeException(String.format("Error getting expiration tag exit code %d", exitCode));
+                throw new RuntimeException(String.format("Error getting expiration tag exit code %d, stdout=%s, stderr=%s", exitCode, stdOutCapture.getOutput(), stdErrCapture.getOutput()));
             }
             return stdOutCapture.getOutput();
         } finally {
