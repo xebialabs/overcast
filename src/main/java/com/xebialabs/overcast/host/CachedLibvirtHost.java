@@ -18,6 +18,7 @@
 package com.xebialabs.overcast.host;
 
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -146,14 +147,14 @@ public class CachedLibvirtHost extends LibvirtHost {
                     provisionHost(remote, ip);
                     return;
                 } catch (RuntimeIOException e) {
-                    logger.info("Retrying provisioning of to " + ip);
                     Throwable cause = e.getCause();
-                    while (cause != null && !(cause instanceof ConnectException)) {
+                    while (cause != null && !(cause instanceof ConnectException || cause instanceof NoRouteToHostException)) {
                         cause = cause.getCause();
                     }
-                    if (!(cause instanceof ConnectException)) {
+                    if (!(cause instanceof ConnectException || cause instanceof NoRouteToHostException)) {
                         throw e;
                     }
+                    logger.info("Retrying provisioning of to " + ip);
                 }
                 sleep(1);
                 seconds--;
@@ -277,7 +278,8 @@ public class CachedLibvirtHost extends LibvirtHost {
             cmd.addRaw(cacheExpirationCmd);
             int exitCode = connection.execute(stdOutCapture, stdErrCapture, cmd);
             if (exitCode != 0) {
-                throw new RuntimeException(String.format("Error getting expiration tag exit code %d, stdout=%s, stderr=%s", exitCode, stdOutCapture.getOutput(), stdErrCapture.getOutput()));
+                throw new RuntimeException(String.format("Error getting expiration tag exit code %d, stdout=%s, stderr=%s", exitCode,
+                    stdOutCapture.getOutput(), stdErrCapture.getOutput()));
             }
             return stdOutCapture.getOutput();
         } finally {
