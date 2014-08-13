@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 import com.xebialabs.overcast.OverthereUtil;
 import com.xebialabs.overcast.command.Command;
@@ -148,7 +147,11 @@ public class CachedLibvirtHost extends LibvirtHost {
                     return;
                 } catch (RuntimeIOException e) {
                     logger.info("Retrying provisioning of to " + ip);
-                    if (!(Throwables.getRootCause(e) instanceof ConnectException)) {
+                    Throwable cause = e.getCause();
+                    while (cause != null && !(cause instanceof ConnectException)) {
+                        cause = cause.getCause();
+                    }
+                    if (!(cause instanceof ConnectException)) {
                         throw e;
                     }
                 }
@@ -168,7 +171,6 @@ public class CachedLibvirtHost extends LibvirtHost {
         super.getClone().destroyWithDisks();
         throw new RuntimeException(String.format("Could not start provisioning clone from '%s' within %d seconds", this.getBaseDomainName(), startTimeout));
     }
-
 
     protected DomainWrapper findFirstCachedDomain() {
         final String baseDomainName = super.getBaseDomainName();
