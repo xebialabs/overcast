@@ -192,7 +192,7 @@ public class LibVirtHostItest {
     }
 
     @Test
-    public void shouldBootStaticHostCache() throws LibvirtException {
+    public void shouldBootStaticHostNoCache() throws LibvirtException {
         cachedHostNotCachedTest("overcastItestProvisionedStaticIpHost");
     }
 
