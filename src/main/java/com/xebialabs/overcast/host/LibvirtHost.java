@@ -168,7 +168,7 @@ class LibvirtHost implements CloudHost {
         sleep(delaySeconds);
     }
 
-    private static void sleep(final int seconds) {
+    protected static void sleep(final int seconds) {
         try {
             Thread.sleep(seconds * 1000);
         } catch (InterruptedException e) {

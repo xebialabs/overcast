@@ -106,6 +106,8 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.provision.bootDelay - Boot delay to use after the system has been provisioned.
 
+{my-host-label}.provision.startTimeout - After the boot delay the copy and provision commands will be retried until this timeout expires. This allows for more robust startup when startup times vary, without configuring a big bootDelay.
+
 {my-host-label}.provision.copy - Files/directories specified here will be copied to the system before provisioning. If the length of the list is even then files/directories are copied pair wise. If the length is odd then everything is copied into the last entry (which should be a directory).
 
 {my-host-label}.provision.cmd - Command to run to provision the system.

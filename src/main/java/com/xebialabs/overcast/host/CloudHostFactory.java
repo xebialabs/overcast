@@ -68,6 +68,8 @@ import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_DEFA
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT_DEFAULT;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT;
 
 public class CloudHostFactory {
 
@@ -156,11 +158,12 @@ public class CloudHostFactory {
                 String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
                 String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
                 String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
+                int provisionStartTimeout = Integer.valueOf(getOvercastProperty(label + PROVISION_START_TIMEOUT, PROVISION_START_TIMEOUT_DEFAULT));
                 int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
                 List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.<String> emptyList());
                 CommandProcessor cmdProcessor = atCurrentDir();
 
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionedBootDelay, fsMappings, copySpec);
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);

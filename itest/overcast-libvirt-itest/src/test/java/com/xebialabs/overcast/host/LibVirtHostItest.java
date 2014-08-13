@@ -102,7 +102,8 @@ public class LibVirtHostItest {
         final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("overcastItest.libvirtUrl");
         final String basebox = OvercastProperties.getRequiredOvercastProperty("overcastItest.basebox");
         final String staticBaseBox = OvercastProperties.getRequiredOvercastProperty("overcastItest.staticbasebox");
-        Set<String> baseBoxes = Sets.newHashSet(basebox, staticBaseBox);
+        final String windowsBaseBox = OvercastProperties.getRequiredOvercastProperty("overcastItest.windowsbasebox");
+        Set<String> baseBoxes = Sets.newHashSet(basebox, staticBaseBox, windowsBaseBox);
 
         Connect libvirt = null;
 
@@ -204,6 +205,17 @@ public class LibVirtHostItest {
     @Test
     public void shouldDetectFailedProvisioningOnExitCode() throws LibvirtException {
         failedProvisonTest("overcastLibVirtItestBridgedDhcpHostFailedOnExit", "exit code");
+    }
+
+    @Test
+    public void shouldBootDynamicWindowsHostNoCache() throws LibvirtException {
+        cachedHostNotCachedTest("overcastLibVirtItestWindows");
+    }
+
+    // depends on previous test (e.g. a cached host is expected)
+    @Test
+    public void shouldBootDynamicWindowsHostWithCache() throws LibvirtException {
+        cachedHostCachedTest("overcastLibVirtItestWindows");
     }
 
     @Test

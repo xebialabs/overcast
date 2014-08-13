@@ -17,6 +17,7 @@
 
 package com.xebialabs.overcast.host;
 
+import java.net.ConnectException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 import com.xebialabs.overcast.OverthereUtil;
 import com.xebialabs.overcast.command.Command;
@@ -45,6 +47,7 @@ import com.xebialabs.overcast.support.libvirt.Metadata;
 import com.xebialabs.overthere.CmdLine;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.OverthereExecutionOutputHandler;
+import com.xebialabs.overthere.RuntimeIOException;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
 
@@ -58,6 +61,8 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     public static final String PROVISION_CMD = ".provision.cmd";
     public static final String PROVISION_URL = ".provision.url";
+    public static final String PROVISION_START_TIMEOUT = ".provision.startTimeout";
+    public static final String PROVISION_START_TIMEOUT_DEFAULT = "60";
     public static final String COPY_SPEC = ".provision.copy";
     public static final String CACHE_EXPIRATION_CMD = ".provision.expirationTag.cmd";
     public static final String CACHE_EXPIRATION_URL = ".provision.expirationTag.url";
@@ -73,13 +78,14 @@ public class CachedLibvirtHost extends LibvirtHost {
     private DomainWrapper provisionedClone;
     private String provisionedCloneIp;
     private int provisionedbootDelay;
+    private int provisionStartTimeout;
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
         String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
         String provisionUrl, String provisionCmd,
         String cacheExpirationUrl, String cacheExpirationCmd,
         CommandProcessor cmdProcessor,
-        int startTimeout, int bootDelay, int provisionedbootDelay,
+        int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
         List<Filesystem> filesystemMappings, List<String> copySpec) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
         this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
@@ -87,6 +93,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         this.cacheExpirationUrl = cacheExpirationUrl;
         this.cacheExpirationCmd = checkArgument(cacheExpirationCmd, "cacheExpirationCmd");
         this.provisionedbootDelay = provisionedbootDelay;
+        this.provisionStartTimeout = provisionStartTimeout;
         this.cmdProcessor = cmdProcessor;
         this.copySpec = copySpec;
     }
@@ -101,18 +108,14 @@ public class CachedLibvirtHost extends LibvirtHost {
         DomainWrapper cachedDomain = findFirstCachedDomain();
         if (cachedDomain == null) {
             logger.info("No cached domain creating provisioned clone");
+
+            // create a clone to provision
             super.setup();
             String ip = super.getHostName();
 
-            copyFiles(ip, copySpec);
-            try {
-                provisionHost(ip);
-            } catch (RuntimeException e) {
-                logger.error("Failed to provision clone from '{}' cleaning up", this.getBaseDomainName());
-                super.getClone().destroyWithDisks();
-                throw e;
-            }
+            provisionDomain(ip, copySpec, provisionStartTimeout);
 
+            // shut down the provisioned domain so it can be cloned again
             DomainWrapper clone = super.getClone();
             clone.acpiShutdown();
 
@@ -130,6 +133,42 @@ public class CachedLibvirtHost extends LibvirtHost {
 
         bootDelay(provisionedbootDelay);
     }
+
+    protected void provisionDomain(String ip, List<String> copySpec, int startTimeout) {
+        OverthereConnection remote = null;
+        int seconds = startTimeout;
+        try {
+            // SSH connections will fail in getRemoteConnection
+            // CIFS in the actual provisioning call
+            while (seconds >= 0) {
+                try {
+                    remote = getRemoteConnection(ip);
+                    copyFiles(remote, copySpec);
+                    provisionHost(remote, ip);
+                    return;
+                } catch (RuntimeIOException e) {
+                    logger.info("Retrying provisioning of to " + ip);
+                    if (!(Throwables.getRootCause(e) instanceof ConnectException)) {
+                        throw e;
+                    }
+                }
+                sleep(1);
+                seconds--;
+            }
+        } catch (RuntimeException e) {
+            logger.error("Failed to provision clone from '{}' cleaning up", this.getBaseDomainName());
+            super.getClone().destroyWithDisks();
+            throw e;
+        } finally {
+            if (remote != null) {
+                remote.close();
+            }
+        }
+        // timed out => clean up
+        super.getClone().destroyWithDisks();
+        throw new RuntimeException(String.format("Could not start provisioning clone from '%s' within %d seconds", this.getBaseDomainName(), startTimeout));
+    }
+
 
     protected DomainWrapper findFirstCachedDomain() {
         final String baseDomainName = super.getBaseDomainName();
@@ -276,53 +315,43 @@ public class CachedLibvirtHost extends LibvirtHost {
         return overthereConnectionFromURI(finalUrl);
     }
 
-    protected void copyFiles(String ip, List<String> copySpec) {
+    protected void copyFiles(OverthereConnection remote, List<String> copySpec) {
         if (copySpec.isEmpty()) {
             return;
         }
-        OverthereConnection lc = LocalConnection.getLocalConnection();
-        OverthereConnection rc = getRemoteConnection(ip);
-        OverthereUtil.copyFiles(lc, rc, copySpec);
+        OverthereConnection local = LocalConnection.getLocalConnection();
+        OverthereUtil.copyFiles(local, remote, copySpec);
     }
 
-    protected void provisionHost(String ip) {
+    protected void provisionHost(OverthereConnection remote, String ip) {
         CmdLine cmdLine = new CmdLine();
         String fragment = MessageFormat.format(provisionCmd, ip);
         cmdLine.addRaw(fragment);
         logger.info("Provisioning host with '{}'", cmdLine);
 
-        OverthereConnection connection = null;
-        try {
-            connection = getRemoteConnection(ip);
+        CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
+        CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
 
-            CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
-            CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
+        OverthereExecutionOutputHandler stdOutHandler = stdOutCapture;
+        OverthereExecutionOutputHandler stdErrHandler = stdErrCapture;
 
-            OverthereExecutionOutputHandler stdOutHandler = stdOutCapture;
-            OverthereExecutionOutputHandler stdErrHandler = stdErrCapture;
+        if (logger.isInfoEnabled()) {
+            OverthereExecutionOutputHandler stdout = new LoggingOutputHandler(logger, "out");
+            stdOutHandler = multiHandler(stdOutCapture, stdout);
 
-            if (logger.isInfoEnabled()) {
-                OverthereExecutionOutputHandler stdout = new LoggingOutputHandler(logger, "out");
-                stdOutHandler = multiHandler(stdOutCapture, stdout);
+            OverthereExecutionOutputHandler stderr = new LoggingOutputHandler(logger, "err");
+            stdErrHandler = multiHandler(stdErrCapture, stderr);
+        }
 
-                OverthereExecutionOutputHandler stderr = new LoggingOutputHandler(logger, "err");
-                stdErrHandler = multiHandler(stdErrCapture, stderr);
-            }
+        int exitCode = remote.execute(stdOutHandler, stdErrHandler, cmdLine);
+        if (exitCode != 0) {
+            throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with exit code %d", getBaseDomainName(), exitCode));
+        }
 
-            int exitCode = connection.execute(stdOutHandler, stdErrHandler, cmdLine);
-            if (exitCode != 0) {
-                throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with exit code %d", getBaseDomainName(), exitCode));
-            }
-
-            // doesn't seem to work, we don't get stderr returned overthere/sshj bug?
-            if (!stdErrCapture.getOutputLines().isEmpty()) {
-                throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with output to stderr: %s", getBaseDomainName(),
-                    stdErrCapture.getOutput()));
-            }
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
+        // doesn't seem to work, we don't get stderr returned overthere/sshj bug?
+        if (!stdErrCapture.getOutputLines().isEmpty()) {
+            throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with output to stderr: %s", getBaseDomainName(),
+                stdErrCapture.getOutput()));
         }
     }
 }
