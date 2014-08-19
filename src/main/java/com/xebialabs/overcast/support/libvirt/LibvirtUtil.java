@@ -1,6 +1,8 @@
 package com.xebialabs.overcast.support.libvirt;
 
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jdom2.Document;
 import org.libvirt.Connect;
@@ -15,6 +17,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 public final class LibvirtUtil {
     private static final Logger log = LoggerFactory.getLogger(LibvirtUtil.class);
+    private static final Lock connectLock = new ReentrantLock();
 
     private LibvirtUtil() {
     }
@@ -92,6 +95,18 @@ public final class LibvirtUtil {
             return domains;
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException("Unable to list defined domains", e);
+        }
+    }
+
+    /** Create a connection to libvirt in a thread safe manner. */
+    public static Connect getConnection(String libvirtURL, boolean readOnly) {
+        connectLock.lock();
+        try {
+            return new Connect(libvirtURL, readOnly);
+        } catch (LibvirtException e) {
+            throw new LibvirtRuntimeException("Unable to connect to " + libvirtURL, e);
+        } finally {
+            connectLock.unlock();
         }
     }
 }
