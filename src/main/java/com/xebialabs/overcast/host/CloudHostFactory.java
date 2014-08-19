@@ -47,8 +47,8 @@ import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
@@ -56,10 +56,12 @@ import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.COPY_SPEC;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT_DEFAULT;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.COPY_SPEC;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_FS_MAPPING_SUFFIX;
@@ -68,8 +70,6 @@ import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_DEFA
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_DEFAULT;
 import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT_DEFAULT;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT;
 
 public class CloudHostFactory {
 
@@ -163,7 +163,8 @@ public class CloudHostFactory {
                 List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.<String> emptyList());
                 CommandProcessor cmdProcessor = atCurrentDir();
 
-                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl, cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
+                return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl,
+                    cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
             }
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);
@@ -209,7 +210,7 @@ public class CloudHostFactory {
             options.set(ConnectionOptions.PASSWORD, "vagrant");
 
             OverthereConnectionBuilder cb = null;
-            if(OperatingSystemFamily.WINDOWS.toString().equals(vagrantOs)) {
+            if (OperatingSystemFamily.WINDOWS.toString().equals(vagrantOs)) {
                 options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.WINDOWS);
                 options.set(SshConnectionBuilder.CONNECTION_TYPE, CifsConnectionType.WINRM_INTERNAL);
 
