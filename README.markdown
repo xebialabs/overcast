@@ -141,12 +141,12 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 #### From maven repo
 
-[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.0.0](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.0.0)
+[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.3.0](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.3.0)
 
     <dependency>
         <groupId>com.xebialabs.cloud</groupId>
         <artifactId>overcast</artifactId>
-        <version>2.0.0</version>
+        <version>2.3.0</version>
     </dependency>
 
 #### From sources
