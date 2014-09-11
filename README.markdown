@@ -45,6 +45,7 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.tunnel.ports - Tunnel ports. Comma separated.
 
+{my-host-label}.tunnel.setupTimeout - Attempt to set up the tunnel for this many seconds, default 0.
 
 ##### Amazon EC2 properties
 
@@ -81,7 +82,6 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 {my-host-label}.vboxSnapshotUuid - UUID  of the snapshot
 
 {my-host-label}.vboxIp - IP address of the virtual machine
-
 
 ##### Libvirt host properties
 {my-host-label}.libvirtURL - URL of libvirt e.g. qemu+ssh://user@linux-box/system

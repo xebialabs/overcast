@@ -77,6 +77,8 @@ public class CloudHostFactory {
     public static final String TUNNEL_USERNAME_PROPERTY_SUFFIX = ".tunnel.username";
     public static final String TUNNEL_PASSWORD_PROPERTY_SUFFIX = ".tunnel" + OvercastProperties.PASSWORD_PROPERTY_SUFFIX;
     public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
+    public static final String TUNNEL_SETUP_TIMEOUT = ".tunnel.setupTimeout";
+    public static final String TUNNEL_DEFAULT_SETUP_TIMEOUT = "0";
 
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
@@ -240,7 +242,8 @@ public class CloudHostFactory {
 
         String tunnelPassword = getRequiredOvercastProperty(label + TUNNEL_PASSWORD_PROPERTY_SUFFIX);
         String ports = getRequiredOvercastProperty(label + TUNNEL_PORTS_PROPERTY_SUFFIX);
+        int timeout = Integer.parseInt(getOvercastProperty(label + TUNNEL_SETUP_TIMEOUT, TUNNEL_DEFAULT_SETUP_TIMEOUT));
         Map<Integer, Integer> portForwardMap = parsePortsProperty(ports);
-        return new TunneledCloudHost(actualHost, tunnelUsername, tunnelPassword, portForwardMap);
+        return new TunneledCloudHost(actualHost, tunnelUsername, tunnelPassword, portForwardMap, timeout);
     }
 }

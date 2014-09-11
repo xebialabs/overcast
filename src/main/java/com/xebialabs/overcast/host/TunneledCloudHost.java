@@ -18,7 +18,9 @@
 package com.xebialabs.overcast.host;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
 import java.net.ServerSocket;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,7 @@ class TunneledCloudHost implements CloudHost {
     private final CloudHost actualHost;
     private final String username;
     private final String password;
+    private final int setupTimeout;
     private final Map<Integer, Integer> portForwardMap;
 
     private SSHClient client;
@@ -58,7 +61,8 @@ class TunneledCloudHost implements CloudHost {
             return thread.getName();
         }
 
-        public static PortForwarder create(SSHClient client, String remoteHostName, String localHost, int localPort, String remoteHost, int remotePort) throws IOException {
+        public static PortForwarder create(SSHClient client, String remoteHostName, String localHost, int localPort, String remoteHost, int remotePort)
+            throws IOException {
             final LocalPortForwarder.Parameters params = new LocalPortForwarder.Parameters(localHost, localPort, remoteHost, remotePort);
 
             ServerSocket ss = new ServerSocket();
@@ -93,11 +97,13 @@ class TunneledCloudHost implements CloudHost {
         }
     }
 
-    TunneledCloudHost(CloudHost actualHost, String username, String password, Map<Integer, Integer> portForwardMap) {
+    TunneledCloudHost(CloudHost actualHost, String username, String password, Map<Integer, Integer> portForwardMap, int setupTimeout) {
+        checkArgument(setupTimeout >= 0, "setupTimeout must be >= 0");
         this.actualHost = actualHost;
         this.username = username;
         this.password = password;
         this.portForwardMap = portForwardMap;
+        this.setupTimeout = setupTimeout;
         this.portForwarders = Lists.newArrayList();
     }
 
@@ -107,11 +113,23 @@ class TunneledCloudHost implements CloudHost {
 
         client = new SSHClient();
         client.addHostKeyVerifier(new PromiscuousVerifier());
-
         try {
-            client.connect(actualHost.getHostName(), 22);
-            client.authPassword(username, password);
+            int i = setupTimeout;
 
+            while (i >= 0) {
+                try {
+                    client.connect(actualHost.getHostName(), 22);
+                    client.authPassword(username, password);
+                    break;
+                } catch (IOException e) {
+                    if (!(e instanceof ConnectException || e instanceof NoRouteToHostException)) {
+                        throw e;
+                    }
+                    logger.debug("Could not connect to '{}' to set up tunnels, retrying for {} seconds", actualHost.getHostName(), i);
+                    sleep(1);
+                    i--;
+                }
+            }
             for (Map.Entry<Integer, Integer> forwardedPort : portForwardMap.entrySet()) {
                 int remotePort = forwardedPort.getKey();
                 int localPort = forwardedPort.getValue();
@@ -150,5 +168,13 @@ class TunneledCloudHost implements CloudHost {
     public int getPort(int port) {
         checkArgument(portForwardMap.containsKey(port), "Port %d is not tunneled", port);
         return portForwardMap.get(port);
+    }
+
+    protected static void sleep(final int seconds) {
+        try {
+            Thread.sleep(seconds * 1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
