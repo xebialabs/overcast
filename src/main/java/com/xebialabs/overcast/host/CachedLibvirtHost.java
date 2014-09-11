@@ -31,8 +31,6 @@ import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 import com.xebialabs.overcast.OverthereUtil;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
@@ -51,6 +49,7 @@ import com.xebialabs.overthere.RuntimeIOException;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.xebialabs.overcast.OverthereUtil.overthereConnectionFromURI;
 import static com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler.capturingHandler;
 import static com.xebialabs.overthere.util.MultipleOverthereExecutionOutputHandler.multiHandler;
@@ -88,18 +87,18 @@ public class CachedLibvirtHost extends LibvirtHost {
         int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
         List<Filesystem> filesystemMappings, List<String> copySpec) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
-        this.provisionUrl = checkArgument(provisionUrl, "provisionUrl");
-        this.provisionCmd = checkArgument(provisionCmd, "provisionCmd");
+        this.provisionUrl = checkNotNullOrEmpty(provisionUrl, "provisionUrl");
+        this.provisionCmd = checkNotNullOrEmpty(provisionCmd, "provisionCmd");
         this.cacheExpirationUrl = cacheExpirationUrl;
-        this.cacheExpirationCmd = checkArgument(cacheExpirationCmd, "cacheExpirationCmd");
+        this.cacheExpirationCmd = checkNotNullOrEmpty(cacheExpirationCmd, "cacheExpirationCmd");
         this.provisionedbootDelay = provisionedbootDelay;
         this.provisionStartTimeout = provisionStartTimeout;
         this.cmdProcessor = cmdProcessor;
         this.copySpec = copySpec;
     }
 
-    private String checkArgument(String arg, String argName) {
-        Preconditions.checkArgument(arg != null && !arg.isEmpty(), "%s cannot be null or empty", argName);
+    private String checkNotNullOrEmpty(String arg, String argName) {
+        checkArgument(arg != null && !arg.isEmpty(), "%s cannot be null or empty", argName);
         return arg;
     }
 
@@ -107,7 +106,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     public void setup() {
         DomainWrapper cachedDomain = findFirstCachedDomain();
         if (cachedDomain == null) {
-            logger.info("No cached domain creating provisioned clone");
+            logger.info("No cached domain, creating a new cached domain");
 
             // create a clone to provision
             super.setup();
@@ -125,7 +124,7 @@ public class CachedLibvirtHost extends LibvirtHost {
             String baseName = super.getBaseDomainName();
             String cloneName = baseName + "-" + UUID.randomUUID().toString();
 
-            logger.info("Creating provisioned clone '{}' from base domain '{}'", cloneName, cachedDomain.getName());
+            logger.info("Creating clone '{}' from cached domain '{}'", cloneName, cachedDomain.getName());
             provisionedClone = cachedDomain.cloneWithBackingStore(cloneName);
         }
 
@@ -137,6 +136,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     protected void provisionDomain(String ip, List<String> copySpec, int startTimeout) {
         OverthereConnection remote = null;
         int seconds = startTimeout;
+        String baseDomainName = this.getBaseDomainName();
         try {
             // SSH connections will fail in getRemoteConnection
             // CIFS in the actual provisioning call
@@ -154,13 +154,13 @@ public class CachedLibvirtHost extends LibvirtHost {
                     if (!(cause instanceof ConnectException || cause instanceof NoRouteToHostException)) {
                         throw e;
                     }
-                    logger.info("Retrying provisioning of to " + ip);
+                    logger.debug("Could not connect to '{}' at '{}' for provisioning, retrying", baseDomainName, ip);
                 }
                 sleep(1);
                 seconds--;
             }
         } catch (RuntimeException e) {
-            logger.error("Failed to provision clone from '{}' cleaning up", this.getBaseDomainName());
+            logger.error("Failed to provision '{}' cleaning up", baseDomainName);
             super.getClone().destroyWithDisks();
             throw e;
         } finally {
@@ -170,7 +170,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         }
         // timed out => clean up
         super.getClone().destroyWithDisks();
-        throw new RuntimeException(String.format("Could not start provisioning clone from '%s' within %d seconds", this.getBaseDomainName(), startTimeout));
+        throw new RuntimeException(String.format("Could not start provisioning clone from '%s' within %d seconds", baseDomainName, startTimeout));
     }
 
     protected DomainWrapper findFirstCachedDomain() {
@@ -198,10 +198,10 @@ public class CachedLibvirtHost extends LibvirtHost {
                     deleteStaleDomain(new DomainWrapper(domain, doc));
                     continue;
                 }
-                logger.info("Found domain '{}' found for '{}'", domainName, baseDomainName);
+                logger.debug("Found domain '{}' found for '{}'", domainName, baseDomainName);
                 return new DomainWrapper(domain, doc);
             }
-            logger.info("No cached domain found for '{}' with checksum '{}'", baseDomainName, checkSum);
+            logger.debug("No cached domain found for '{}' with checksum '{}'", baseDomainName, checkSum);
             return null;
         } catch (LibvirtException e) {
             throw new LibvirtRuntimeException(e);
@@ -322,6 +322,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         if (copySpec.isEmpty()) {
             return;
         }
+        logger.info("Copying files into host: {}", copySpec);
         OverthereConnection local = LocalConnection.getLocalConnection();
         OverthereUtil.copyFiles(local, remote, copySpec);
     }
@@ -353,7 +354,7 @@ public class CachedLibvirtHost extends LibvirtHost {
 
         // doesn't seem to work, we don't get stderr returned overthere/sshj bug?
         if (!stdErrCapture.getOutputLines().isEmpty()) {
-            throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with output to stderr: %s", getBaseDomainName(),
+            throw new RuntimeException(String.format("Provisioning of clone from '%s' failed with output to stderr: '%s'", getBaseDomainName(),
                 stdErrCapture.getOutput()));
         }
     }
