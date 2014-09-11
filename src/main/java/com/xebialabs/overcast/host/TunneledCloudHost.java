@@ -136,9 +136,9 @@ class TunneledCloudHost implements CloudHost {
             client.disconnect();
         } catch (IOException ignored) {
             //
+        } finally {
+            actualHost.teardown();
         }
-
-        actualHost.teardown();
     }
 
     @Override
