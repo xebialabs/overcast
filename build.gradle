@@ -1,6 +1,6 @@
 // build.gradle for the overcast project
 
-version = '2.3.0-SNAPSHOT'
+version = '2.3.0'
 //version = '2.2.1' // Last released version
 
 group = 'com.xebialabs.cloud'
