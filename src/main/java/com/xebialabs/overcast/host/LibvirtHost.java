@@ -145,22 +145,30 @@ class LibvirtHost implements CloudHost {
 
     protected String waitUntilRunningAndGetIP(DomainWrapper clone) {
         String name = clone.getName();
-        int seconds = startTimeout;
-        DomainState state = DomainState.VIR_DOMAIN_NOSTATE;
-        while (state != DomainState.VIR_DOMAIN_RUNNING && seconds >= 0) {
-            state = clone.getState();
-            logger.debug("Waiting {}s for clone '{}' to become running ({})", seconds, name, state);
-            sleep(1);
-            seconds--;
-        }
-        if (state != DomainState.VIR_DOMAIN_RUNNING) {
-            String msg = String.format("Clone '%s' not running after %d seconds (state=%s)", name, startTimeout, state);
-            throw new RuntimeException(msg);
-        }
-        logger.info("Clone '{}' running determining IP", name, startTimeout, state);
+        try {
+            int seconds = startTimeout;
+            DomainState state = DomainState.VIR_DOMAIN_NOSTATE;
+            while (state != DomainState.VIR_DOMAIN_RUNNING && seconds >= 0) {
+                state = clone.getState();
+                logger.debug("Waiting {}s for clone '{}' to become running ({})", seconds, name, state);
+                sleep(1);
+                seconds--;
+            }
+            if (state != DomainState.VIR_DOMAIN_RUNNING) {
+                String msg = String.format("Clone '%s' not running after %d seconds (state=%s)", name, startTimeout, state);
+                throw new RuntimeException(msg);
+            }
+            logger.info("Clone '{}' running determining IP", name, startTimeout, state);
 
-        String mac = clone.getMac(networkName);
-        return ipLookupStrategy.lookup(mac);
+            String mac = clone.getMac(networkName);
+            return ipLookupStrategy.lookup(mac);
+        } catch (RuntimeException bootupFailure) {
+            // something went wrong booting up or getting an IP to access the machine no point
+            // in keeping it around.
+            logger.error("Clone '{}' did not reach a usable state destroying. ({})", name, bootupFailure.getMessage());
+            clone.destroyWithDisks();
+            throw bootupFailure;
+        }
     }
 
     protected void bootDelay(int delaySeconds) {
