@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -20,6 +21,7 @@ import com.typesafe.config.ConfigValue;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 
 /**
@@ -88,6 +90,28 @@ public class OvercastProperties {
             }
         }
         return value;
+    }
+
+    public static boolean getOvercastBooleanProperty(String key) {
+        return getOvercastBooleanProperty(key, false);
+    }
+
+    public static boolean getOvercastBooleanProperty(String key, boolean defaultValue) {
+        boolean value;
+        Config overcastConfig = getOvercastConfig();
+        if (overcastConfig.hasPath(key)) {
+            value = overcastConfig.getBoolean(key);
+        } else {
+            value = defaultValue;
+        }
+        if (logger.isTraceEnabled()) {
+            logger.trace("Overcast property {}={}", key, key.endsWith(PASSWORD_PROPERTY_SUFFIX) ? "********" : value);
+        }
+        return value;
+    }
+
+    public static List<String> getOvercastListProperty(String key) {
+        return getOvercastListProperty(key, Lists.<String>newArrayList());
     }
 
     public static List<String> getOvercastListProperty(String key, List<String> defaultValue) {

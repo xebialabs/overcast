@@ -26,11 +26,10 @@ import org.libvirt.Connect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
 import com.xebialabs.overcast.OvercastProperties;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
+import com.xebialabs.overcast.support.docker.Config;
 import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.Filesystem.AccessMode;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
@@ -46,11 +45,8 @@ import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
-import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
-import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.xebialabs.overcast.OvercastProperties.*;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
@@ -131,7 +127,22 @@ public class CloudHostFactory {
             return createLibvirtHost(label, kvmBaseDomain);
         }
 
+        String dockerImage = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX);
+        if (dockerImage != null) {
+            return createDockerHost(label, dockerImage);
+        }
+
         throw new IllegalStateException("No valid configuration has been specified for host label " + label);
+    }
+
+    private static CloudHost createDockerHost(String label, String imageName) {
+
+        String hostname = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
+        String image = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX, Config.DOCKER_DEFAULT_IMAGE);
+        List<String> command = getOvercastListProperty(label + Config.DOCKER_COMMAND_SUFFIX);
+        boolean exposeAllPorts = getOvercastBooleanProperty(label + Config.DOCKER_EXPOSE_ALL_PORTS_SUFFIX);
+
+        return new DockerHost(hostname, image, command, exposeAllPorts);
     }
 
     private static CloudHost createLibvirtHost(String label, String kvmBaseDomain) {
@@ -143,7 +154,7 @@ public class CloudHostFactory {
         int bootDelay = Integer.valueOf(getOvercastProperty(label + LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX, LIBVIRT_BOOT_DELAY_DEFAULT));
         String networkName = getOvercastProperty(label + LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX);
 
-        List<Filesystem> fsMappings = Lists.newArrayList();
+        List<Filesystem> fsMappings = newArrayList();
         Set<String> mappingNames = getOvercastPropertyNames(label + LIBVIRT_FS_MAPPING_SUFFIX);
         for (String mapping : mappingNames) {
             fsMappings.add(createFilesystem(mapping, label + LIBVIRT_FS_MAPPING_SUFFIX + "." + mapping));

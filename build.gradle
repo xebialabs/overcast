@@ -36,6 +36,7 @@ dependencies {
     compile 'org.jdom:jdom2:2.0.5'
     compile "org.apache.httpcomponents:httpcore:${apacheHttpVersion}"
     compile "org.apache.httpcomponents:httpclient:${apacheHttpVersion}"
+    compile "com.spotify:docker-client:2.4.2"
 
     compile 'com.typesafe:config:1.2.1'
 
@@ -171,6 +172,15 @@ uploadArchives {
                         name 'Ric Klaren'
                         url 'http://www.xebialabs.com/'
                         email 'rklaren@xebialabs.com'
+                        roles {
+                            role 'Developer'
+                        }
+                    }
+                    developer {
+                        id 'pvanderende'
+                        name 'Paul van der Ende'
+                        url 'http://www.xebialabs.com/'
+                        email 'pvanderende@xebialabs.com'
                         roles {
                             role 'Developer'
                         }
