@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DockerException;
+import com.spotify.docker.client.ImageNotFoundException;
 import com.spotify.docker.client.messages.*;
 
 import com.xebialabs.overcast.host.DockerHost;
@@ -22,8 +24,6 @@ public class DockerDriver {
     public DockerDriver(final DockerHost dockerHost) {
         this.dockerHost = dockerHost;
         dockerClient = new DefaultDockerClient(dockerHost.getUri());
-
-        buildImageConfig();
     }
 
     private void buildImageConfig() {
@@ -31,21 +31,26 @@ public class DockerDriver {
         if(dockerHost.getCommand() != null){
             configBuilder.cmd(dockerHost.getCommand());
         }
+        if(dockerHost.getEnv() != null){
+            configBuilder.env(dockerHost.getEnv());
+        }
+        if(dockerHost.getExposedPorts() != null) {
+            configBuilder.exposedPorts(dockerHost.getExposedPorts());
+        }
+
         config = configBuilder.build();
     }
 
-
-    public void pullImage(){
-        try {
-            dockerClient.pull(dockerHost.getImage(), new ProcessHandlerLogger());
-        } catch (Exception e) {
-            logger.error("Error while pulling container: ", e);
-        }
-    }
-
     public void runContainer() {
+        buildImageConfig();
+
         try {
-            containerId = dockerClient.createContainer(config).id();
+            try {
+                createImage();
+            } catch(ImageNotFoundException e){
+                dockerClient.pull(dockerHost.getImage(), new ProcessHandlerLogger());
+                createImage();
+            }
 
             if(dockerHost.isExposeAllPorts()) {
                 HostConfig hostConfig = HostConfig.builder().publishAllPorts(true).build();
@@ -63,11 +68,21 @@ public class DockerDriver {
 
     }
 
+    private void createImage() throws DockerException, InterruptedException {
+        if(dockerHost.getName() == null){
+            containerId = dockerClient.createContainer(config).id();
+        } else {
+            containerId = dockerClient.createContainer(config, dockerHost.getName()).id();
+        }
+    }
+
 
     public void killAndRemoveContainer() {
         try {
             dockerClient.killContainer(containerId);
-            dockerClient.removeContainer(containerId);
+            if(dockerHost.isRemove()) {
+                dockerClient.removeContainer(containerId);
+            }
         } catch (Exception e) {
             logger.error("Error while tearing down docker host: ", e);
         }
@@ -75,13 +90,8 @@ public class DockerDriver {
 
     public int getPort(int port) {
         ArrayList<PortBinding> bindings = (ArrayList<PortBinding>) portMappings.get(port+"/tcp");
-        if(bindings != null) {
-            PortBinding portBinding = bindings.get(0);
-            if (portBinding != null) {
-                return Integer.parseInt(portBinding.hostPort());
-            } else {
-                throw new IllegalArgumentException("Port not available");
-            }
+        if(bindings != null && bindings.size() > 0) {
+            return Integer.parseInt(bindings.get(0).hostPort());
         } else {
             throw new IllegalArgumentException("Port not available");
         }

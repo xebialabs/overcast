@@ -42,7 +42,7 @@ dependencies {
 
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile 'junit:junit:4.10'
+    testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.9.0'
 
     testRuntime 'ch.qos.logback:logback-classic:1.0.9'

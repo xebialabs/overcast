@@ -46,6 +46,7 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static com.xebialabs.overcast.OvercastProperties.*;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
@@ -137,12 +138,18 @@ public class CloudHostFactory {
 
     private static CloudHost createDockerHost(String label, String imageName) {
 
-        String hostname = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
         String image = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX, Config.DOCKER_DEFAULT_IMAGE);
-        List<String> command = getOvercastListProperty(label + Config.DOCKER_COMMAND_SUFFIX);
-        boolean exposeAllPorts = getOvercastBooleanProperty(label + Config.DOCKER_EXPOSE_ALL_PORTS_SUFFIX);
+        String dockerHostName = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
+        DockerHost dockerHost = new DockerHost(image, dockerHostName);
 
-        return new DockerHost(hostname, image, command, exposeAllPorts);
+        dockerHost.setName(getOvercastProperty(label + Config.DOCKER_NAME_SUFFIX));
+        dockerHost.setCommand(getOvercastListProperty(label + Config.DOCKER_COMMAND_SUFFIX));
+        dockerHost.setExposeAllPorts(getOvercastBooleanProperty(label + Config.DOCKER_EXPOSE_ALL_PORTS_SUFFIX));
+        dockerHost.setRemove(getOvercastBooleanProperty(label + Config.DOCKER_REMOVE_SUFFIX));
+        dockerHost.setEnv(getOvercastListProperty(label + Config.DOCKER_ENV_SUFFIX));
+        dockerHost.setExposedPorts(newHashSet(getOvercastListProperty(label + Config.DOCKER_EXPOSED_PORTS_SUFFIX)));
+
+        return dockerHost;
     }
 
     private static CloudHost createLibvirtHost(String label, String kvmBaseDomain) {
