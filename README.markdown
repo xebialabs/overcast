@@ -10,6 +10,7 @@ A Java library to test against hosts in the cloud.
    - Vagrant hosts (Set up to the running state, tear down to the initial state)
    - VirtualBox hosts (Load snapshot and start, power off)
    - Libvirt managed KVM hosts (Fast clones using backing store, provisioning)
+   - Docker containers
    - Tunneled cloud hosts (Reaching target host via ssh tunnel)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
@@ -20,6 +21,7 @@ A Java library to test against hosts in the cloud.
 - Virtualbox version >= 4.2
 - Vagrant version >= 1.2.7
 - Qemu/KVM version that supports domain metadata (QEMU-KVM 1.4.2 (Fedora 19), 2.0.0 (Ubuntu LTS 14))
+- Docker >= 1.2
 
 ### Usage
 
@@ -121,6 +123,34 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 {my-host-label}.fsMapping.{target}.accessMode - Access mode, one of passthrough, mapped, squash (default: passthrough)
 
 {my-host-label}.fsMapping.{target}.readOnly - Whether the mount will be readOnly (default: true)
+
+#### Docker concepts
+During `setup()`, Overcast will create and start a new Docker container. If the image specified is not available in the local registry, it will be automatically pulled from the central Docker repository.
+
+During `teardown()`, it will stop the container and optionally remove the container (see remove property).
+
+Calling `getHostName()` will return the hostname of the Docker Host, assuming the container will run on that host, with the exposed ports accessible on the Docker host.
+
+Calling `getPort(port)` will translate the internal port (passed as an argument) to the port externally exposed by the Docker Container. The port number is dynamically determined by Docker. The port range used for dynamic allocation is 49153 to 65535 (defined by Docker).
+
+We use the [Spotify Docker Client](https://github.com/docker-java/docker-java) library, and therefore only TCP sockets are supported, no UNIX sockets.
+
+##### Docker container properties
+{my-host-label}.dockerHost - The hostname of the Docker Host. (default: `http://localhost:2375`)
+
+{my-host-label}.dockerImage - The Docker image that will be run. (required)
+
+{my-host-label}.name - The name the container will get. Warning: Docker container names must be unique, even when the container is stopped. Use in combination with `remove` to make sure you can start a container with the same name again. Also not suitable for parallel testing. (default: random name defined by docker)
+
+{my-host-label}.remove - Boolean. If true, the container will be removed during teardown. (default: false)
+
+{my-host-label}.exposedPorts - List of ports to expose. Use in combination with `exposeAllPorts`. Must include the protocol. Currently only `tcp` is supported. For example: `["12345/tcp", "23456/tcp"]`.
+
+{my-host-label}.exposeAllPorts - Boolean. If true, Docker will expose the ports defined by the Docker image (see [EXPOSE](https://docs.docker.com/reference/builder/#expose)), and additionally the ports defined in overcast property `exposedPorts`. (default: false)
+
+{my-host-label}.command - Command to execute within the container. For example: `["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"]`
+
+{my-host-label}.env - Environment variables that will be exported in the container. For example: `["MYVAR1=AAA", "MYVAR2=BBB", "MYVAR3=CCC"]`.
 
 #### Set up and Tear down
 
