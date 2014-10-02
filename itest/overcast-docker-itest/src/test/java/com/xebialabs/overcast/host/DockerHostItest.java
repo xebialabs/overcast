@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 
-public class DockerHostTest {
+public class DockerHostItest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -34,19 +34,22 @@ public class DockerHostTest {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerMinimalConfig");
         assertThat(itestHost, notNullValue());
 
+        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        String containerId = null;
+
         try {
             itestHost.setup();
             assertThat(itestHost.getHostName(), equalTo("localhost"));
-            assertThat(itestHost.getPort(27017), greaterThanOrEqualTo(49153));
 
-            DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
-            ContainerInfo containerInfo = dockerClient.inspectContainer(itestHost.getDockerDriver().getContainerId());
-            assertThat(containerInfo.config().image(), equalTo("mongo"));
-            assertThat(containerInfo.networkSettings().ports(), not(nullValue()));
-            assertThat(containerInfo.networkSettings().ports().size(), equalTo(1));
+            dockerClient = new DefaultDockerClient(itestHost.getUri());
+            containerId = itestHost.getDockerDriver().getContainerId();
+            dockerClient.inspectContainer(containerId);
         } finally {
             itestHost.teardown();
         }
+
+        thrown.expect(ContainerNotFoundException.class);
+        dockerClient.inspectContainer(containerId);
     }
 
     @Test
@@ -87,6 +90,6 @@ public class DockerHostTest {
         dockerClient.inspectContainer(containerId);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(DockerHostTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerHostItest.class);
 
 }
