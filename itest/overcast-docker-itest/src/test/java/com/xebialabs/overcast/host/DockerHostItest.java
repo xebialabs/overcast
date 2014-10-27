@@ -90,6 +90,31 @@ public class DockerHostItest {
         dockerClient.inspectContainer(containerId);
     }
 
+    @Test
+    public void shouldRunWithImageConfig() throws DockerException, InterruptedException {
+
+
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerWithImage");
+        assertThat(itestHost, notNullValue());
+
+        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        String containerId = null;
+
+        try {
+            itestHost.setup();
+
+            containerId = itestHost.getDockerDriver().getContainerId();
+            ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+
+
+        } finally {
+            itestHost.teardown();
+        }
+
+        thrown.expect(ContainerNotFoundException.class);
+        dockerClient.inspectContainer(containerId);
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(DockerHostItest.class);
 
 }

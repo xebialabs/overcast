@@ -130,13 +130,13 @@ public class CloudHostFactory {
 
         String dockerImage = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX);
         if (dockerImage != null) {
-            return createDockerHost(label, dockerImage);
+            return createDockerHost(label);
         }
 
         throw new IllegalStateException("No valid configuration has been specified for host label " + label);
     }
 
-    private static CloudHost createDockerHost(String label, String imageName) {
+    private static CloudHost createDockerHost(String label) {
 
         String image = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX, Config.DOCKER_DEFAULT_IMAGE);
         String dockerHostName = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
@@ -148,6 +148,8 @@ public class CloudHostFactory {
         dockerHost.setRemove(getOvercastBooleanProperty(label + Config.DOCKER_REMOVE_SUFFIX));
         dockerHost.setEnv(getOvercastListProperty(label + Config.DOCKER_ENV_SUFFIX));
         dockerHost.setExposedPorts(newHashSet(getOvercastListProperty(label + Config.DOCKER_EXPOSED_PORTS_SUFFIX)));
+        dockerHost.setBuildPath(getOvercastProperty(label + Config.DOCKER_BUILD_PATH_SUFFIX));
+        dockerHost.setCertPath(getOvercastProperty(label + Config.DOCKER_CERT_PATH_SUFFIX));
 
         return dockerHost;
     }

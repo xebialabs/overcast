@@ -14,6 +14,8 @@ public class DockerHost implements CloudHost {
     private final DockerDriver dockerDriver;
 
     private String image;
+    private String buildPath;
+    private String certPath;
     private List<String> command;
     private boolean exposeAllPorts = false;
     private URI uri;
@@ -111,6 +113,22 @@ public class DockerHost implements CloudHost {
 
     public void setExposedPorts(final Set<String> exposedPorts) {
         this.exposedPorts = exposedPorts;
+    }
+
+    public String getBuildPath() {
+        return buildPath;
+    }
+
+    public void setBuildPath(final String buildPath) {
+        this.buildPath = buildPath;
+    }
+
+    public String getCertPath() {
+        return certPath;
+    }
+
+    public void setCertPath(final String certPath) {
+        this.certPath = certPath;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);
