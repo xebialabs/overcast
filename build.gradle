@@ -1,5 +1,15 @@
 // build.gradle for the overcast project
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+    }
+}
+
 version = '2.5.0-SNAPSHOT'
 //version = '2.4.0' // Last released version
 
@@ -17,6 +27,13 @@ allprojects {
 
     apply plugin: 'idea'
     apply plugin: 'eclipse'
+    apply plugin: 'license'
+
+    license {
+        header rootProject.file("${rootProject.projectDir}/gradle/license-header")
+        ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        ext.name = 'XebiaLabs'
+    }
 }
 
 apply plugin: 'signing'
