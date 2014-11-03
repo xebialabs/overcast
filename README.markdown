@@ -179,6 +179,8 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
         <version>2.4.0</version>
     </dependency>
 
+Note: the libvirt JNA wrapper may require adding the libvirt.org repository to your build: [http://www.libvirt.org/maven2/](http://www.libvirt.org/maven2/)
+
 #### From sources
 
    gradle build
