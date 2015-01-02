@@ -83,7 +83,7 @@ The `overcast.conf` files are in [Typesafe Config HOCON syntax](https://github.c
 
 {my-host-label}.vboxSnapshotUuid - UUID  of the snapshot
 
-{my-host-label}.vboxIp - IP address of the virtual machine
+{my-host-label}.vboxBoxIp - IP address of the virtual machine
 
 ##### Libvirt host properties
 {my-host-label}.libvirtURL - URL of libvirt e.g. qemu+ssh://user@linux-box/system
