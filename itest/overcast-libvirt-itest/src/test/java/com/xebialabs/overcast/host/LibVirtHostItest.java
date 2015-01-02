@@ -18,12 +18,11 @@ package com.xebialabs.overcast.host;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jdom2.Document;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,17 +37,13 @@ import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 import com.xebialabs.overcast.OvercastProperties;
-import com.xebialabs.overcast.host.CachedLibvirtHost;
-import com.xebialabs.overcast.host.CloudHost;
-import com.xebialabs.overcast.host.CloudHostFactory;
-import com.xebialabs.overcast.host.LibvirtHost;
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
 import com.xebialabs.overcast.support.libvirt.Metadata;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.transform;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
