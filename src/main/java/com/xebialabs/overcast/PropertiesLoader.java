@@ -31,6 +31,7 @@ public class PropertiesLoader {
 
     public static final String OVERCAST_CONF_FILE = "overcast.conf";
     public static final String OVERCAST_USER_DIR = ".overcast";
+    public static final String OVERCAST_CONF_FILE_PROPERTY = "overcast.conf.file";
 
     private static String getUserOvercastConfPath() {
         return new File(new File(System.getProperty("user.home"), OVERCAST_USER_DIR), OVERCAST_CONF_FILE).getAbsolutePath();
@@ -40,7 +41,9 @@ public class PropertiesLoader {
         return ConfigFactory.systemProperties()
             .withFallback(loadOvercastConfigFromFile(getUserOvercastConfPath()))
             .withFallback(loadOvercastConfigFromFile(OVERCAST_CONF_FILE))
-            .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE)).resolve();
+            .withFallback(loadOvercastConfigFromFile(System.getProperty(OVERCAST_CONF_FILE_PROPERTY)))
+            .withFallback(loadOvercastConfigFromClasspath(OVERCAST_CONF_FILE))
+            .resolve();
     }
 
     /** Load {@link Config} from 'file' but do not resolve it. */
@@ -59,6 +62,11 @@ public class PropertiesLoader {
 
     /** Load {@link Config} from 'file' but do not resolve it. */
     static Config loadOvercastConfigFromFile(String file) {
+
+        if (file == null) {
+            return ConfigFactory.empty();
+        }
+
         File f = new File(file);
         if (!f.exists()) {
             logger.warn("File {} not found.", f.getAbsolutePath());
