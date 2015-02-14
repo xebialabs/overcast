@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,6 +38,11 @@ public class OvercastPropertiesTest {
     @Before
     public void setup() {
         System.setProperty("user.home", new File("src/test/resources/fake-home").getAbsolutePath());
+    }
+
+    @After
+    public void teardown() {
+        System.clearProperty("overcast.conf.file");
     }
 
     @Test
@@ -91,6 +98,37 @@ public class OvercastPropertiesTest {
         OvercastProperties.reloadOvercastProperties();
 
         assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromHome"));
+    }
+
+    @Test
+    public void testPropertyHasPrecedenceOverClasspath() throws IOException {
+
+        System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
+        System.clearProperty("precedenceTestValue");
+        System.setProperty("overcast.conf.file", "src/test/resources/property-path/overcast.conf");
+        
+        File cfg = new File("overcast.conf");
+        File bkp = new File("backup.conf");
+        
+        try {
+            FileUtils.moveFile(cfg, bkp);
+            OvercastProperties.reloadOvercastProperties();
+            assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromProperty"));
+        } finally {
+            FileUtils.moveFile(bkp, cfg);
+        }
+    }
+
+    @Test
+    public void testWorkDirHasPrecedenceOverProperty() throws IOException {
+
+        System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
+        System.clearProperty("precedenceTestValue");
+        System.setProperty("overcast.conf.file", "src/test/resources/property-path/overcast.conf");
+        
+        OvercastProperties.reloadOvercastProperties();
+
+        assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromWork"));
     }
 
     @Test

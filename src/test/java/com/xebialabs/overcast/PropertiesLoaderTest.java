@@ -24,6 +24,8 @@ import com.typesafe.config.Config;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 public class PropertiesLoaderTest {
 
@@ -43,6 +45,13 @@ public class PropertiesLoaderTest {
     public void shouldLoadPropertiesFromPath() throws IOException {
         Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/overcast.conf").resolve();
         assertThat(cfg.getString("unittestHost.someProp"), is("someValue"));
+    }
+
+    @Test
+    public void shouldLoadEmptyPropertiesFromNull() throws IOException {
+        Config cfg = PropertiesLoader.loadOvercastConfigFromFile(null).resolve();
+        assertNotNull(cfg);
+        assertTrue(cfg.isEmpty());
     }
 
     @Test
