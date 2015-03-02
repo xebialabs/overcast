@@ -171,12 +171,12 @@ Also Overcast is used for integration tests of [Overthere](https://github.com/xe
 
 #### From maven repo
 
-[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.5.0](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.5.0)
+[http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.5.1](http://mvnrepository.com/artifact/com.xebialabs.cloud/overcast/2.5.1)
 
     <dependency>
         <groupId>com.xebialabs.cloud</groupId>
         <artifactId>overcast</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
     </dependency>
 
 Note: the libvirt JNA wrapper may require adding the libvirt.org repository to your build: [http://www.libvirt.org/maven2/](http://www.libvirt.org/maven2/)
