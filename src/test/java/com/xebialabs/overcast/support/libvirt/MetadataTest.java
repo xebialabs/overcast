@@ -45,7 +45,7 @@ public class MetadataTest {
             + "<parent_domain>basedom</parent_domain>"
             + "<provisioned_with>provcmd</provisioned_with>"
             + "<provisioned_checksum>expire</provisioned_checksum>"
-            + "<creation_time>1970-01-01T01:00:00Z</creation_time>"
+            + "<creation_time>1970-01-01T00:00:00Z</creation_time>"
             + "</overcast_metadata>"
             + "</metadata>"
             + "</domain>";
@@ -59,7 +59,7 @@ public class MetadataTest {
         + "<parent_domain>basedom2</parent_domain>"
         + "<provisioned_with>provcmd2</provisioned_with>"
         + "<provisioned_checksum>expire2</provisioned_checksum>"
-        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
+        + "<creation_time>2009-02-13T23:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -71,7 +71,7 @@ public class MetadataTest {
         + "<metadata>"
         + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
         + "<parent_domain>basedom2</parent_domain>"
-        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
+        + "<creation_time>2009-02-13T23:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -81,7 +81,7 @@ public class MetadataTest {
         Document doc = stringToDocument(XML_WITHOUT_METADATA);
         Metadata.updateProvisioningMetadata(doc, "basedom", "provcmd", "expire", new Date(0));
         String val = documentToRawString(doc);
-        Assert.assertEquals(XML_WITH_METADATA, val);
+        assertThat(XML_WITH_METADATA, equalTo(val));
     }
 
     @Test
