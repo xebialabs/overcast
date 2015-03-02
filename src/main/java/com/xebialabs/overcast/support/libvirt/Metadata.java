@@ -18,6 +18,7 @@ package com.xebialabs.overcast.support.libvirt;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -60,6 +61,7 @@ public class Metadata {
     public static final String PROVISIONED_CHECKSUM = "provisioned_checksum";
     public static final String PROVISIONED_WITH = "provisioned_with";
     public static final String PARENT_DOMAIN = "parent_domain";
+    private static final TimeZone METADATA_TIMEZONE = TimeZone.getTimeZone("UTC");
 
     private final String parentDomain;
     private final String provisionedWith;
@@ -143,6 +145,7 @@ public class Metadata {
 
     private static Element createProvisioningMetadata(String parentDomain, String provisionedWith, String provisionedChecksum, Date provisionedAt) {
         SimpleDateFormat sdf = new SimpleDateFormat(XML_DATE_FORMAT);
+        sdf.setTimeZone(METADATA_TIMEZONE);
 
         Element metadata = new Element(METADATA);
         Element ocmetadata = new Element(OVERCAST_METADATA, METADATA_NS_V1);
@@ -158,6 +161,7 @@ public class Metadata {
 
     private static Element createCloningMetadata(String parentDomain, Date creationTime) {
         SimpleDateFormat sdf = new SimpleDateFormat(XML_DATE_FORMAT);
+        sdf.setTimeZone(METADATA_TIMEZONE);
 
         Element metadata = new Element(METADATA);
         Element ocmetadata = new Element(OVERCAST_METADATA, METADATA_NS_V1);
