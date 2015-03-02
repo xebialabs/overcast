@@ -10,8 +10,8 @@ buildscript {
     }
 }
 
-version = '2.5.1'
-//version = '2.5.0' // Last released version
+version = '2.6.0'
+//version = '2.5.1' // Last released version
 
 group = 'com.xebialabs.cloud'
 
