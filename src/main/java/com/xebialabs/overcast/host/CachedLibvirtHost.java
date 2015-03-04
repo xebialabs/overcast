@@ -305,7 +305,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     protected DomainWrapper createProvisionedClone() {
         DomainWrapper base = super.getClone();
         String baseName = super.getBaseDomainName();
-        String cloneName = baseName + "-" + UUID.randomUUID().toString();
+        String cloneName = baseName + "-instance-" + UUID.randomUUID().toString();
 
         logger.info("Creating clone '{}' from provisioned domain '{}'", cloneName, base.getName());
         return base.cloneWithBackingStore(cloneName);

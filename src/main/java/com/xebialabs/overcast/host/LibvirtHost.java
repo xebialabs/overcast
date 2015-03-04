@@ -136,7 +136,7 @@ class LibvirtHost implements CloudHost {
 
     protected DomainWrapper createClone() {
         String baseName = baseDomain.getName();
-        String cloneName = baseName + "-" + UUID.randomUUID().toString();
+        String cloneName = baseName + "-provisioned-" + UUID.randomUUID().toString();
         logger.info("Creating clone '{}' from base domain '{}'", cloneName, baseName);
         return baseDomain.cloneWithBackingStore(cloneName, filesystemMappings);
     }
