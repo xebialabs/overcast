@@ -58,7 +58,6 @@ public class Metadata {
     public static final String METADATA = "metadata";
     public static final String OVERCAST_METADATA = "overcast_metadata";
     public static final String CREATION_TIME = "creation_time";
-    public static final String TYPE_OF_IMAGE = "type_of_image";
     public static final String PROVISIONED_CHECKSUM = "provisioned_checksum";
     public static final String PROVISIONED_WITH = "provisioned_with";
     public static final String PARENT_DOMAIN = "parent_domain";
@@ -68,10 +67,6 @@ public class Metadata {
     private final String provisionedWith;
     private final String provisionedChecksum;
     private final Date creationTime;
-
-    private enum TypeOfImage {
-        BASE, PROVISIONED, INSTANCE
-    }
 
     public Metadata(String parentDomain, String provisionedWith, String provisionedChecksum, Date creationTime) {
         Preconditions.checkNotNull(creationTime, "creationTime cannot be null");
@@ -160,7 +155,6 @@ public class Metadata {
         ocmetadata.addContent(new Element(PROVISIONED_WITH, METADATA_NS_V1).setText(provisionedWith));
         ocmetadata.addContent(new Element(PROVISIONED_CHECKSUM, METADATA_NS_V1).setText(provisionedChecksum));
         ocmetadata.addContent(new Element(CREATION_TIME, METADATA_NS_V1).setText(sdf.format(provisionedAt)));
-        ocmetadata.addContent(new Element(TYPE_OF_IMAGE, METADATA_NS_V1).setText(TypeOfImage.PROVISIONED.name()));
 
         return metadata;
     }
@@ -175,7 +169,6 @@ public class Metadata {
 
         ocmetadata.addContent(new Element(PARENT_DOMAIN, METADATA_NS_V1).setText(parentDomain));
         ocmetadata.addContent(new Element(CREATION_TIME, METADATA_NS_V1).setText(sdf.format(creationTime)));
-        ocmetadata.addContent(new Element(TYPE_OF_IMAGE, METADATA_NS_V1).setText(TypeOfImage.INSTANCE.name()));
 
         return metadata;
     }

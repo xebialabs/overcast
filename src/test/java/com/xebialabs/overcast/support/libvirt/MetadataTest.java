@@ -45,8 +45,7 @@ public class MetadataTest {
             + "<parent_domain>basedom</parent_domain>"
             + "<provisioned_with>provcmd</provisioned_with>"
             + "<provisioned_checksum>expire</provisioned_checksum>"
-            + "<creation_time>1970-01-01T01:00:00Z</creation_time>"
-            + "<type_of_image>PROVISIONED</type_of_image>"
+            + "<creation_time>1970-01-01T00:00:00Z</creation_time>"
             + "</overcast_metadata>"
             + "</metadata>"
             + "</domain>";
@@ -60,8 +59,7 @@ public class MetadataTest {
         + "<parent_domain>basedom2</parent_domain>"
         + "<provisioned_with>provcmd2</provisioned_with>"
         + "<provisioned_checksum>expire2</provisioned_checksum>"
-        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
-        + "<type_of_image>PROVISIONED</type_of_image>"
+        + "<creation_time>2009-02-13T23:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -73,8 +71,7 @@ public class MetadataTest {
         + "<metadata>"
         + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
         + "<parent_domain>basedom2</parent_domain>"
-        + "<creation_time>2009-02-14T00:31:31Z</creation_time>"
-        + "<type_of_image>INSTANCE</type_of_image>"
+        + "<creation_time>2009-02-13T23:31:31Z</creation_time>"
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
@@ -109,7 +106,6 @@ public class MetadataTest {
             + "<name>centos6</name>"
             + "<uuid>e5905e8d-4698-2b41-59a7-f4a98d9aa61e</uuid>"
             + "<memory unit='KiB'>1048576</memory>"
-            + "<type_of_image>INSTANCE</type_of_image>"
             + "</domain>");
         assertThat(Metadata.fromXml(xml), nullValue());
     }
