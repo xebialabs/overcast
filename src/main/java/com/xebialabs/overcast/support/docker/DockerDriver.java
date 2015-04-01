@@ -52,6 +52,9 @@ public class DockerDriver {
         if(dockerHost.getExposedPorts() != null) {
             configBuilder.exposedPorts(dockerHost.getExposedPorts());
         }
+        if (dockerHost.isTty()) {
+            configBuilder.tty(true);
+        }
 
         config = configBuilder.build();
     }

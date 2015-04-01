@@ -143,6 +143,7 @@ public class CloudHostFactory {
         dockerHost.setName(getOvercastProperty(label + Config.DOCKER_NAME_SUFFIX));
         dockerHost.setCommand(getOvercastListProperty(label + Config.DOCKER_COMMAND_SUFFIX));
         dockerHost.setExposeAllPorts(getOvercastBooleanProperty(label + Config.DOCKER_EXPOSE_ALL_PORTS_SUFFIX));
+        dockerHost.setTty(getOvercastBooleanProperty(label + Config.DOCKER_TTY_SUFFIX));
         dockerHost.setRemove(getOvercastBooleanProperty(label + Config.DOCKER_REMOVE_SUFFIX));
         dockerHost.setRemoveVolume(getOvercastBooleanProperty(label + Config.DOCKER_REMOVE_VOLUME_SUFFIX));
         dockerHost.setEnv(getOvercastListProperty(label + Config.DOCKER_ENV_SUFFIX));
