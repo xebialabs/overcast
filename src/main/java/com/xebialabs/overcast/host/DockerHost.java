@@ -37,6 +37,8 @@ public class DockerHost implements CloudHost {
     private List<String> env;
     private Set<String> exposedPorts;
 
+    private boolean tty;
+
     public DockerHost(String image, String dockerHostName) {
         try {
             this.uri = new URI(dockerHostName);
@@ -126,6 +128,14 @@ public class DockerHost implements CloudHost {
 
     public void setExposedPorts(final Set<String> exposedPorts) {
         this.exposedPorts = exposedPorts;
+    }
+
+    public boolean isTty() {
+        return tty;
+    }
+
+    public void setTty(boolean tty) {
+        this.tty = tty;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);

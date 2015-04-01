@@ -36,7 +36,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class DockerHostItest {
 
@@ -96,6 +98,31 @@ public class DockerHostItest {
             assertThat(containerInfo.config().env(), hasItem("MYVAR2=BBB"));
             assertThat(containerInfo.config().env(), hasItem("MYVAR3=CCC"));
             assertThat(containerInfo.config().cmd(), Matchers.equalTo((List<String>) newArrayList("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")));
+            assertFalse(containerInfo.config().tty());
+
+        } finally {
+            itestHost.teardown();
+        }
+
+        thrown.expect(ContainerNotFoundException.class);
+        dockerClient.inspectContainer(containerId);
+    }
+
+    @Test
+    public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException {
+
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerAdvancedConfigTty");
+        assertThat(itestHost, notNullValue());
+
+        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        String containerId = null;
+
+        try {
+            itestHost.setup();
+            containerId = itestHost.getDockerDriver().getContainerId();
+            ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+
+            assertTrue(containerInfo.config().tty());
 
         } finally {
             itestHost.teardown();
