@@ -34,6 +34,7 @@ public class DockerHost implements CloudHost {
     private URI uri;
     private String name;
     private boolean remove;
+    private boolean removeVolume;
     private List<String> env;
     private Set<String> exposedPorts;
 
@@ -110,6 +111,14 @@ public class DockerHost implements CloudHost {
 
     public void setRemove(final boolean remove) {
         this.remove = remove;
+    }
+
+    public boolean isRemoveVolume() {
+        return removeVolume;
+    }
+
+    public void setRemoveVolume(final boolean removeVolume) {
+        this.removeVolume = removeVolume;
     }
 
     public List<String> getEnv() {
