@@ -33,10 +33,10 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigUtil;
 import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 
 /**
@@ -107,6 +107,32 @@ public class OvercastProperties {
         return value;
     }
 
+    public static List<String> getOvercastProperties(String key, String... defaultValues) {
+        List<String> value = null;
+        Config overcastConfig = getOvercastConfig();
+        if (overcastConfig.hasPath(key)) {
+            ConfigValue rawValue = overcastConfig.getValue(key);
+            ConfigValueType valueType = rawValue.valueType();
+            if (valueType == ConfigValueType.LIST) {
+                value = overcastConfig.getStringList(key);
+            }
+            else { // fallback to old behavior
+                value = Lists.newArrayList(overcastConfig.getString(key));
+            }
+        } else {
+            value = Lists.newArrayList(defaultValues);
+        }
+        if (logger.isTraceEnabled()) {
+            if (value == null) {
+                logger.trace("Overcast property {} is null", key);
+            } else {
+                logger.trace("Overcast property {}={}", key, key.endsWith(PASSWORD_PROPERTY_SUFFIX) ? "********" : value);
+            }
+        }
+        return value;
+    }
+
+
     public static boolean getOvercastBooleanProperty(String key) {
         return getOvercastBooleanProperty(key, false);
     }
@@ -153,6 +179,14 @@ public class OvercastProperties {
                 + " which can be placed in the current working directory, in ~/.overcast or on the classpath", key);
         return value;
     }
+
+    public static List<String> getRequiredOvercastProperties(String key) {
+        List<String> value = getOvercastProperties(key);
+        checkState(value != null && !value.isEmpty(), "Required property %s is not specified as a system property or in " + PropertiesLoader.OVERCAST_CONF_FILE
+                + " which can be placed in the current working directory, in ~/.overcast or on the classpath", key);
+        return value;
+    }
+
 
     public static Map<Integer, Integer> parsePortsProperty(String ports) {
         Map<Integer, Integer> portForwardMap = newLinkedHashMap();

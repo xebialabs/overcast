@@ -18,6 +18,7 @@ package com.xebialabs.overcast.support.libvirt;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.jdom2.Document;
@@ -85,6 +86,11 @@ public class Metadata {
     }
 
     private static String checkArgument(String arg, String argName) {
+        Preconditions.checkArgument(arg != null && !arg.isEmpty(), "%s cannot be null or empty", argName);
+        return arg;
+    }
+
+    private static List<String> checkArgument(List<String> arg, String argName) {
         Preconditions.checkArgument(arg != null && !arg.isEmpty(), "%s cannot be null or empty", argName);
         return arg;
     }

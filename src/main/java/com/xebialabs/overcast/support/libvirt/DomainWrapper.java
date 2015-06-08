@@ -30,6 +30,7 @@ import org.libvirt.StorageVol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import static com.xebialabs.overcast.support.libvirt.JDomUtil.documentToString;
@@ -181,14 +182,15 @@ public class DomainWrapper {
         return domainXml;
     }
 
-    public void updateMetadata(String baseDomainName, String provisionCmd, String expirationTag, Date date) {
+    public void updateMetadata(String baseDomainName, List<String> provisionCmd, String expirationTag, Date date) {
         try {
             if (domain.isActive() == 1) {
                 throw new IllegalStateException("Domain must be shut down before updating metdata");
             }
             // need a really fresh copy of the domain xml or the update may fail...
             reloadDomainXml();
-            updateProvisioningMetadata(domainXml, baseDomainName, provisionCmd, expirationTag, date);
+            String provisionedWith = Joiner.on(" ").join(provisionCmd);
+            updateProvisioningMetadata(domainXml, baseDomainName, provisionedWith, expirationTag, date);
             String xml = documentToString(domainXml);
             logger.debug("Updating domain '{}' XML with {}", getName(), xml);
             domain.getConnect().domainDefineXML(xml);
