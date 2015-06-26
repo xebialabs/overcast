@@ -96,7 +96,7 @@ public class DockerDriver {
         try {
             dockerClient.killContainer(containerId);
             if(dockerHost.isRemove()) {
-                dockerClient.removeContainer(containerId);
+                dockerClient.removeContainer(containerId, dockerHost.isRemoveVolume());
             }
         } catch (Exception e) {
             logger.error("Error while tearing down docker host: ", e);
