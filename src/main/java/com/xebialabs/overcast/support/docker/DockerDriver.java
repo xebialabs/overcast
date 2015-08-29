@@ -15,11 +15,14 @@
  */
 package com.xebialabs.overcast.support.docker;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerCertificateException;
+import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.ImageNotFoundException;
@@ -37,8 +40,22 @@ public class DockerDriver {
     private ContainerConfig config;
 
     public DockerDriver(final DockerHost dockerHost) {
+        this(dockerHost, null);
+    }
+    
+    public DockerDriver(final DockerHost dockerHost, final Path certificatesPath) {
         this.dockerHost = dockerHost;
-        dockerClient = new DefaultDockerClient(dockerHost.getUri());
+        
+        if (certificatesPath != null) {
+            try {
+                dockerClient = new DefaultDockerClient(dockerHost.getUri(), new DockerCertificates(certificatesPath));
+            } catch (final DockerCertificateException e) {
+                logger.error("could not read certificates", e);
+                throw new IllegalArgumentException("could not read certificates");
+            }
+        } else {
+            dockerClient = new DefaultDockerClient(dockerHost.getUri());
+        }
     }
 
     private void buildImageConfig() {
@@ -51,6 +68,15 @@ public class DockerDriver {
         }
         if(dockerHost.getExposedPorts() != null) {
             configBuilder.exposedPorts(dockerHost.getExposedPorts());
+        }
+        
+        if(dockerHost.isExposeAllPorts()) {
+            configBuilder.hostConfig(
+                HostConfig
+                    .builder()
+                    .publishAllPorts(true)
+                    .build()
+            );
         }
 
         config = configBuilder.build();
@@ -67,12 +93,7 @@ public class DockerDriver {
                 createImage();
             }
 
-            if(dockerHost.isExposeAllPorts()) {
-                HostConfig hostConfig = HostConfig.builder().publishAllPorts(true).build();
-                dockerClient.startContainer(containerId, hostConfig);
-            } else {
-                dockerClient.startContainer(containerId);
-            }
+            dockerClient.startContainer(containerId);
 
             final ContainerInfo info = dockerClient.inspectContainer(containerId);
             portMappings = info.networkSettings().ports();

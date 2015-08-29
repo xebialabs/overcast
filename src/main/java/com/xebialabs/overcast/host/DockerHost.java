@@ -17,8 +17,10 @@ package com.xebialabs.overcast.host;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,10 @@ public class DockerHost implements CloudHost {
     private Set<String> exposedPorts;
 
     public DockerHost(String image, String dockerHostName) {
+        this(image, dockerHostName, null);
+    }
+
+    public DockerHost(String image, String dockerHostName, Path certificatesPath) {
         try {
             this.uri = new URI(dockerHostName);
         } catch (URISyntaxException e) {
@@ -46,7 +52,16 @@ public class DockerHost implements CloudHost {
             throw new IllegalArgumentException("could not parse host name");
         }
         this.image = image;
-        dockerDriver = new DockerDriver(this);
+        
+        if (uri.getScheme().endsWith("https")) {
+            if (certificatesPath == null) {
+                throw new IllegalArgumentException("certificates are required for secured connections");
+            }
+            
+            dockerDriver = new DockerDriver(this, certificatesPath);
+        } else {
+            dockerDriver = new DockerDriver(this);
+        }
     }
 
     @Override
