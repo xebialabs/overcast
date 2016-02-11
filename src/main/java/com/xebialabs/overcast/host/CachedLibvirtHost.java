@@ -86,7 +86,7 @@ public class CachedLibvirtHost extends LibvirtHost {
         List<Filesystem> filesystemMappings, List<String> copySpec) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
         this.provisionUrl = checkNotNullOrEmpty(provisionUrl, "provisionUrl");
-        this.provisionCmd = checkNotNullOrEmpty(provisionCmd, "provisionCmd");
+        this.provisionCmd = checkNotNullOrEmpty(provisionCmd, "provisionCmd").trim();
         this.cacheExpirationUrl = cacheExpirationUrl;
         this.cacheExpirationCmd = checkNotNullOrEmpty(cacheExpirationCmd, "cacheExpirationCmd");
         this.provisionedbootDelay = provisionedbootDelay;

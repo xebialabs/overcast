@@ -15,6 +15,9 @@
  */
 package com.xebialabs.overcast.host;
 
+import com.xebialabs.overcast.command.CommandProcessor;
+import com.xebialabs.overcast.support.libvirt.DomainWrapper;
+import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import org.junit.Test;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
@@ -23,6 +26,8 @@ import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 public class CachedLibvirtHostTest {
@@ -55,6 +60,17 @@ public class CachedLibvirtHostTest {
         + "</overcast_metadata>"
         + "</metadata>"
         + "</domain>";
+
+    static final String PROVISION_COMMAND_DOMAIN_XML = "<domain type='kvm'>"
+            +"<metadata>"
+            + "<overcast_metadata xmlns=\"http://www.xebialabs.com/overcast/metadata/v1\">"
+            + "<parent_domain>baseDomainName</parent_domain>"
+            + "<creation_time>2014-06-13T12:28:49Z</creation_time>"
+            + "<provisioned_with>provcmd</provisioned_with>"
+            + "<provisioned_checksum>checksum</provisioned_checksum>"
+            + "</overcast_metadata>"
+            + "</metadata>"
+            + "</domain>";
 
     @Test
     public void shouldReturnTrueIfNoRunningDomains() throws LibvirtException {
@@ -104,5 +120,29 @@ public class CachedLibvirtHostTest {
         when(libvirt.domainLookupByID(1)).thenReturn(unrelatedClone);
 
         assertThat(CachedLibvirtHost.isDomainSafeToDelete(libvirt, "staleDomain"), equalTo(true));
+    }
+
+    @Test
+    public void shouldTrimAndMatchProvisionCommand() throws LibvirtException {
+
+        Connect libvirt = Mockito.mock(Connect.class);
+        IpLookupStrategy lookupStrategy = Mockito.mock(IpLookupStrategy.class);
+
+        Domain domain = Mockito.mock(Domain.class);
+        when(domain.getXMLDesc(0)).thenReturn(PROVISION_COMMAND_DOMAIN_XML);
+        when(domain.getName()).thenReturn("domain");
+
+        when(libvirt.listDomains()).thenReturn(new int[] { 1 });
+        when(libvirt.domainLookupByID(1)).thenReturn(domain);
+        when(libvirt.domainLookupByName(anyString())).thenReturn(domain);
+        when(libvirt.listDefinedDomains()).thenReturn(new String[]{"domain"});
+
+        CachedLibvirtHost host = new CachedLibvirtHost("hostLabel", libvirt,
+                "baseDomainName", lookupStrategy, "networkName",
+                "provisionUrl", "provcmd ", null, "echo checksum",
+                CommandProcessor.atCurrentDir(), 100, 100, 100, 100, null, null);
+
+        DomainWrapper w = host.findFirstCachedDomain();
+        assertThat(w, notNullValue());
     }
 }
