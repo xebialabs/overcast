@@ -85,17 +85,17 @@ public class CachedLibvirtHost extends LibvirtHost {
         int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
         List<Filesystem> filesystemMappings, List<String> copySpec) {
         super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
-        this.provisionUrl = checkNotNullOrEmptyAndTrim(provisionUrl, "provisionUrl");
-        this.provisionCmd = checkNotNullOrEmptyAndTrim(provisionCmd, "provisionCmd");
+        this.provisionUrl = checkNotNullTrimAndNotEmpty(provisionUrl, "provisionUrl");
+        this.provisionCmd = checkNotNullTrimAndNotEmpty(provisionCmd, "provisionCmd");
         this.cacheExpirationUrl = cacheExpirationUrl;
-        this.cacheExpirationCmd = checkNotNullOrEmptyAndTrim(cacheExpirationCmd, "cacheExpirationCmd");
+        this.cacheExpirationCmd = checkNotNullTrimAndNotEmpty(cacheExpirationCmd, "cacheExpirationCmd");
         this.provisionedbootDelay = provisionedbootDelay;
         this.provisionStartTimeout = provisionStartTimeout;
         this.cmdProcessor = cmdProcessor;
         this.copySpec = copySpec;
     }
 
-    private String checkNotNullOrEmptyAndTrim(String arg, String argName) {
+    private String checkNotNullTrimAndNotEmpty(String arg, String argName) {
         checkArgument(arg != null , "%s cannot be null", argName);
         arg = arg.trim();
         checkArgument(!arg.isEmpty(), "%s cannot be empty", argName);
