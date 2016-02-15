@@ -16,6 +16,7 @@
 package com.xebialabs.overcast.support.docker;
 
 public class Config {
+    public static final String DOCKER_CERTIFICATES = ".certificates";
     public static final String DOCKER_HOST_SUFFIX = ".dockerHost";
     public static final String DOCKER_IMAGE_SUFFIX = ".dockerImage";
     public static final String DOCKER_NAME_SUFFIX = ".name";

@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.host;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.libvirt.Connect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.xebialabs.overcast.OvercastProperties;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
@@ -138,7 +140,8 @@ public class CloudHostFactory {
 
         String image = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX, Config.DOCKER_DEFAULT_IMAGE);
         String dockerHostName = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
-        DockerHost dockerHost = new DockerHost(image, dockerHostName);
+        String certicates = getOvercastProperty(label + Config.DOCKER_CERTIFICATES, null);
+        DockerHost dockerHost = new DockerHost(image, dockerHostName, Strings.isNullOrEmpty(certicates) ? null : new File(certicates).toPath());
 
         dockerHost.setName(getOvercastProperty(label + Config.DOCKER_NAME_SUFFIX));
         dockerHost.setCommand(getOvercastListProperty(label + Config.DOCKER_COMMAND_SUFFIX));
