@@ -29,6 +29,7 @@ import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.messages.ContainerInfo;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,10 +42,14 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DockerHostItest {
+    // port range can be system specific e.g.
+    // on linux cat /proc/sys/net/ipv4/ip_local_port_range
+    // boot to docker had a different value
+    public static final int DOCKER_PORT_RANGE_MIN = 32768;
+    public static final int DOCKER_PORT_RANGE_MAX = 65535;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-    // docker port range 49153 to 65535
 
     @Test
     public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
@@ -71,8 +76,6 @@ public class DockerHostItest {
 
     @Test
     public void shouldRunAdvancedConfig() throws DockerException, InterruptedException {
-
-
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerAdvancedConfig");
         assertThat(itestHost, notNullValue());
 
@@ -82,12 +85,9 @@ public class DockerHostItest {
         try {
             itestHost.setup();
             assertThat(itestHost.getHostName(), equalTo("localhost"));
-            assertThat(itestHost.getPort(12345), greaterThanOrEqualTo(49153));
-            assertThat(itestHost.getPort(12345), lessThanOrEqualTo(65535));
-            assertThat(itestHost.getPort(23456), greaterThanOrEqualTo(49153));
-            assertThat(itestHost.getPort(23456), lessThanOrEqualTo(65535));
-            assertThat(itestHost.getPort(34567), greaterThanOrEqualTo(49153));
-            assertThat(itestHost.getPort(34567), lessThanOrEqualTo(65535));
+            assertThat(itestHost.getPort(12345), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+            assertThat(itestHost.getPort(23456), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+            assertThat(itestHost.getPort(34567), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
 
             containerId = itestHost.getDockerDriver().getContainerId();
             ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
