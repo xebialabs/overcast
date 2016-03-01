@@ -46,7 +46,12 @@ import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.xebialabs.overcast.OvercastProperties.*;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastBooleanProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
@@ -149,6 +154,7 @@ public class CloudHostFactory {
         dockerHost.setRemoveVolume(getOvercastBooleanProperty(label + Config.DOCKER_REMOVE_VOLUME_SUFFIX));
         dockerHost.setEnv(getOvercastListProperty(label + Config.DOCKER_ENV_SUFFIX));
         dockerHost.setExposedPorts(newHashSet(getOvercastListProperty(label + Config.DOCKER_EXPOSED_PORTS_SUFFIX)));
+        dockerHost.setLinks(getOvercastListProperty(label + Config.DOCKER_LINKS_SUFFIX));
 
         return dockerHost;
     }

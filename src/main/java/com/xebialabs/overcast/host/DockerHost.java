@@ -31,14 +31,18 @@ public class DockerHost implements CloudHost {
     private final String image;
     private final URI uri; // allowed to be null when configuring via DOCKER_* environment variables
 
-    private List<String> command;
-    private boolean exposeAllPorts = false;
     private String name;
+    private List<String> env;
+    private List<String> command;
+    private boolean tty;
+
     private boolean remove;
     private boolean removeVolume;
-    private List<String> env;
+
+    private boolean exposeAllPorts = false;
     private Set<String> exposedPorts;
-    private boolean tty;
+
+    private List<String> links;
 
     public DockerHost(String image, String dockerHostName, Path certificatesPath) {
         try {
@@ -157,6 +161,14 @@ public class DockerHost implements CloudHost {
 
     public void setTty(boolean tty) {
         this.tty = tty;
+    }
+
+    public List<String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(final List<String> links) {
+        this.links = links;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);

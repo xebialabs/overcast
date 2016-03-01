@@ -70,26 +70,25 @@ public class DockerDriver {
 
     private void buildImageConfig() {
         final ContainerConfig.Builder configBuilder = ContainerConfig.builder().image(dockerHost.getImage());
-        if(dockerHost.getCommand() != null){
+        if (dockerHost.getCommand() != null){
             configBuilder.cmd(dockerHost.getCommand());
         }
-        if(dockerHost.getEnv() != null){
+        if (dockerHost.getEnv() != null){
             configBuilder.env(dockerHost.getEnv());
         }
-        if(dockerHost.getExposedPorts() != null) {
+        if (dockerHost.getExposedPorts() != null) {
             configBuilder.exposedPorts(dockerHost.getExposedPorts());
         }
         if (dockerHost.isTty()) {
             configBuilder.tty(true);
         }
-        if(dockerHost.isExposeAllPorts()) {
-            configBuilder.hostConfig(
-                HostConfig
-                    .builder()
-                    .publishAllPorts(true)
-                    .build()
-            );
-        }
+        
+        final HostConfig hostConfig = HostConfig.builder()
+                .publishAllPorts(dockerHost.isExposeAllPorts())
+                .links(dockerHost.getLinks())
+                .build();
+        
+        configBuilder.hostConfig(hostConfig);
         config = configBuilder.build();
     }
 
