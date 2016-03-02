@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DockerClient.LogsParam;
+import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -38,9 +40,12 @@ import com.xebialabs.overcast.support.docker.DockerDriver;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
@@ -59,6 +64,7 @@ public class DockerHostItest {
     public static final String DOCKER_ADVANCED_CONFIG = "dockerAdvancedConfig";
     public static final String DOCKER_MINIMAL_CONFIG = "dockerMinimalConfig";
     public static final String DOCKER_ADVANCED_CONFIG_TTY = "dockerAdvancedConfigTty";
+    public static final String DOCKER_LINKS_CONFIG = "dockerLinksConfig";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -98,6 +104,41 @@ public class DockerHostItest {
 
         thrown.expect(ContainerNotFoundException.class);
         dockerClient.inspectContainer(containerId);
+    }
+
+    @Test
+    public void shouldRunLinksConfig() throws DockerException, InterruptedException, DockerCertificateException {
+        DockerHost linkedHost = (DockerHost) CloudHostFactory.getCloudHost("mountebankConfig");
+        assertThat(linkedHost, notNullValue());
+
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_LINKS_CONFIG);
+        assertThat(itestHost, notNullValue());
+
+        DockerClient dockerClient = createDockerClient(DOCKER_LINKS_CONFIG);
+
+        try {
+            linkedHost.setup();
+
+            String containerId = linkedHost.getDockerDriver().getContainerId();
+            dockerClient.inspectContainer(containerId);
+
+            itestHost.setup();
+            assertThat(itestHost.getLinks(), contains("mountebank:mountebank"));
+
+            containerId = itestHost.getDockerDriver().getContainerId();
+            dockerClient.inspectContainer(containerId);
+
+            Thread.sleep(2000);
+
+            try (final LogStream logStream = dockerClient.logs(containerId, LogsParam.stdout(), LogsParam.stderr(), LogsParam.follow())) {
+                final String logs = logStream.readFully();
+                assertThat(logs, containsString("Connecting to mountebank:2525"));
+                assertThat(logs, containsString("imposters            100% |*******************************|"));
+            }
+        } finally {
+            linkedHost.teardown();
+            itestHost.teardown();
+        }
     }
 
     @Test
