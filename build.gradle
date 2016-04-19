@@ -10,7 +10,7 @@ buildscript {
     }
 }
 
-version = '2.6.1-RIZE'
+version = '2.6.0'
 //version = '2.5.1' // Last released version
 
 group = 'com.xebialabs.cloud'
@@ -92,7 +92,7 @@ allprojects {
             url 'https://oss.sonatype.org/content/repositories/releases'
         }
         maven {
-             url 'http://www.libvirt.org/maven2/'
+            url 'http://www.libvirt.org/maven2/'
         }
     }
 

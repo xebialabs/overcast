@@ -156,6 +156,7 @@ public class CloudHostFactory {
         dockerHost.setEnv(getOvercastListProperty(label + Config.DOCKER_ENV_SUFFIX));
         dockerHost.setExposedPorts(newHashSet(getOvercastListProperty(label + Config.DOCKER_EXPOSED_PORTS_SUFFIX)));
         dockerHost.setLinks(getOvercastListProperty(label + Config.DOCKER_LINKS_SUFFIX));
+        dockerHost.setPortBindings(newHashSet(getOvercastListProperty(label + Config.DOCKER_PORT_BINDINGS_SUFFIX)));
         
         return dockerHost;
     }
