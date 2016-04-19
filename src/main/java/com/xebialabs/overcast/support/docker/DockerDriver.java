@@ -17,18 +17,24 @@ package com.xebialabs.overcast.support.docker;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.ImageNotFoundException;
-import com.spotify.docker.client.messages.*;
-
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.PortBinding;
 import com.xebialabs.overcast.host.DockerHost;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DockerDriver {
 
@@ -72,13 +78,23 @@ public class DockerDriver {
         if (dockerHost.isTty()) {
             configBuilder.tty(true);
         }
+
+        final HostConfig.Builder hostConfigBuilder = HostConfig.builder()
+                .publishAllPorts(dockerHost.isExposeAllPorts() && dockerHost.getPortBindings() == null)
+                .links(dockerHost.getLinks());
         
-        final HostConfig hostConfig = HostConfig.builder()
-                .publishAllPorts(dockerHost.isExposeAllPorts())
-                .links(dockerHost.getLinks())
-                .build();
+        if (dockerHost.getPortBindings() != null) {
+            final Map<String, List<PortBinding>> portBindings = new HashMap<>();
+            for (String binding : dockerHost.getPortBindings()) {
+                final String[] bindings = binding.split(":");
+                final String hostBinding = bindings[0];
+                final PortBinding containerBinding = PortBinding.of("0.0.0.0", bindings[1]);
+                portBindings.put(hostBinding, Collections.singletonList(containerBinding));
+            }
+            hostConfigBuilder.portBindings(portBindings);
+        }
         
-        configBuilder.hostConfig(hostConfig);
+        configBuilder.hostConfig(hostConfigBuilder.build());
         config = configBuilder.build();
     }
 

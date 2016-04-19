@@ -21,7 +21,6 @@ import com.spotify.docker.client.ContainerNotFoundException;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerClient.LogsParameter;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -33,6 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.spotify.docker.client.DockerClient.LogsParam.follow;
+import static com.spotify.docker.client.DockerClient.LogsParam.stderr;
+import static com.spotify.docker.client.DockerClient.LogsParam.stdout;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -100,7 +102,7 @@ public class DockerHostItest {
             containerId = itestHost.getDockerDriver().getContainerId();
             dockerClient.inspectContainer(containerId);
 
-            try (final LogStream logStream = dockerClient.logs(containerId, LogsParameter.STDOUT, LogsParameter.STDERR, LogsParameter.FOLLOW)) {
+            try (final LogStream logStream = dockerClient.logs(containerId, stdout(), stderr(), follow())) {
                 final String logs = logStream.readFully();
                 assertThat(logs, containsString("Connecting to mountebank:2525"));
                 assertThat(logs, containsString("imposters            100% |*******************************|"));

@@ -10,7 +10,7 @@ buildscript {
     }
 }
 
-version = '2.6.0'
+version = '2.6.1-RIZE'
 //version = '2.5.1' // Last released version
 
 group = 'com.xebialabs.cloud'
@@ -55,7 +55,7 @@ dependencies {
     compile 'org.jdom:jdom2:2.0.5'
 
     // docker-client and friends
-    compile "com.spotify:docker-client:3.1.3"
+    compile "com.spotify:docker-client:3.5.13"
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.2.3'  // appease annotation warnings in docker-client
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'                     // appease annotation warnings in docker-client
 
