@@ -17,8 +17,8 @@ package com.xebialabs.overcast.support.docker;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
+import javax.ws.rs.HEAD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -82,13 +82,23 @@ public class DockerDriver {
         if (dockerHost.isTty()) {
             configBuilder.tty(true);
         }
-        
-        final HostConfig hostConfig = HostConfig.builder()
+
+        final HostConfig.Builder hostConfigBuilder = HostConfig.builder()
                 .publishAllPorts(dockerHost.isExposeAllPorts())
-                .links(dockerHost.getLinks())
-                .build();
-        
-        configBuilder.hostConfig(hostConfig);
+                .links(dockerHost.getLinks());
+
+        if (dockerHost.hasPortBindings()) {
+            final Map<String, List<PortBinding>> portBindings = new HashMap<>();
+            for (String binding : dockerHost.getPortBindings()) {
+                final String[] bindings = binding.split(":");
+                final String containerPort = bindings[1];
+                final PortBinding hostBinding = PortBinding.of("0.0.0.0", bindings[0]);
+                portBindings.put(containerPort, Collections.singletonList(hostBinding));
+            }
+            hostConfigBuilder.portBindings(portBindings);
+        }
+
+        configBuilder.hostConfig(hostConfigBuilder.build());
         config = configBuilder.build();
     }
 
@@ -122,7 +132,6 @@ public class DockerDriver {
         }
     }
 
-
     public void killAndRemoveContainer() {
         try {
             dockerClient.killContainer(containerId);
@@ -145,7 +154,6 @@ public class DockerDriver {
         } else {
             throw new IllegalArgumentException("Port not available");
         }
-
     }
 
     public String getContainerId() {

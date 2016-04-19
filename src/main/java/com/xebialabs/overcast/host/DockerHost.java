@@ -41,7 +41,7 @@ public class DockerHost implements CloudHost {
 
     private boolean exposeAllPorts = false;
     private Set<String> exposedPorts;
-
+    private Set<String> portBindings;
     private List<String> links;
 
     public DockerHost(String image, String dockerHostName, Path certificatesPath) {
@@ -169,6 +169,22 @@ public class DockerHost implements CloudHost {
 
     public void setLinks(final List<String> links) {
         this.links = links;
+    }
+
+    public Set<String> getPortBindings() {
+        return portBindings;
+    }
+
+    public void setPortBindings(final Set<String> portBindings) {
+        this.portBindings = portBindings;
+    }
+
+    public boolean hasNoPortBindings() {
+        return portBindings == null || portBindings.isEmpty();
+    }
+
+    public boolean hasPortBindings() {
+        return !hasNoPortBindings();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);

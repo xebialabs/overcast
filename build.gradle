@@ -98,7 +98,7 @@ allprojects {
             url 'https://oss.sonatype.org/content/repositories/releases'
         }
         maven {
-             url 'http://www.libvirt.org/maven2/'
+            url 'http://www.libvirt.org/maven2/'
         }
     }
 

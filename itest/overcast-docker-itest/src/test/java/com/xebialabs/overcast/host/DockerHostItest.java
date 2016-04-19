@@ -40,7 +40,6 @@ import com.xebialabs.overcast.support.docker.DockerDriver;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
