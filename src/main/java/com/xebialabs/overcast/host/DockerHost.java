@@ -182,4 +182,11 @@ public class DockerHost implements CloudHost {
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);
 
+    public boolean hasNoPortBindings() {
+        return portBindings == null || portBindings.isEmpty();
+    }
+
+    public boolean hasPortBindings() {
+        return !hasNoPortBindings();
+    }
 }

@@ -80,16 +80,16 @@ public class DockerDriver {
         }
 
         final HostConfig.Builder hostConfigBuilder = HostConfig.builder()
-                .publishAllPorts(dockerHost.isExposeAllPorts() && dockerHost.getPortBindings() == null)
+                .publishAllPorts(dockerHost.isExposeAllPorts())
                 .links(dockerHost.getLinks());
         
-        if (dockerHost.getPortBindings() != null) {
+        if (dockerHost.hasPortBindings()) {
             final Map<String, List<PortBinding>> portBindings = new HashMap<>();
             for (String binding : dockerHost.getPortBindings()) {
                 final String[] bindings = binding.split(":");
-                final String hostBinding = bindings[0];
-                final PortBinding containerBinding = PortBinding.of("0.0.0.0", bindings[1]);
-                portBindings.put(hostBinding, Collections.singletonList(containerBinding));
+                final String containerPort = bindings[1];
+                final PortBinding hostBinding = PortBinding.of("0.0.0.0", bindings[0]);
+                portBindings.put(containerPort, Collections.singletonList(hostBinding));
             }
             hostConfigBuilder.portBindings(portBindings);
         }
