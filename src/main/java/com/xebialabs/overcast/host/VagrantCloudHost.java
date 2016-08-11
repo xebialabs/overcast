@@ -71,5 +71,4 @@ public class VagrantCloudHost implements CloudHost {
     public int getPort(int port) {
         return port;
     }
-
 }

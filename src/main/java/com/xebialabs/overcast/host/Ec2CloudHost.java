@@ -16,6 +16,7 @@
 package com.xebialabs.overcast.host;
 
 import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.amazonaws.auth.BasicAWSCredentials;

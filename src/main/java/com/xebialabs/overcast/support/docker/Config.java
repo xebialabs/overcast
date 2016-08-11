@@ -28,6 +28,5 @@ public class Config {
 
     public static final String DOCKER_EXPOSE_ALL_PORTS_SUFFIX = ".exposeAllPorts";
     public static final String DOCKER_TTY_SUFFIX = ".tty";
-    public static final String DOCKER_DEFAULT_HOST = "http://localhost:2375";
     public static final String DOCKER_DEFAULT_IMAGE = "busybox";
 }
