@@ -17,18 +17,24 @@ package com.xebialabs.overcast.support.docker;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
 import com.spotify.docker.client.ImageNotFoundException;
-import com.spotify.docker.client.messages.*;
-
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.PortBinding;
 import com.xebialabs.overcast.host.DockerHost;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DockerDriver {
 
@@ -60,26 +66,35 @@ public class DockerDriver {
 
     private void buildImageConfig() {
         final ContainerConfig.Builder configBuilder = ContainerConfig.builder().image(dockerHost.getImage());
-        if(dockerHost.getCommand() != null){
+        if (dockerHost.getCommand() != null){
             configBuilder.cmd(dockerHost.getCommand());
         }
-        if(dockerHost.getEnv() != null){
+        if (dockerHost.getEnv() != null){
             configBuilder.env(dockerHost.getEnv());
         }
-        if(dockerHost.getExposedPorts() != null) {
+        if (dockerHost.getExposedPorts() != null) {
             configBuilder.exposedPorts(dockerHost.getExposedPorts());
         }
         if (dockerHost.isTty()) {
             configBuilder.tty(true);
         }
-        if(dockerHost.isExposeAllPorts()) {
-            configBuilder.hostConfig(
-                HostConfig
-                    .builder()
-                    .publishAllPorts(true)
-                    .build()
-            );
+
+        final HostConfig.Builder hostConfigBuilder = HostConfig.builder()
+                .publishAllPorts(dockerHost.isExposeAllPorts())
+                .links(dockerHost.getLinks());
+        
+        if (dockerHost.hasPortBindings()) {
+            final Map<String, List<PortBinding>> portBindings = new HashMap<>();
+            for (String binding : dockerHost.getPortBindings()) {
+                final String[] bindings = binding.split(":");
+                final String containerPort = bindings[1];
+                final PortBinding hostBinding = PortBinding.of("0.0.0.0", bindings[0]);
+                portBindings.put(containerPort, Collections.singletonList(hostBinding));
+            }
+            hostConfigBuilder.portBindings(portBindings);
         }
+        
+        configBuilder.hostConfig(hostConfigBuilder.build());
         config = configBuilder.build();
     }
 

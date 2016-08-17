@@ -24,7 +24,9 @@ public class Config {
     public static final String DOCKER_REMOVE_SUFFIX = ".remove";
     public static final String DOCKER_REMOVE_VOLUME_SUFFIX = ".removeVolume";
     public static final String DOCKER_ENV_SUFFIX = ".env";
+    public static final String DOCKER_LINKS_SUFFIX = ".links";
     public static final String DOCKER_EXPOSED_PORTS_SUFFIX = ".exposedPorts";
+    public static final String DOCKER_PORT_BINDINGS_SUFFIX = ".portBindings";
 
     public static final String DOCKER_EXPOSE_ALL_PORTS_SUFFIX = ".exposeAllPorts";
     public static final String DOCKER_TTY_SUFFIX = ".tty";

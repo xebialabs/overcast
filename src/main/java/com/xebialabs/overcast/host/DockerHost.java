@@ -39,6 +39,8 @@ public class DockerHost implements CloudHost {
     private boolean removeVolume;
     private List<String> env;
     private Set<String> exposedPorts;
+    private Set<String> portBindings;
+    private List<String> links;
 
     private boolean tty;
 
@@ -162,6 +164,29 @@ public class DockerHost implements CloudHost {
         this.tty = tty;
     }
 
+    public List<String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(final List<String> links) {
+        this.links = links;
+    }
+
+    public Set<String> getPortBindings() {
+        return portBindings;
+    }
+
+    public void setPortBindings(final Set<String> portBindings) {
+        this.portBindings = portBindings;
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);
 
+    public boolean hasNoPortBindings() {
+        return portBindings == null || portBindings.isEmpty();
+    }
+
+    public boolean hasPortBindings() {
+        return !hasNoPortBindings();
+    }
 }
