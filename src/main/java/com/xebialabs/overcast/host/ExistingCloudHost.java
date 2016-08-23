@@ -44,6 +44,5 @@ class ExistingCloudHost implements CloudHost {
     public int getPort(int port) {
         return port;
     }
-
 }
 

@@ -24,6 +24,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.xebialabs.overcast.support.docker.DockerDriver;
 
 public class DockerHost implements CloudHost {
@@ -47,20 +48,25 @@ public class DockerHost implements CloudHost {
     }
 
     public DockerHost(String image, String dockerHostName, Path certificatesPath) {
-        try {
-            this.uri = new URI(dockerHostName);
-        } catch (URISyntaxException e) {
-            logger.error("could not parse host name", e);
-            throw new IllegalArgumentException("could not parse host name");
-        }
-        this.image = image;
-        
-        if (uri.getScheme().endsWith("https")) {
-            if (certificatesPath == null) {
-                throw new IllegalArgumentException("certificates are required for secured connections");
-            }
-            
-            dockerDriver = new DockerDriver(this, certificatesPath);
+    	this.image = image;
+    	
+        if (!Strings.isNullOrEmpty(dockerHostName)) {
+            try {
+	            this.uri = new URI(dockerHostName);
+	        } catch (URISyntaxException e) {
+	            logger.error("could not parse host name", e);
+	            throw new IllegalArgumentException("could not parse host name");
+	        }
+	        
+	        if (uri.getScheme().endsWith("https")) {
+	            if (certificatesPath == null) {
+	                throw new IllegalArgumentException("certificates are required for secured connections");
+	            }
+	            
+	            dockerDriver = new DockerDriver(this, certificatesPath);
+	        } else {
+	            dockerDriver = new DockerDriver(this);
+	        }
         } else {
             dockerDriver = new DockerDriver(this);
         }
@@ -83,7 +89,7 @@ public class DockerHost implements CloudHost {
 
     @Override
     public String getHostName() {
-        return uri.getHost();
+        return dockerDriver.getHost();
     }
 
     public String getImage() {

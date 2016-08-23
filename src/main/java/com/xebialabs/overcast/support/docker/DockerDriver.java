@@ -18,16 +18,20 @@ package com.xebialabs.overcast.support.docker;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.ImageNotFoundException;
-import com.spotify.docker.client.messages.*;
-
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.exceptions.ImageNotFoundException;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.PortBinding;
 import com.xebialabs.overcast.host.DockerHost;
 
 public class DockerDriver {
@@ -45,8 +49,15 @@ public class DockerDriver {
 
     public DockerDriver(final DockerHost dockerHost, final Path certificatesPath) {
         this.dockerHost = dockerHost;
-
-        if (certificatesPath != null) {
+        
+        if (dockerHost.getUri() == null) {
+            try {
+                dockerClient = DefaultDockerClient.fromEnv().build();
+            } catch (final DockerCertificateException e) {
+                logger.error("could not read certificates", e);
+                throw new IllegalArgumentException("could not read certificates");
+            }
+        } else if (certificatesPath != null) {
             try {
                 dockerClient = new DefaultDockerClient(dockerHost.getUri(), new DockerCertificates(certificatesPath));
             } catch (final DockerCertificateException e) {
@@ -57,6 +68,10 @@ public class DockerDriver {
             dockerClient = new DefaultDockerClient(dockerHost.getUri());
         }
     }
+    
+    public String getHost() {
+		return dockerClient.getHost();
+	}
 
     private void buildImageConfig() {
         final ContainerConfig.Builder configBuilder = ContainerConfig.builder().image(dockerHost.getImage());

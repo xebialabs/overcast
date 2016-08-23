@@ -139,7 +139,7 @@ public class CloudHostFactory {
     private static CloudHost createDockerHost(String label, String imageName) {
 
         String image = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX, Config.DOCKER_DEFAULT_IMAGE);
-        String dockerHostName = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
+        String dockerHostName = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX);
         String certicates = getOvercastProperty(label + Config.DOCKER_CERTIFICATES, null);
         DockerHost dockerHost = new DockerHost(image, dockerHostName, Strings.isNullOrEmpty(certicates) ? null : new File(certicates).toPath());
 

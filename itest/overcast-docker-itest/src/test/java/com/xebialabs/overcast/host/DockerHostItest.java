@@ -15,23 +15,9 @@
  */
 package com.xebialabs.overcast.host;
 
-import java.util.List;
-import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.spotify.docker.client.ContainerNotFoundException;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.messages.ContainerInfo;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -40,6 +26,22 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.hamcrest.Matchers;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.ContainerNotFoundException;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.ContainerInfo;
 
 public class DockerHostItest {
     // port range can be system specific e.g.
@@ -52,18 +54,19 @@ public class DockerHostItest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
+    public void shouldRunMinimalConfig() throws DockerException, DockerCertificateException, InterruptedException {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerMinimalConfig");
         assertThat(itestHost, notNullValue());
+        assertThat(itestHost.getUri(), nullValue());
 
-        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        DockerClient dockerClient = DefaultDockerClient.fromEnv().build();
         String containerId = null;
 
         try {
             itestHost.setup();
             assertThat(itestHost.getHostName(), equalTo("localhost"));
 
-            dockerClient = new DefaultDockerClient(itestHost.getUri());
+            dockerClient = DefaultDockerClient.fromEnv().build();
             containerId = itestHost.getDockerDriver().getContainerId();
             dockerClient.inspectContainer(containerId);
         } finally {
