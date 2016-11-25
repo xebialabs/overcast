@@ -15,7 +15,7 @@
  */
 package com.xebialabs.overcast.support.libvirt;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
@@ -50,7 +50,7 @@ public class Filesystem {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
             .add("source", source)
             .add("target", target)
             .add("accessMode", accessMode)

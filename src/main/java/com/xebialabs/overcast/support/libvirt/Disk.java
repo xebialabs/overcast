@@ -16,15 +16,13 @@
 package com.xebialabs.overcast.support.libvirt;
 
 import java.io.IOException;
-
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
 import org.libvirt.StorageVolInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 import com.xebialabs.overcast.support.libvirt.jdom.DiskXml;
 
@@ -103,10 +101,10 @@ public class Disk {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
-            .add("name", getName())
-            .add("format", format)
-            .add("device", device)
-            .add("file", file).toString();
+        return MoreObjects.toStringHelper(this)
+                .add("name", getName())
+                .add("format", format)
+                .add("device", device)
+                .add("file", file).toString();
     }
 }

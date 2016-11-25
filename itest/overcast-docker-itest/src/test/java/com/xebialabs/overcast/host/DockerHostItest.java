@@ -24,7 +24,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.spotify.docker.client.*;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerCertificates;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.ContainerNotFoundException;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerInfo;
 
 import com.xebialabs.overcast.support.docker.Config;
