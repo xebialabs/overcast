@@ -46,7 +46,14 @@ import com.xebialabs.overthere.util.DefaultAddressPortMapper;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.xebialabs.overcast.OvercastProperties.*;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastBooleanProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperties;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperties;
+import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
@@ -170,14 +177,14 @@ public class CloudHostFactory {
 
         IpLookupStrategy ipLookupStrategy = LibvirtHost.determineIpLookupStrategy(label);
 
-        String provisionCmd = getOvercastProperty(label + PROVISION_CMD);
+        List<String> provisionCmd = getOvercastProperties(label + PROVISION_CMD);
 
-        if (provisionCmd == null) {
+        if (provisionCmd == null || provisionCmd.isEmpty()) {
             return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay, fsMappings);
         } else {
             String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
             String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
-            String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
+            List<String> cacheExpirationCmd = getRequiredOvercastProperties(label + CACHE_EXPIRATION_CMD);
             int provisionStartTimeout = Integer.valueOf(getOvercastProperty(label + PROVISION_START_TIMEOUT, PROVISION_START_TIMEOUT_DEFAULT));
             int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
             List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.<String> emptyList());

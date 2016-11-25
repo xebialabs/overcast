@@ -29,6 +29,8 @@ import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
 import com.xebialabs.overcast.OverthereUtil;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
@@ -65,10 +67,10 @@ public class CachedLibvirtHost extends LibvirtHost {
     public static final String CACHE_EXPIRATION_URL = ".provision.expirationTag.url";
     public static final String PROVISIONED_BOOT_DELAY = ".provision.bootDelay";
 
-    private final String provisionCmd;
+    private final List<String> provisionCmd;
     private final String provisionUrl;
     private final String cacheExpirationUrl;
-    private final String cacheExpirationCmd;
+    private final List<String> cacheExpirationCmd;
     private CommandProcessor cmdProcessor;
     private final List<String> copySpec;
 
@@ -79,8 +81,8 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
         String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
-        String provisionUrl, String provisionCmd,
-        String cacheExpirationUrl, String cacheExpirationCmd,
+        String provisionUrl, List<String> provisionCmd,
+        String cacheExpirationUrl, List<String> cacheExpirationCmd,
         CommandProcessor cmdProcessor,
         int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
         List<Filesystem> filesystemMappings, List<String> copySpec) {
@@ -99,6 +101,11 @@ public class CachedLibvirtHost extends LibvirtHost {
         checkArgument(arg != null , "%s cannot be null", argName);
         arg = arg.trim();
         checkArgument(!arg.isEmpty(), "%s cannot be empty", argName);
+        return arg;
+    }
+
+    private List<String> checkNotNullOrEmpty(List<String> arg, String argName) {
+        checkArgument(arg != null && !arg.isEmpty(), "%s cannot be null or empty", argName);
         return arg;
     }
 
@@ -190,7 +197,7 @@ public class CachedLibvirtHost extends LibvirtHost {
                 if (!md.getParentDomain().equals(baseDomainName)) {
                     continue;
                 }
-                if (!md.getProvisionedWith().equals(provisionCmd)) {
+                if (!md.getProvisionedWith().trim().equals(Joiner.on(" ").join(provisionCmd).trim())) {
                     continue;
                 }
                 if (!md.getProvisionedChecksum().equals(checkSum)) {
@@ -275,7 +282,9 @@ public class CachedLibvirtHost extends LibvirtHost {
             CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
             CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
             CmdLine cmd = new CmdLine();
-            cmd.addRaw(cacheExpirationCmd);
+            for (String cmdArg : cacheExpirationCmd) {
+                cmd.addRaw(cmdArg);
+            }
             int exitCode = connection.execute(stdOutCapture, stdErrCapture, cmd);
             if (exitCode != 0) {
                 throw new RuntimeException(String.format("Error getting expiration tag exit code %d, stdout=%s, stderr=%s", exitCode,
@@ -291,7 +300,7 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     private String getLocalExpirationTag() {
         try {
-            String expirationTag = cmdProcessor.run(Command.fromString(cacheExpirationCmd)).getOutput().trim();
+            String expirationTag = cmdProcessor.run(Command.fromCmdArgs(cacheExpirationCmd)).getOutput().trim();
             return expirationTag;
         } catch (NonZeroCodeException e) {
             throw new IllegalArgumentException(
@@ -329,8 +338,10 @@ public class CachedLibvirtHost extends LibvirtHost {
 
     protected void provisionHost(OverthereConnection remote, String ip) {
         CmdLine cmdLine = new CmdLine();
-        String fragment = MessageFormat.format(provisionCmd, ip);
-        cmdLine.addRaw(fragment);
+        for (String cmdArg : provisionCmd) {
+            String fragment = MessageFormat.format(cmdArg, ip);
+            cmdLine.addRaw(fragment);
+        }
         logger.info("Provisioning host with '{}'", cmdLine);
 
         CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();

@@ -18,6 +18,7 @@ package com.xebialabs.overcast.command;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import com.google.common.base.Splitter;
 
 import static com.google.common.base.Joiner.on;
@@ -74,6 +75,15 @@ public class Command {
 
         for (String o : Splitter.on(" ").split(s)) {
             c.getCommand().add(o);
+        }
+
+        return c;
+    }
+
+    public static Command fromCmdArgs(List<String> cmdArgs) {
+        Command c = new Command();
+        for (String cmdArg : cmdArgs) {
+            c.getCommand().add(cmdArg);
         }
 
         return c;
