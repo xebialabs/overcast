@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.host;
 
+import java.nio.file.Paths;
 import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Ignore;
@@ -23,13 +24,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.spotify.docker.client.ContainerNotFoundException;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
+import com.spotify.docker.client.*;
 import com.spotify.docker.client.messages.ContainerInfo;
 
+import com.xebialabs.overcast.support.docker.Config;
+
 import static com.google.common.collect.Lists.newArrayList;
+import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -47,16 +48,36 @@ public class DockerHostItest {
     public static final int DOCKER_PORT_RANGE_MIN = 32768;
     public static final int DOCKER_PORT_RANGE_MAX = 65535;
 
+    // configuration keys
+    public static final String DOCKER_ADVANCED_CONFIG = "dockerAdvancedConfig";
+    public static final String DOCKER_MINIMAL_CONFIG = "dockerMinimalConfig";
+    public static final String DOCKER_ADVANCED_CONFIG_TTY = "dockerAdvancedConfigTty";
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    public DockerClient createDockerClient(String label) throws DockerCertificateException {
+        DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
+
+        String dockerHost = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
+        builder.uri(dockerHost);
+
+        String certificatePath = getOvercastProperty(label + Config.DOCKER_CERTIFICATES_SUFFIX, null);
+        if (certificatePath != null) {
+            DockerCertificates.Builder certBuilder = DockerCertificates.builder();
+            DockerCertificates certs = certBuilder.dockerCertPath(Paths.get(certificatePath)).build().get();
+            builder.dockerCertificates(certs);
+        }
+        return builder.build();
+    }
+
     @Ignore("relies on the default host being http://localhost:2375")
     @Test
-    public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
-        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerMinimalConfig");
+    public void shouldRunMinimalConfig() throws DockerException, InterruptedException, DockerCertificateException {
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_MINIMAL_CONFIG);
         assertThat(itestHost, notNullValue());
 
-        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        DockerClient dockerClient = createDockerClient(DOCKER_MINIMAL_CONFIG);
         String containerId = null;
 
         try {
@@ -75,11 +96,11 @@ public class DockerHostItest {
     }
 
     @Test
-    public void shouldRunAdvancedConfig() throws DockerException, InterruptedException {
-        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerAdvancedConfig");
+    public void shouldRunAdvancedConfig() throws DockerException, InterruptedException, DockerCertificateException {
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_ADVANCED_CONFIG);
         assertThat(itestHost, notNullValue());
 
-        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG);
         String containerId = null;
 
         try {
@@ -109,11 +130,11 @@ public class DockerHostItest {
     }
 
     @Test
-    public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException {
-        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerAdvancedConfigTty");
+    public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException, DockerCertificateException {
+        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_ADVANCED_CONFIG_TTY);
         assertThat(itestHost, notNullValue());
 
-        DockerClient dockerClient = new DefaultDockerClient(itestHost.getUri());
+        DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG_TTY);
         String containerId = null;
 
         try {
