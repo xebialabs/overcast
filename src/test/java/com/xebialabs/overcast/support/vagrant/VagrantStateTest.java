@@ -17,8 +17,14 @@ package com.xebialabs.overcast.support.vagrant;
 
 import org.junit.Test;
 
-import static com.xebialabs.overcast.support.vagrant.VagrantState.*;
-import static junit.framework.Assert.assertEquals;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.ABORTED;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.POWEROFF;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.RUNNING;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.SAVED;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.fromStatusString;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
+import static org.junit.Assert.assertEquals;
 
 public class VagrantStateTest {
 

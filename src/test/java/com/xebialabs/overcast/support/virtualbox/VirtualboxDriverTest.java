@@ -25,9 +25,9 @@ import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.command.CommandResponse;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class VirtualboxDriverTest {
-
 
     @Mock
     private CommandProcessor commandProcessor;
@@ -62,7 +61,6 @@ public class VirtualboxDriverTest {
     private static final Command start = Command.fromString("VBoxManage startvm 4407a6e4-c966-49d4-959a-50c87fffa0ac --type headless");
     private static final Command snapshotList = Command.fromString("VBoxManage snapshot 4407a6e4-c966-49d4-959a-50c87fffa0ac list --machinereadable");
     private static final Command getExtraData = Command.fromString("VBoxManage getextradata windows12 someKey");
-
 
 
     @Before
@@ -155,5 +153,4 @@ public class VirtualboxDriverTest {
         when(commandProcessor.run(getExtraData)).thenReturn(new CommandResponse(0, "", "Value: some value\n"));
         assertThat(driver.getExtraData("windows12", "someKey"), is("some value"));
     }
-
 }

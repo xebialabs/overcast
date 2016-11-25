@@ -16,9 +16,6 @@
 package com.xebialabs.overcast.support.libvirt;
 
 import java.util.Date;
-
-import junit.framework.Assert;
-
 import org.jdom2.Document;
 import org.junit.Test;
 

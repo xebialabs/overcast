@@ -20,18 +20,17 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificateException;
-import com.spotify.docker.client.DockerCertificates;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.ImageNotFoundException;
-import com.spotify.docker.client.messages.*;
+import com.spotify.docker.client.*;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.PortBinding;
 
 import com.xebialabs.overcast.host.DockerHost;
 
-public class DockerDriver {
+import static com.spotify.docker.client.DockerClient.RemoveContainerParam.removeVolumes;
 
+public class DockerDriver {
     private DockerHost dockerHost;
 
     private Map portMappings;
@@ -117,8 +116,8 @@ public class DockerDriver {
     public void killAndRemoveContainer() {
         try {
             dockerClient.killContainer(containerId);
-            if(dockerHost.isRemove()) {
-                dockerClient.removeContainer(containerId, dockerHost.isRemoveVolume());
+            if (dockerHost.isRemove()) {
+                dockerClient.removeContainer(containerId, removeVolumes(dockerHost.isRemoveVolume()));
             }
         } catch (Exception e) {
             logger.error("Error while tearing down docker host: ", e);
