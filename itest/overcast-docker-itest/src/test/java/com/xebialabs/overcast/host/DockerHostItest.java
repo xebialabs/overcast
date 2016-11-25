@@ -15,6 +15,8 @@
  */
 package com.xebialabs.overcast.host;
 
+import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import org.hamcrest.Matchers;
@@ -25,7 +27,6 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -33,6 +34,7 @@ import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerInfo;
 
 import com.xebialabs.overcast.support.docker.Config;
+import com.xebialabs.overcast.support.docker.DockerDriver;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
@@ -61,19 +63,17 @@ public class DockerHostItest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    public DockerClient createDockerClient(String label) throws DockerCertificateException {
-        DefaultDockerClient.Builder builder = DefaultDockerClient.builder();
+    public DockerClient createDockerClient(String label) {
+        try {
+            String hostProperty = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX);
+            String certificateProperty = getOvercastProperty(label + Config.DOCKER_CERTIFICATES_SUFFIX);
 
-        String dockerHost = getOvercastProperty(label + Config.DOCKER_HOST_SUFFIX, Config.DOCKER_DEFAULT_HOST);
-        builder.uri(dockerHost);
-
-        String certificatePath = getOvercastProperty(label + Config.DOCKER_CERTIFICATES_SUFFIX, null);
-        if (certificatePath != null) {
-            DockerCertificates.Builder certBuilder = DockerCertificates.builder();
-            DockerCertificates certs = certBuilder.dockerCertPath(Paths.get(certificatePath)).build().get();
-            builder.dockerCertificates(certs);
+            URI host = hostProperty == null ? null : new URI(hostProperty);
+            Path certificates = certificateProperty == null ? null : Paths.get(certificateProperty);
+            return DockerDriver.buildClient(host, certificates);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return builder.build();
     }
 
     @Ignore("relies on the default host being http://localhost:2375")

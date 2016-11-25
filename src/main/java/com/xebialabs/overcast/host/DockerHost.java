@@ -28,36 +28,38 @@ import com.xebialabs.overcast.support.docker.DockerDriver;
 public class DockerHost implements CloudHost {
 
     private final DockerDriver dockerDriver;
+    private final String image;
+    private final URI uri; // allowed to be null when configuring via DOCKER_* environment variables
 
-    private String image;
     private List<String> command;
     private boolean exposeAllPorts = false;
-    private URI uri;
     private String name;
     private boolean remove;
     private boolean removeVolume;
     private List<String> env;
     private Set<String> exposedPorts;
-
     private boolean tty;
 
     public DockerHost(String image, String dockerHostName, Path certificatesPath) {
         try {
-            this.uri = new URI(dockerHostName);
-        } catch (URISyntaxException e) {
-            logger.error("could not parse host name", e);
-            throw new IllegalArgumentException("could not parse host name");
-        }
-        this.image = image;
+            this.image = image;
 
-        if ("https".equals(uri.getScheme())) {
-            if (certificatesPath == null) {
-                throw new IllegalArgumentException("certificates are required for secured connections");
+            if (dockerHostName != null) {
+                this.uri = new URI(dockerHostName);
+
+                if ("https".equals(uri.getScheme())) {
+                    if (certificatesPath == null) {
+                        throw new IllegalArgumentException("<host>.certificates must be configured for https connection");
+                    }
+                }
+            } else {
+                this.uri = null;
             }
 
             dockerDriver = new DockerDriver(this, certificatesPath);
-        } else {
-            dockerDriver = new DockerDriver(this);
+        } catch (URISyntaxException e) {
+            logger.error("Invalid dockerHost " + dockerHostName, e);
+            throw new IllegalArgumentException("Invalid dockerHost " + e.getMessage());
         }
     }
 
@@ -78,11 +80,7 @@ public class DockerHost implements CloudHost {
 
     @Override
     public String getHostName() {
-        // if we're connected to a unix socket the host must be localhost, this prevents returning null
-        if ("unix".equals(uri.getScheme())) {
-            return "localhost";
-        }
-        return uri.getHost();
+        return dockerDriver.getHost();
     }
 
     public String getImage() {
@@ -162,5 +160,4 @@ public class DockerHost implements CloudHost {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHost.class);
-
 }

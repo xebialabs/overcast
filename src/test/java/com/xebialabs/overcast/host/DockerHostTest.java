@@ -15,20 +15,19 @@
  */
 package com.xebialabs.overcast.host;
 
-import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class DockerHostTest {
     @Test
     public void shouldReturnLocalhostForUnixSocket() {
-        DockerHost dh = new DockerHost("image", "unix:///var/run/docker", new File(".").toPath());
+        DockerHost dh = new DockerHost("image", "unix:///var/run/docker", null);
         Assert.assertEquals("localhost", dh.getHostName());
     }
 
     @Test
     public void shouldReturnOtherHostForUrl() {
-        DockerHost dh = new DockerHost("image", "http://remotehost", new File(".").toPath());
+        DockerHost dh = new DockerHost("image", "http://remotehost", null);
         Assert.assertEquals("remotehost", dh.getHostName());
     }
 }

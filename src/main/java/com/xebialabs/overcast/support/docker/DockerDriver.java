@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.support.docker;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
@@ -36,29 +37,34 @@ import com.xebialabs.overcast.host.DockerHost;
 import static com.spotify.docker.client.DockerClient.RemoveContainerParam.removeVolumes;
 
 public class DockerDriver {
-    private DockerHost dockerHost;
+    private final DockerHost dockerHost;
+    private final DockerClient dockerClient;
 
     private Map portMappings;
-    private DockerClient dockerClient;
     private String containerId;
     private ContainerConfig config;
 
-    public DockerDriver(final DockerHost dockerHost) {
-        this(dockerHost, null);
+    public DockerDriver(DockerHost dockerHost, Path certificatesPath) {
+        this.dockerHost = dockerHost;
+        this.dockerClient = buildClient(dockerHost.getUri(), certificatesPath);
     }
 
-    public DockerDriver(final DockerHost dockerHost, final Path certificatesPath) {
-        this.dockerHost = dockerHost;
-
-        if (certificatesPath != null) {
-            try {
-                dockerClient = new DefaultDockerClient(dockerHost.getUri(), new DockerCertificates(certificatesPath));
-            } catch (final DockerCertificateException e) {
-                logger.error("could not read certificates", e);
-                throw new IllegalArgumentException("could not read certificates");
+    public static DockerClient buildClient(URI dockerHost, Path certificatesPath) {
+        try {
+            if (dockerHost == null) {
+                logger.info("Configuring docker host from environment");
+                return DefaultDockerClient.fromEnv().build();
+            } else {
+                logger.info("Configuring docker host from configuration");
+                DefaultDockerClient.Builder builder = DefaultDockerClient.builder().uri(dockerHost);
+                if (certificatesPath != null) {
+                    builder.dockerCertificates(new DockerCertificates(certificatesPath));
+                }
+                return builder.build();
             }
-        } else {
-            dockerClient = new DefaultDockerClient(dockerHost.getUri());
+        } catch (DockerCertificateException e) {
+            logger.error("Could not read certificates", e);
+            throw new IllegalArgumentException("Could not read certificates: " + e.getMessage());
         }
     }
 
@@ -127,6 +133,10 @@ public class DockerDriver {
         } catch (Exception e) {
             logger.error("Error while tearing down docker host: ", e);
         }
+    }
+
+    public String getHost() {
+        return dockerClient.getHost();
     }
 
     public int getPort(int port) {
