@@ -21,7 +21,7 @@ A Java library to test against hosts in the cloud.
 - Virtualbox version >= 4.2
 - Vagrant version >= 1.2.7
 - Qemu/KVM version that supports domain metadata (QEMU-KVM 1.4.2 (Fedora 19), 2.0.0 (Ubuntu LTS 14))
-- Docker >= 1.2
+- Docker >= 1.6
 
 ### Usage
 
@@ -133,10 +133,12 @@ Calling `getHostName()` will return the hostname of the Docker Host, assuming th
 
 Calling `getPort(port)` will translate the internal port (passed as an argument) to the port externally exposed by the Docker Container. The port number is dynamically determined by Docker. The port range used for dynamic allocation is 49153 to 65535 (defined by Docker).
 
-We use the [Spotify Docker Client](https://github.com/docker-java/docker-java) library, and therefore only TCP sockets are supported, no UNIX sockets.
+We use the [Spotify Docker Client](https://github.com/spotify/docker-client) library.
 
 ##### Docker container properties
-{my-host-label}.dockerHost - The hostname of the Docker Host. (default: `http://localhost:2375`)
+{my-host-label}.dockerHost - The hostname of the Docker Host. (default: `http://localhost:2375`). It can also be a unix socket: `unix:///var/run/docker.sock`.
+
+{my-host-label}.certificates - The certificates to use when connecting to a HTTPS secured docker host. The directory must contain `ca.pem`, `cert.pem` and `key.pem`.
 
 {my-host-label}.dockerImage - The Docker image that will be run. (required)
 
