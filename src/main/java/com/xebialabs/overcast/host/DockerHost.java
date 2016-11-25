@@ -42,10 +42,6 @@ public class DockerHost implements CloudHost {
 
     private boolean tty;
 
-    public DockerHost(String image, String dockerHostName) {
-        this(image, dockerHostName, null);
-    }
-
     public DockerHost(String image, String dockerHostName, Path certificatesPath) {
         try {
             this.uri = new URI(dockerHostName);
