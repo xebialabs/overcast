@@ -50,12 +50,12 @@ public class DockerHost implements CloudHost {
             throw new IllegalArgumentException("could not parse host name");
         }
         this.image = image;
-        
-        if (uri.getScheme().endsWith("https")) {
+
+        if ("https".equals(uri.getScheme())) {
             if (certificatesPath == null) {
                 throw new IllegalArgumentException("certificates are required for secured connections");
             }
-            
+
             dockerDriver = new DockerDriver(this, certificatesPath);
         } else {
             dockerDriver = new DockerDriver(this);
