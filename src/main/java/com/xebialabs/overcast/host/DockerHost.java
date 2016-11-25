@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +78,10 @@ public class DockerHost implements CloudHost {
 
     @Override
     public String getHostName() {
+        // if we're connected to a unix socket the host must be localhost, this prevents returning null
+        if ("unix".equals(uri.getScheme())) {
+            return "localhost";
+        }
         return uri.getHost();
     }
 
