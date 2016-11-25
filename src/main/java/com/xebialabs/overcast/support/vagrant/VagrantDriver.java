@@ -32,7 +32,7 @@ public class VagrantDriver {
 
     /**
      * Executes vagrant command which means that arguments passed here will be prepended with "vagrant"
-     * @param vagrantCommand arguments for <i><vagrant</i> command
+     * @param vagrantCommand arguments for <i>vagrant</i> command
      * @return vagrant response object
      */
     public CommandResponse doVagrant(String vagrantVm, final String... vagrantCommand) {
