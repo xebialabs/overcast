@@ -17,6 +17,7 @@ package com.xebialabs.overcast.host;
 
 import java.util.List;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,9 +32,7 @@ import com.spotify.docker.client.messages.ContainerInfo;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
@@ -51,6 +50,7 @@ public class DockerHostItest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Ignore("relies on the default host being http://localhost:2375")
     @Test
     public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerMinimalConfig");
@@ -110,7 +110,6 @@ public class DockerHostItest {
 
     @Test
     public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException {
-
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost("dockerAdvancedConfigTty");
         assertThat(itestHost, notNullValue());
 
@@ -133,5 +132,4 @@ public class DockerHostItest {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DockerHostItest.class);
-
 }
