@@ -41,10 +41,10 @@ import com.xebialabs.overcast.support.docker.DockerDriver;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
@@ -107,8 +107,8 @@ public class DockerHostItest {
 
     @Test
     public void shouldRunLinksConfig() throws DockerException, InterruptedException, DockerCertificateException {
-        DockerHost linkedHost = (DockerHost) CloudHostFactory.getCloudHost("mountebankConfig");
-        assertThat(linkedHost, notNullValue());
+        DockerHost greeter = (DockerHost) CloudHostFactory.getCloudHost("greeterConfig");
+        assertThat(greeter, notNullValue());
 
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_LINKS_CONFIG);
         assertThat(itestHost, notNullValue());
@@ -116,26 +116,20 @@ public class DockerHostItest {
         DockerClient dockerClient = createDockerClient(DOCKER_LINKS_CONFIG);
 
         try {
-            linkedHost.setup();
-
-            String containerId = linkedHost.getDockerDriver().getContainerId();
-            dockerClient.inspectContainer(containerId);
+            greeter.setup();
 
             itestHost.setup();
-            assertThat(itestHost.getLinks(), contains("mountebank:mountebank"));
+            assertThat(itestHost.getLinks(), contains("greeter:greeter"));
 
-            containerId = itestHost.getDockerDriver().getContainerId();
+            String containerId = itestHost.getDockerDriver().getContainerId();
             dockerClient.inspectContainer(containerId);
-
-            Thread.sleep(2000);
 
             try (final LogStream logStream = dockerClient.logs(containerId, LogsParam.stdout(), LogsParam.stderr(), LogsParam.follow())) {
                 final String logs = logStream.readFully();
-                assertThat(logs, containsString("Connecting to mountebank:2525"));
-                assertThat(logs, containsString("imposters            100% |*******************************|"));
+                assertThat(logs, containsString("hi"));
             }
         } finally {
-            linkedHost.teardown();
+            greeter.teardown();
             itestHost.teardown();
         }
     }
