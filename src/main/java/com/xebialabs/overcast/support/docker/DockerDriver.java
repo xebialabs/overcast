@@ -17,8 +17,10 @@ package com.xebialabs.overcast.support.docker;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.*;
-import javax.ws.rs.HEAD;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -40,7 +42,7 @@ public class DockerDriver {
     private final DockerHost dockerHost;
     private final DockerClient dockerClient;
 
-    private Map portMappings;
+    private Map<String, List<PortBinding>> portMappings;
     private String containerId;
     private ContainerConfig config;
 
@@ -70,10 +72,10 @@ public class DockerDriver {
 
     private void buildImageConfig() {
         final ContainerConfig.Builder configBuilder = ContainerConfig.builder().image(dockerHost.getImage());
-        if (dockerHost.getCommand() != null){
+        if (dockerHost.getCommand() != null) {
             configBuilder.cmd(dockerHost.getCommand());
         }
-        if (dockerHost.getEnv() != null){
+        if (dockerHost.getEnv() != null) {
             configBuilder.env(dockerHost.getEnv());
         }
         if (dockerHost.getExposedPorts() != null) {
@@ -125,8 +127,7 @@ public class DockerDriver {
     }
 
     private void createImage() throws DockerException, InterruptedException {
-        if(dockerHost.getName() == null){
-            containerId = dockerClient.createContainer(config).id();
+ private void createImage() throws DockerExc            containerId = dockerClient.createContainer(config).id();
         } else {
             containerId = dockerClient.createContainer(config, dockerHost.getName()).id();
         }
@@ -148,8 +149,8 @@ public class DockerDriver {
     }
 
     public int getPort(int port) {
-        ArrayList<PortBinding> bindings = (ArrayList<PortBinding>) portMappings.get(port+"/tcp");
-        if(bindings != null && bindings.size() > 0) {
+        List<PortBinding> bindings = portMappings.get(port + "/tcp");
+        if (bindings != null && bindings.size() > 0) {
             return Integer.parseInt(bindings.get(0).hostPort());
         } else {
             throw new IllegalArgumentException("Port not available");
