@@ -29,10 +29,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.exceptions.ImageNotFoundException;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.*;
 
 import com.xebialabs.overcast.host.DockerHost;
 
@@ -105,12 +102,12 @@ public class DockerDriver {
     }
 
     public void runContainer() {
-        buildImageConfig();
-
         try {
+            buildImageConfig();
+
             try {
                 createImage();
-            } catch(ImageNotFoundException e){
+            } catch (ImageNotFoundException e) {
                 dockerClient.pull(dockerHost.getImage(), new ProcessHandlerLogger());
                 createImage();
             }
@@ -119,15 +116,15 @@ public class DockerDriver {
 
             final ContainerInfo info = dockerClient.inspectContainer(containerId);
             portMappings = info.networkSettings().ports();
-
-        } catch (Exception e) {
-            logger.error("Error while setting up docker host: ", e);
+        } catch (InterruptedException | DockerException e) {
+            logger.error("Error while setting up docker container", e);
+            throw new RuntimeException("Error while setting up docker container", e);
         }
-
     }
 
     private void createImage() throws DockerException, InterruptedException {
- private void createImage() throws DockerExc            containerId = dockerClient.createContainer(config).id();
+        if (dockerHost.getName() == null) {
+            containerId = dockerClient.createContainer(config).id();
         } else {
             containerId = dockerClient.createContainer(config, dockerHost.getName()).id();
         }
@@ -135,12 +132,16 @@ public class DockerDriver {
 
     public void killAndRemoveContainer() {
         try {
-            dockerClient.killContainer(containerId);
+            ContainerState state = dockerClient.inspectContainer(containerId).state();
+            if (Boolean.TRUE.equals(state.running())) {
+                dockerClient.killContainer(containerId);
+            }
             if (dockerHost.isRemove()) {
                 dockerClient.removeContainer(containerId, removeVolumes(dockerHost.isRemoveVolume()));
             }
-        } catch (Exception e) {
-            logger.error("Error while tearing down docker host: ", e);
+        } catch (InterruptedException | DockerException e) {
+            logger.error("Error while tearing down docker container", e);
+            throw new RuntimeException("Error while tearing down docker container", e);
         }
     }
 
