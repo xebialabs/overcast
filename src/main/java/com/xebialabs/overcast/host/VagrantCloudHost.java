@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
@@ -65,6 +66,11 @@ public class VagrantCloudHost implements CloudHost {
     @Override
     public String getHostName() {
         return vagrantIp;
+    }
+
+    @Override
+    public String getHandle() {
+        throw new NotImplementedException();
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.*;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
@@ -91,6 +92,11 @@ class Ec2CloudHost implements CloudHost {
     @Override
     public String getHostName() {
         return publicDnsAddress;
+    }
+
+    @Override
+    public String getHandle() {
+        throw new NotImplementedException();
     }
 
     @Override

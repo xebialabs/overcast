@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -160,6 +161,11 @@ class TunneledCloudHost implements CloudHost {
     @Override
     public String getHostName() {
         return "localhost";
+    }
+
+    @Override
+    public String getHandle() {
+        throw new NotImplementedException();
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -78,13 +78,13 @@ public class CachedLibvirtHost extends LibvirtHost {
     private int provisionStartTimeout;
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
-        String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
-        String provisionUrl, String provisionCmd,
-        String cacheExpirationUrl, String cacheExpirationCmd,
-        CommandProcessor cmdProcessor,
-        int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
-        List<Filesystem> filesystemMappings, List<String> copySpec) {
-        super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings);
+                      String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
+                      String provisionUrl, String provisionCmd,
+                      String cacheExpirationUrl, String cacheExpirationCmd,
+                      CommandProcessor cmdProcessor,
+                      int startTimeout, int bootDelay, int provisionStartTimeout, int provisionedbootDelay,
+                      List<Filesystem> filesystemMappings, List<String> copySpec, String handle) {
+        super(libvirt, baseDomainName, ipLookupStrategy, networkName, startTimeout, bootDelay, filesystemMappings, handle);
         this.provisionUrl = checkNotNullTrimAndNotEmpty(provisionUrl, "provisionUrl");
         this.provisionCmd = checkNotNullTrimAndNotEmpty(provisionCmd, "provisionCmd");
         this.cacheExpirationUrl = cacheExpirationUrl;
@@ -93,6 +93,17 @@ public class CachedLibvirtHost extends LibvirtHost {
         this.provisionStartTimeout = provisionStartTimeout;
         this.cmdProcessor = cmdProcessor;
         this.copySpec = copySpec;
+
+        if(handle != null) {
+            try {
+                logger.info("Restoring Libvirt provisioned clone from handle [handle={}]", handle);
+                provisionedClone = DomainWrapper.newWrapper(libvirt.domainLookupByName(handle));
+                this.handle = handle;
+            } catch (LibvirtException e) {
+                String msg = String.format("Could not initiate libvirt domain with given handle (handle=%s)", handle);
+                throw new RuntimeException(msg, e);
+            }
+        }
     }
 
     private String checkNotNullTrimAndNotEmpty(String arg, String argName) {
@@ -122,10 +133,10 @@ public class CachedLibvirtHost extends LibvirtHost {
             provisionedClone = createProvisionedClone();
         } else {
             String baseName = super.getBaseDomainName();
-            String cloneName = baseName + "-" + UUID.randomUUID().toString();
+            handle = baseName + "-" + UUID.randomUUID().toString();
 
-            logger.info("Creating clone '{}' from cached domain '{}'", cloneName, cachedDomain.getName());
-            provisionedClone = cachedDomain.cloneWithBackingStore(cloneName);
+            logger.info("Creating clone '{}' from cached domain '{}'", handle, cachedDomain.getName());
+            provisionedClone = cachedDomain.cloneWithBackingStore(handle);
         }
 
         provisionedCloneIp = waitUntilRunningAndGetIP(provisionedClone);

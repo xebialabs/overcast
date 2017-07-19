@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.support.docker.DockerDriver;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class DockerHost implements CloudHost {
 
@@ -85,6 +86,11 @@ public class DockerHost implements CloudHost {
     @Override
     public String getHostName() {
         return dockerDriver.getHost();
+    }
+
+    @Override
+    public String getHandle() {
+        throw new NotImplementedException();
     }
 
     public String getImage() {

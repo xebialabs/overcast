@@ -1,0 +1,13 @@
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+dependencies {
+
+    compile rootProject
+
+    compile 'args4j:args4j:2.33'
+    compile gradleApi()
+
+}
+

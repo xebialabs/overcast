@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.xebialabs.overcast.host;
 
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class VirtualboxHost implements CloudHost {
 
@@ -41,6 +42,11 @@ public class VirtualboxHost implements CloudHost {
     @Override
     public String getHostName() {
         return ip;
+    }
+
+    @Override
+    public String getHandle() {
+        throw new NotImplementedException();
     }
 
     @Override

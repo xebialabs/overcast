@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.SshIpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.StaticIpLookupStrategy;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 
@@ -62,11 +63,12 @@ class LibvirtHost implements CloudHost {
 
     private DomainWrapper clone;
     private String hostIp;
+    String handle;
     private IpLookupStrategy ipLookupStrategy;
 
     private List<Filesystem> filesystemMappings;
 
-    public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay, List<Filesystem> filesystemMappings) {
+    public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay, List<Filesystem> filesystemMappings, String handle) {
         this.libvirt = libvirt;
         this.baseDomainName = baseDomainName;
         this.startTimeout = startTimeout;
@@ -80,6 +82,18 @@ class LibvirtHost implements CloudHost {
         } catch (LibvirtException e) {
             throw new RuntimeException(e);
         }
+
+        if(handle != null) {
+            try {
+                logger.info("Restoring Libvirt clone from handle [handle={}]", handle);
+                clone = DomainWrapper.newWrapper(libvirt.domainLookupByName(handle));
+                this.handle = handle;
+            } catch (LibvirtException e) {
+                String msg = String.format("Could not initiate libvirt domain with given handle (handle=%s)", handle);
+                throw new RuntimeException(msg, e);
+            }
+        }
+
     }
 
     public static IpLookupStrategy determineIpLookupStrategy(String hostLabel) {
@@ -122,6 +136,11 @@ class LibvirtHost implements CloudHost {
     }
 
     @Override
+    public String getHandle() {
+        return handle;
+    }
+
+    @Override
     public int getPort(int port) {
         return port;
     }
@@ -136,9 +155,9 @@ class LibvirtHost implements CloudHost {
 
     protected DomainWrapper createClone() {
         String baseName = baseDomain.getName();
-        String cloneName = baseName + "-" + UUID.randomUUID().toString();
-        logger.info("Creating clone '{}' from base domain '{}'", cloneName, baseName);
-        return baseDomain.cloneWithBackingStore(cloneName, filesystemMappings);
+        handle = baseName + "-" + UUID.randomUUID().toString();
+        logger.info("Creating clone '{}' from base domain '{}'", handle, baseName);
+        return baseDomain.cloneWithBackingStore(handle, filesystemMappings);
     }
 
     protected String waitUntilRunningAndGetIP(DomainWrapper clone) {

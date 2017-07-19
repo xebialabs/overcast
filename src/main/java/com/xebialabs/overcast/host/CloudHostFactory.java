@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -97,6 +97,17 @@ public class CloudHostFactory {
         return getCloudHost(hostLabel, true);
     }
 
+    public static CloudHost getCloudHostByHandle(String label, String handle) {
+
+        String kvmBaseDomain = getOvercastProperty(label + LibvirtHost.LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX);
+        if (kvmBaseDomain != null) {
+            logger.info("Getting Libvirt host [label={}, handle={}]", label, handle);
+            return createLibvirtHost(label, kvmBaseDomain, handle);
+        }
+
+        return null;
+    }
+
     public static CloudHost getCloudHost(String hostLabel) {
         return getCloudHost(hostLabel, false);
     }
@@ -129,7 +140,7 @@ public class CloudHostFactory {
 
         String kvmBaseDomain = getOvercastProperty(label + LibvirtHost.LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX);
         if (kvmBaseDomain != null) {
-            return createLibvirtHost(label, kvmBaseDomain);
+            return createLibvirtHost(label, kvmBaseDomain, null);
         }
 
         String dockerImage = getOvercastProperty(label + Config.DOCKER_IMAGE_SUFFIX);
@@ -160,7 +171,7 @@ public class CloudHostFactory {
         return dockerHost;
     }
 
-    private static CloudHost createLibvirtHost(String label, String kvmBaseDomain) {
+    private static CloudHost createLibvirtHost(String label, String kvmBaseDomain, String handle) {
         String libvirtURL = getOvercastProperty(label + LIBVIRT_URL_PROPERTY_SUFFIX, LIBVIRT_URL_DEFAULT);
 
         Connect libvirt = LibvirtUtil.getConnection(libvirtURL, false);
@@ -180,7 +191,7 @@ public class CloudHostFactory {
         String provisionCmd = getOvercastProperty(label + PROVISION_CMD);
 
         if (provisionCmd == null) {
-            return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay, fsMappings);
+            return new LibvirtHost(libvirt, kvmBaseDomain, ipLookupStrategy, networkName, startTimeout, bootDelay, fsMappings, handle);
         } else {
             String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
             String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
@@ -191,7 +202,7 @@ public class CloudHostFactory {
             CommandProcessor cmdProcessor = atCurrentDir();
 
             return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl,
-                cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
+                cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec, handle);
         }
     }
 

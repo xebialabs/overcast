@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class CachedLibvirtHostTest {
         CachedLibvirtHost host = new CachedLibvirtHost("hostLabel", libvirt,
                 "baseDomainName", lookupStrategy, "networkName",
                 "provisionUrl", "provcmd ", null, "echo checksum",
-                CommandProcessor.atCurrentDir(), 100, 100, 100, 100, null, null);
+                CommandProcessor.atCurrentDir(), 100, 100, 100, 100, null, null, null);
 
         DomainWrapper w = host.findFirstCachedDomain();
         assertThat(w, notNullValue());

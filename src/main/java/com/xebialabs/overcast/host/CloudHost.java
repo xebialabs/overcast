@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2016 XebiaLabs B.V.
+ *    Copyright 2012-2017 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -39,6 +39,13 @@ public interface CloudHost {
     String getHostName();
 
     /**
+     * Returns an internal handler that can be used to identify the specific instance that has been setup.
+     *
+     * @return the handle.
+     */
+    String getHandle();
+
+    /**
      * Translates a target port number to the port number to connect to. Can only be called after {@link #setup()} has
      * been invoked.
      *
@@ -47,4 +54,5 @@ public interface CloudHost {
      * @return the translated port number.
      */
     int getPort(int port);
+
 }
