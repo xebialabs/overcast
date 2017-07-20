@@ -1,5 +1,16 @@
 // build.gradle for the overcast project
 
+/*
+ * Release and publish instructions:
+ *
+ * Overthere can be automatically "closed" and "released" on maven central by calling gradle tasks
+ * closeRepository, releaseRepository or closeAndReleaseRepository. Archives need to be uploaded manually.
+ *
+ * For example:
+ * gradle clean build signArchives uploadArchives closeAndPromoteRepository
+ *
+ * prerequisites: Published PGP key installed and configured, authorised sonatype username and password configured
+ */
 buildscript {
     repositories {
         jcenter()
@@ -8,6 +19,10 @@ buildscript {
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
     }
+}
+
+plugins {
+    id 'io.codearte.nexus-staging' version '0.9.0'
 }
 
 version = '2.6.0'
@@ -133,6 +148,10 @@ signing {
     sign configurations.archives
 }
 
+nexusStaging {
+    packageGroup = "com.xebialabs"
+}
+
 uploadArchives {
     if(project.hasProperty('sonatypeUsername')) {
         repositories.mavenDeployer {
@@ -216,4 +235,10 @@ uploadArchives {
             }
         }
     }
+}
+
+task dumpVersion {
+    file(buildDir).mkdirs()
+    def out = file("$buildDir/version.dump")
+    out.write("version=$project.version")
 }
