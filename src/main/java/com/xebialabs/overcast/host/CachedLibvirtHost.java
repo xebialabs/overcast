@@ -318,10 +318,10 @@ public class CachedLibvirtHost extends LibvirtHost {
     protected DomainWrapper createProvisionedClone() {
         DomainWrapper base = super.getClone();
         String baseName = super.getBaseDomainName();
-        String cloneName = baseName + "-" + UUID.randomUUID().toString();
+        handle = baseName + "-" + UUID.randomUUID().toString();
 
-        logger.info("Creating clone '{}' from provisioned domain '{}'", cloneName, base.getName());
-        return base.cloneWithBackingStore(cloneName);
+        logger.info("Creating clone '{}' from provisioned domain '{}'", handle, base.getName());
+        return base.cloneWithBackingStore(handle);
     }
 
     protected OverthereConnection getRemoteConnection(String ip) {

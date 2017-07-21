@@ -17,7 +17,6 @@ package com.xebialabs.overcast.host;
 
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class VirtualboxHost implements CloudHost {
 
@@ -46,7 +45,7 @@ public class VirtualboxHost implements CloudHost {
 
     @Override
     public String getHandle() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

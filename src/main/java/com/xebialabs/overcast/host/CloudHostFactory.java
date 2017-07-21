@@ -98,6 +98,10 @@ public class CloudHostFactory {
     }
 
     public static CloudHost getCloudHostByHandle(String label, String handle) {
+        String hostName = getOvercastProperty(label + HOSTNAME_PROPERTY_SUFFIX);
+        if (hostName != null) {
+            return createExistingCloudHost(label);
+        }
 
         String kvmBaseDomain = getOvercastProperty(label + LibvirtHost.LIBVIRT_BASE_DOMAIN_PROPERTY_SUFFIX);
         if (kvmBaseDomain != null) {
@@ -105,7 +109,7 @@ public class CloudHostFactory {
             return createLibvirtHost(label, kvmBaseDomain, handle);
         }
 
-        return null;
+        throw new RuntimeException("Could not determine configuration for handle");
     }
 
     public static CloudHost getCloudHost(String hostLabel) {

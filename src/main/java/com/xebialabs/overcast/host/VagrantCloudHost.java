@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
@@ -70,7 +69,7 @@ public class VagrantCloudHost implements CloudHost {
 
     @Override
     public String getHandle() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

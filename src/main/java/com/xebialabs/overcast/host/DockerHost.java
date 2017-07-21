@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xebialabs.overcast.support.docker.DockerDriver;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class DockerHost implements CloudHost {
 
@@ -90,7 +89,7 @@ public class DockerHost implements CloudHost {
 
     @Override
     public String getHandle() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public String getImage() {

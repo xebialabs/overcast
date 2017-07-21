@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -165,7 +164,7 @@ class TunneledCloudHost implements CloudHost {
 
     @Override
     public String getHandle() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -15,11 +15,10 @@
  */
 package com.xebialabs.overcast.gradle.tasks
 
-import com.xebialabs.overcast.cli.OvercastCli
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper;
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.Input;
+import com.xebialabs.overcast.OvercastControl
+import com.xebialabs.overcast.gradle.InstanceUtil
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 class OvercastTeardown extends DefaultTask {
@@ -33,20 +32,10 @@ class OvercastTeardown extends DefaultTask {
 
     @TaskAction
     void tearDown() {
-        def instances = readInstances()
+        def instances = InstanceUtil.readInstances(getProject())
         getProject().logger.lifecycle("Tearing down instances:" + instances)
-        OvercastCli cli = new OvercastCli()
+        OvercastControl cli = new OvercastControl()
         cli.teardown(instances)
     }
-
-    Map<String, Map<String, String>> readInstances() {
-        def instanceFile = new File(getProject().getBuildDir(), "overcast/instances.json")
-        if(instanceFile.exists()) {
-            return new JsonSlurper().parseText(instanceFile.text)
-        } else {
-            return [:]
-        }
-    }
-
 
 }

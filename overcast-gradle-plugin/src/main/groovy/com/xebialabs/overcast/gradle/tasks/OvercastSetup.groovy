@@ -15,28 +15,25 @@
  */
 package com.xebialabs.overcast.gradle.tasks
 
-import com.xebialabs.overcast.cli.OvercastCli
-import groovy.json.JsonOutput;
+import com.xebialabs.overcast.OvercastControl
+import groovy.json.JsonOutput
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction
 
 public class OvercastSetup extends DefaultTask {
 
-    @Input
-    public File config;
 
-    @Input
-    public List<String> labels;
+    public List<String> labels
 
     public Map<String, Map<String, String>> instances = new HashMap<>()
 
     @TaskAction
     void setup() {
-        this.getProject().getLogger().lifecycle("Setting up instances: " + labels)
-        OvercastCli cli = new OvercastCli()
-        instances = cli.setup(labels)
+        this.getProject().getLogger().lifecycle("Setting up instances: " + getLabels())
+        OvercastControl cli = new OvercastControl()
+        instances = cli.setup(getLabels())
         writeInstances(instances)
+
     }
 
     private void writeInstances(Map<String, Map<String, String>> instances) {
@@ -51,5 +48,7 @@ public class OvercastSetup extends DefaultTask {
 
     }
 
-
+    def getLabels() {
+        return this.labels
+    }
 }

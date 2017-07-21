@@ -29,7 +29,6 @@ import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.SshIpLookupStrategy;
 import com.xebialabs.overcast.support.libvirt.StaticIpLookupStrategy;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 

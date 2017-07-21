@@ -13,15 +13,46 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.xebialabs.overcast.gradle;
+package com.xebialabs.overcast.gradle
 
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import com.xebialabs.overcast.gradle.tasks.OvercastSetup
+import com.xebialabs.overcast.gradle.tasks.OvercastTeardown
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
 
 public class OvercastPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        def extension = project.extensions.create("overcast", OvercastPluginExtension)
+
         project.getLogger().lifecycle("Overcast plugin applied GROOVY ");
+        project.tasks.withType(Test) { task ->
+            task.doFirst {
+                def instances = InstanceUtil.readInstances(project)
+                instances.each {
+                    def overcastKey = "overcast-" + it.key
+                    def overcastValue = it.value["hostname"]
+                    project.getLogger().info("Setting overcast system properties: ${overcastKey} = ${overcastValue}")
+                    task.systemProperties[overcastKey] = overcastValue
+                }
+            }
+        }
+
+
+        project.tasks.create("overcastSetup", OvercastSetup).configure {
+            conventionMapping.labels = { -> extension.labels }
+        }
+
+        project.tasks.withType(Test){ task ->
+            task.mustRunAfter 'overcastSetup'
+        }
+
+        project.tasks.create("overcastTeardown", OvercastTeardown).configure {
+          outputs.upToDateWhen { false }
+        }.mustRunAfter project.tasks.withType(Test)
+
     }
+
 }

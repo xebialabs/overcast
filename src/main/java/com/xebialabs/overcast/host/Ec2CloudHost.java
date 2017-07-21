@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.*;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
@@ -96,7 +95,7 @@ class Ec2CloudHost implements CloudHost {
 
     @Override
     public String getHandle() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
