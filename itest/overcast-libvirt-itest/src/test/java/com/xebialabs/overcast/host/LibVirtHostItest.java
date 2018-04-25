@@ -109,10 +109,10 @@ public class LibVirtHostItest {
     @BeforeClass
     public static void checkKvm() throws LibvirtException {
         logger.info("Checking if KVM host is 'clean'");
-        final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("overcastItest.libvirtUrl");
-        final String basebox = OvercastProperties.getRequiredOvercastProperty("overcastItest.basebox");
-        final String staticBaseBox = OvercastProperties.getRequiredOvercastProperty("overcastItest.staticbasebox");
-        final String windowsBaseBox = OvercastProperties.getRequiredOvercastProperty("overcastItest.windowsbasebox");
+        final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("itest.libvirtUrl");
+        final String basebox = OvercastProperties.getRequiredOvercastProperty("itest.basebox");
+        final String staticBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.staticbasebox");
+        final String windowsBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.windowsbasebox");
         Set<String> baseBoxes = Sets.newHashSet(basebox, staticBaseBox, windowsBaseBox);
 
         Connect libvirt = null;
@@ -148,7 +148,7 @@ public class LibVirtHostItest {
 
     @Before
     public void setup() throws LibvirtException {
-        final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("overcastItest.libvirtUrl");
+        final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("itest.libvirtUrl");
         libvirt = new Connect(libvirtUrl);
     }
 
@@ -280,7 +280,7 @@ public class LibVirtHostItest {
 
             // ensure there's no clones running of the base box
             List<Domain> running = LibvirtUtil.getRunningDomains(libvirt);
-            final String basebox = OvercastProperties.getRequiredOvercastProperty("overcastItest.basebox");
+            final String basebox = OvercastProperties.getRequiredOvercastProperty("itest.basebox");
             List<Domain> clones = findCachedDomains(running, Sets.newHashSet(basebox));
             assertThat("There should not be a partially provisioned clone around.", clones, hasSize(0));
         } finally {
