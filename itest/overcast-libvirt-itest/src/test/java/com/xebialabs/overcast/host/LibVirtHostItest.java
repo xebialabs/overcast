@@ -21,11 +21,7 @@ import java.util.Set;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jdom2.Document;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
@@ -229,6 +225,7 @@ public class LibVirtHostItest {
     }
 
     @Test
+    @Ignore
     public void shouldCreateHostWithFsMapping() throws LibvirtException {
         CachedLibvirtHost itestHost = (CachedLibvirtHost) getCloudHost("overcastLibVirtItestHostWithFsMapping");
         assertThat(itestHost, notNullValue());
