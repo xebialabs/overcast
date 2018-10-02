@@ -18,14 +18,11 @@ buildscript {
 
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
     }
 }
 
-plugins {
-    id 'io.codearte.nexus-staging' version '0.9.0'
-}
-
-version = '2.6.0'
+version = '2.5.2'
 //version = '2.5.1' // Last released version
 
 group = 'com.xebialabs.cloud'
