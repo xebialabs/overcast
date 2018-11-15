@@ -3,7 +3,7 @@
 /*
  * Release and publish instructions:
  *
- * Overthere can be automatically "closed" and "released" on maven central by calling gradle tasks
+ * Overcast can be automatically "closed" and "released" on maven central by calling gradle tasks
  * closeRepository, releaseRepository or closeAndReleaseRepository. Archives need to be uploaded manually.
  *
  * For example:
@@ -22,7 +22,7 @@ buildscript {
     }
 }
 
-version = '2.5.2'
+version = '2.5.1-rc.1'
 //version = '2.5.1' // Last released version
 
 group = 'com.xebialabs.cloud'
@@ -153,8 +153,6 @@ nexusStaging {
 uploadArchives {
     if(project.hasProperty('sonatypeUsername')) {
         repositories.mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
-
             configuration = configurations.archives
 
             repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
