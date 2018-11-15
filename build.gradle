@@ -18,8 +18,11 @@ buildscript {
 
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
     }
+}
+
+plugins {
+    id 'io.codearte.nexus-staging' version '0.9.0'
 }
 
 version = '2.5.1-rc.1'
@@ -48,7 +51,6 @@ allprojects {
 }
 
 apply plugin: 'signing'
-apply plugin: 'io.codearte.nexus-staging'
 
 dependencies {
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
@@ -153,6 +155,8 @@ nexusStaging {
 uploadArchives {
     if(project.hasProperty('sonatypeUsername')) {
         repositories.mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
             configuration = configurations.archives
 
             repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
