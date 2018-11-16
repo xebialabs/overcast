@@ -15,9 +15,10 @@
  */
 package com.xebialabs.overcast.host;
 
-import java.util.List;
-import java.util.Set;
-
+import com.xebialabs.overcast.OvercastProperties;
+import com.xebialabs.overcast.support.libvirt.DomainWrapper;
+import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
+import com.xebialabs.overcast.support.libvirt.Metadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jdom2.Document;
@@ -29,21 +30,14 @@ import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.xebialabs.overcast.OvercastProperties;
-import com.xebialabs.overcast.support.libvirt.DomainWrapper;
-import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
-import com.xebialabs.overcast.support.libvirt.Metadata;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.transform;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
@@ -87,7 +81,7 @@ public class LibVirtHostItest {
     }
 
     public static List<Domain> findCachedDomains(List<Domain> domains, Set<String> baseBoxes) {
-        List<Domain> cached = newArrayList();
+        List<Domain> cached = new ArrayList<>();
         for (Domain domain : domains) {
             Document definition = LibvirtUtil.loadDomainXml(domain);
             Metadata md = Metadata.fromXml(definition);
@@ -109,7 +103,7 @@ public class LibVirtHostItest {
         final String basebox = OvercastProperties.getRequiredOvercastProperty("itest.basebox");
         final String staticBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.staticbasebox");
         final String windowsBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.windowsbasebox");
-        Set<String> baseBoxes = Sets.newHashSet(basebox, staticBaseBox, windowsBaseBox);
+        Set<String> baseBoxes = Stream.of(basebox, staticBaseBox, windowsBaseBox).collect(Collectors.toSet());
 
         Connect libvirt = null;
 
@@ -117,21 +111,18 @@ public class LibVirtHostItest {
             libvirt = new Connect(libvirtUrl);
             List<Domain> defined = LibvirtUtil.getDefinedDomains(libvirt);
             List<Domain> running = LibvirtUtil.getRunningDomains(libvirt);
-            List<Domain> all = newArrayList();
+            List<Domain> all = new ArrayList<>();
             all.addAll(defined);
             all.addAll(running);
             List<Domain> cached = findCachedDomains(all, baseBoxes);
             if (!cached.isEmpty()) {
-                List<String> names = transform(cached, new Function<Domain, String>() {
-                    @Override
-                    public String apply(Domain domain) {
-                        try {
-                            return domain.getName();
-                        } catch (LibvirtException e) {
-                            throw new RuntimeException("Error getting domain names.", e);
-                        }
+                List<String> names = cached.stream().map(d -> {
+                    try {
+                        return d.getName();
+                    } catch (LibvirtException e) {
+                        throw new RuntimeException("Error getting domain names.", e);
                     }
-                });
+                }).collect(Collectors.toList());
                 throw new RuntimeException("Still cached domains present: " + names);
             }
         } finally {
@@ -157,7 +148,7 @@ public class LibVirtHostItest {
 
     public List<Domain> findCached(String base) throws LibvirtException {
         List<Domain> defined = LibvirtUtil.getDefinedDomains(libvirt);
-        List<Domain> cached = findCachedDomains(defined, Sets.newHashSet(base));
+        List<Domain> cached = findCachedDomains(defined, Collections.singleton(base));
         return cached;
     }
 
@@ -278,7 +269,7 @@ public class LibVirtHostItest {
             // ensure there's no clones running of the base box
             List<Domain> running = LibvirtUtil.getRunningDomains(libvirt);
             final String basebox = OvercastProperties.getRequiredOvercastProperty("itest.basebox");
-            List<Domain> clones = findCachedDomains(running, Sets.newHashSet(basebox));
+            List<Domain> clones = findCachedDomains(running, Collections.singleton(basebox));
             assertThat("There should not be a partially provisioned clone around.", clones, hasSize(0));
         } finally {
             itestHost.teardown();

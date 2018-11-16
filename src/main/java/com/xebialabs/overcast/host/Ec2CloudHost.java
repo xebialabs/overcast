@@ -22,9 +22,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.*;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
+import static java.util.Arrays.asList;
 
 class Ec2CloudHost implements CloudHost {
 
@@ -85,7 +85,7 @@ class Ec2CloudHost implements CloudHost {
 
     @Override
     public void teardown() {
-        ec2.terminateInstances(new TerminateInstancesRequest(newArrayList(instanceId)));
+        ec2.terminateInstances(new TerminateInstancesRequest(asList(instanceId)));
     }
 
     @Override
@@ -164,7 +164,7 @@ class Ec2CloudHost implements CloudHost {
     }
 
     protected void setInstanceName() {
-        ec2.createTags(new CreateTagsRequest(newArrayList(instanceId), newArrayList(new Tag("Name", hostLabel + " started at " + new Date()))));
+        ec2.createTags(new CreateTagsRequest(asList(instanceId), asList(new Tag("Name", hostLabel + " started at " + new Date()))));
     }
 
     public String waitUntilRunningAndGetPublicDnsName() {
@@ -172,7 +172,7 @@ class Ec2CloudHost implements CloudHost {
         sleep(5);
 
         for (; ; ) {
-            DescribeInstancesRequest describe = new DescribeInstancesRequest().withInstanceIds(newArrayList(instanceId));
+            DescribeInstancesRequest describe = new DescribeInstancesRequest().withInstanceIds(asList(instanceId));
             Instance instance = ec2.describeInstances(describe).getReservations().get(0).getInstances().get(0);
             if (instance.getState().getName().equals("running")) {
                 return instance.getPublicDnsName();

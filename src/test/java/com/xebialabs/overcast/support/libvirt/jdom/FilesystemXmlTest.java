@@ -18,11 +18,10 @@ package com.xebialabs.overcast.support.libvirt.jdom;
 import java.util.Collections;
 import java.util.Map;
 
+import com.xebialabs.overcast.Resources;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Test;
-
-import com.google.common.io.Resources;
 
 import com.xebialabs.overcast.support.libvirt.Filesystem;
 

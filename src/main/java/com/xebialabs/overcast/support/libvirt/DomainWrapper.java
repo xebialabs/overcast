@@ -15,12 +15,6 @@
  */
 package com.xebialabs.overcast.support.libvirt;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.libvirt.Domain;
@@ -30,7 +24,8 @@ import org.libvirt.StorageVol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.*;
 
 import static com.xebialabs.overcast.support.libvirt.JDomUtil.documentToString;
 import static com.xebialabs.overcast.support.libvirt.Metadata.updateCloneMetadata;
@@ -39,9 +34,7 @@ import static com.xebialabs.overcast.support.libvirt.jdom.DiskXml.getDisks;
 import static com.xebialabs.overcast.support.libvirt.jdom.DiskXml.updateDisks;
 import static com.xebialabs.overcast.support.libvirt.jdom.DomainXml.prepareForCloning;
 import static com.xebialabs.overcast.support.libvirt.jdom.DomainXml.setDomainName;
-import static com.xebialabs.overcast.support.libvirt.jdom.FilesystemXml.getFilesystems;
-import static com.xebialabs.overcast.support.libvirt.jdom.FilesystemXml.removeFilesystemsWithTarget;
-import static com.xebialabs.overcast.support.libvirt.jdom.FilesystemXml.toFileSystemXml;
+import static com.xebialabs.overcast.support.libvirt.jdom.FilesystemXml.*;
 import static com.xebialabs.overcast.support.libvirt.jdom.InterfaceXml.getMacs;
 
 public class DomainWrapper {
@@ -139,11 +132,8 @@ public class DomainWrapper {
             cloneDomain.create();
             logger.debug("Starting clone: '{}'", cloneDomain.getName());
 
-            DomainWrapper clone = newWrapper(cloneDomain);
-            return clone;
-        } catch (IOException e) {
-            throw new LibvirtRuntimeException("Unable to clone domain", e);
-        } catch (LibvirtException e) {
+            return newWrapper(cloneDomain);
+        } catch (IOException | LibvirtException e) {
             throw new LibvirtRuntimeException("Unable to clone domain", e);
         }
     }
@@ -161,7 +151,7 @@ public class DomainWrapper {
     }
 
     private void cloneDisks(Document cloneXmlDocument, String cloneName) throws LibvirtException {
-        List<StorageVol> cloneDisks = Lists.newArrayList();
+        List<StorageVol> cloneDisks = new ArrayList<>();
         int idx = 0;
         for (Disk d : getDisks(domain.getConnect(), domainXml)) {
             idx++;
@@ -192,9 +182,7 @@ public class DomainWrapper {
             String xml = documentToString(domainXml);
             logger.debug("Updating domain '{}' XML with {}", getName(), xml);
             domain.getConnect().domainDefineXML(xml);
-        } catch (IOException e) {
-            throw new LibvirtRuntimeException(String.format("Unable to update metadata for domain '%s'", getName()), e);
-        } catch (LibvirtException e) {
+        } catch (IOException | LibvirtException e) {
             throw new LibvirtRuntimeException(String.format("Unable to update metadata for domain '%s'", getName()), e);
         }
     }

@@ -15,17 +15,14 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import java.util.Map;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-
+import com.xebialabs.overcast.Strings;
 import com.xebialabs.overcast.command.CommandProcessor;
 
-import static com.google.common.base.Splitter.on;
-import static com.google.common.collect.Collections2.filter;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.xebialabs.overcast.command.Command.aCommand;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.POWEROFF;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.SAVED;
@@ -49,19 +46,16 @@ public class VirtualboxDriver {
      * Checks if VM exists. Accepts UUID or VM name as an argument.
      */
     public boolean vmExists(final String vmOrUuid) {
-        return filter(newArrayList(on("\n").split(execute("list", "vms"))), new Predicate<String>() {
-            @Override
-            public boolean apply(final String i) {
-                return i.endsWith("{" + vmOrUuid + "}") || i.startsWith("\"" + vmOrUuid + "\"");
-            }
-        }).size() == 1;
+        return  Pattern.compile("\\s").splitAsStream(execute("list", "vms")).filter(s ->
+            s.endsWith("{" + vmOrUuid + "}") || s.startsWith("\"" + vmOrUuid + "\"")
+        ).count() == 1;
     }
 
     /**
      * Shuts down if running, restores the snapshot and starts VM.
      */
     public void loadSnapshot(String vm, String snapshotUuid) {
-        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vm))) {
+        if (!Stream.of(POWEROFF, SAVED).collect(Collectors.toSet()).contains(vmState(vm))) {
             powerOff(vm);
         }
         execute("snapshot", vm, "restore", snapshotUuid);
@@ -72,9 +66,11 @@ public class VirtualboxDriver {
      * Shuts down if running, restores the latest snapshot and starts VM.
      */
     public void loadLatestSnapshot(final String vm) {
-        Map<String,String> split = Splitter.on('\n').omitEmptyStrings()
-                .withKeyValueSeparator("=")
-                .split(execute("snapshot", vm, "list", "--machinereadable"));
+        Map<String,String> split = Pattern.compile("\n")
+                .splitAsStream(execute("snapshot", vm, "list", "--machinereadable"))
+                .filter(Strings::nonEmpty)
+                .map(s -> s.split("="))
+                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
         String quotedId = split.get("CurrentSnapshotUUID");
 
         loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));

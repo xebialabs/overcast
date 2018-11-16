@@ -15,10 +15,7 @@
  */
 package com.xebialabs.overcast.support.libvirt;
 
-import com.google.common.base.MoreObjects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.emptyToNull;
+import static com.xebialabs.overcast.Preconditions.checkNotNullOrEmpty;
 
 public class Filesystem {
     public enum AccessMode {
@@ -39,8 +36,8 @@ public class Filesystem {
     public boolean readOnly;
 
     public Filesystem(String source, String target, AccessMode accessMode, boolean readOnly) {
-        checkNotNull(emptyToNull(source));
-        checkNotNull(emptyToNull(target));
+        checkNotNullOrEmpty(source);
+        checkNotNullOrEmpty(target);
 
         this.source = source;
         this.target = target;
@@ -50,10 +47,11 @@ public class Filesystem {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("source", source)
-            .add("target", target)
-            .add("accessMode", accessMode)
-            .add("readOnly", readOnly).toString();
+        return "Filesystem{" +
+                "source='" + source + '\'' +
+                ", target='" + target + '\'' +
+                ", accessMode=" + accessMode +
+                ", readOnly=" + readOnly +
+                '}';
     }
 }

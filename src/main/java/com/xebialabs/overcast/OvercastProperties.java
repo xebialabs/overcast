@@ -15,29 +15,17 @@
  */
 package com.xebialabs.overcast;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigUtil;
-import com.typesafe.config.ConfigValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newLinkedHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.xebialabs.overcast.Preconditions.checkArgument;
+import static com.xebialabs.overcast.Preconditions.checkState;
 
 /**
  * Methods to load and access the {@code overcast.conf} file.
@@ -63,25 +51,14 @@ public class OvercastProperties {
 
     /** Get set of property names directly below path. */
     public static Set<String> getOvercastPropertyNames(final String path) {
-        Set<String> names = Sets.newHashSet();
-
         Config overcastConfig = getOvercastConfig();
         if (!overcastConfig.hasPath(path)) {
-            return names;
+            return new HashSet<>();
         }
 
         Config cfg = overcastConfig.getConfig(path);
+        return cfg.entrySet().stream().map((entry) -> ConfigUtil.splitPath(entry.getKey()).get(0)).collect(Collectors.toSet());
 
-        Collection<String> tmp = Collections2.transform(cfg.entrySet(), new Function<Entry<String, ConfigValue>, String>() {
-            @Override
-            public String apply(Entry<String, ConfigValue> mapping) {
-                String key = mapping.getKey();
-                return ConfigUtil.splitPath(key).get(0);
-            }
-        });
-        names.addAll(tmp);
-
-        return names;
     }
 
 
@@ -126,7 +103,7 @@ public class OvercastProperties {
     }
 
     public static List<String> getOvercastListProperty(String key) {
-        return getOvercastListProperty(key, Lists.<String>newArrayList());
+        return getOvercastListProperty(key, new ArrayList<>());
     }
 
     public static List<String> getOvercastListProperty(String key, List<String> defaultValue) {
@@ -155,7 +132,7 @@ public class OvercastProperties {
     }
 
     public static Map<Integer, Integer> parsePortsProperty(String ports) {
-        Map<Integer, Integer> portForwardMap = newLinkedHashMap();
+        Map<Integer, Integer> portForwardMap = new LinkedHashMap<>();
         StringTokenizer toker = new StringTokenizer(ports, ",");
         while (toker.hasMoreTokens()) {
             String[] localAndRemotePort = toker.nextToken().split(":");

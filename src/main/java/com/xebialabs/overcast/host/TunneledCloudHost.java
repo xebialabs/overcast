@@ -20,6 +20,7 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,9 +31,7 @@ import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.xebialabs.overcast.Preconditions.checkArgument;
 
 class TunneledCloudHost implements CloudHost {
     private static Logger logger = LoggerFactory.getLogger(TunneledCloudHost.class);
@@ -102,7 +101,7 @@ class TunneledCloudHost implements CloudHost {
         this.password = password;
         this.portForwardMap = portForwardMap;
         this.setupTimeout = setupTimeout;
-        this.portForwarders = Lists.newArrayList();
+        this.portForwarders = new ArrayList<>();
     }
 
     @Override

@@ -15,28 +15,22 @@
  */
 package com.xebialabs.overcast;
 
-import java.io.File;
-import java.net.URI;
-
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
-
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.OperatingSystemFamily;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.ssh.SshConnectionType;
+import org.junit.Test;
 
-import static com.xebialabs.overthere.ConnectionOptions.ADDRESS;
-import static com.xebialabs.overthere.ConnectionOptions.OPERATING_SYSTEM;
-import static com.xebialabs.overthere.ConnectionOptions.PASSWORD;
-import static com.xebialabs.overthere.ConnectionOptions.USERNAME;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.util.Arrays;
+
+import static com.xebialabs.overthere.ConnectionOptions.*;
 import static com.xebialabs.overthere.OperatingSystemFamily.UNIX;
-import static com.xebialabs.overthere.ssh.SshConnectionBuilder.CONNECTION_TYPE;
-import static com.xebialabs.overthere.ssh.SshConnectionBuilder.PASSPHRASE;
-import static com.xebialabs.overthere.ssh.SshConnectionBuilder.PRIVATE_KEY_FILE;
+import static com.xebialabs.overthere.ssh.SshConnectionBuilder.*;
 import static com.xebialabs.overthere.ssh.SshConnectionType.SFTP;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -67,14 +61,14 @@ public class OverthereUtilTest {
     }
 
     @Test
-    public void testCopyFile() {
-        File tempdir = Files.createTempDir();
+    public void testCopyFile() throws IOException {
+        File tempdir = Files.createTempDirectory("overthere-util-test").toFile();
         try {
             OverthereConnection srcHost = LocalConnection.getLocalConnection();
             OverthereConnection dstHost = LocalConnection.getLocalConnection();
 
             File dstFile = new File(tempdir, "destfile");
-            OverthereUtil.copyFiles(srcHost, dstHost, Lists.newArrayList("src/test/resources/copyFilesTest/1/file", dstFile.getAbsolutePath()));
+            OverthereUtil.copyFiles(srcHost, dstHost, Arrays.asList("src/test/resources/copyFilesTest/1/file", dstFile.getAbsolutePath()));
             assertThat(dstFile.exists(), equalTo(true));
         } finally {
             deleteRecursively(tempdir);
@@ -82,13 +76,13 @@ public class OverthereUtilTest {
     }
 
     @Test
-    public void testCopyDir() {
-        File tempdir = Files.createTempDir();
+    public void testCopyDir() throws IOException {
+        File tempdir = Files.createTempDirectory("overthere-util-test").toFile();
         try {
             OverthereConnection srcHost = LocalConnection.getLocalConnection();
             OverthereConnection dstHost = LocalConnection.getLocalConnection();
 
-            OverthereUtil.copyFiles(srcHost, dstHost, Lists.newArrayList("src/test/resources/copyFilesTest/1", tempdir.getAbsolutePath()));
+            OverthereUtil.copyFiles(srcHost, dstHost, Arrays.asList("src/test/resources/copyFilesTest/1", tempdir.getAbsolutePath()));
 
             File dstFile = new File(tempdir, "file");
             assertThat(dstFile.exists(), equalTo(true));
@@ -98,14 +92,14 @@ public class OverthereUtilTest {
     }
 
     @Test
-    public void testCopyMultiple() {
-        File tempdir = Files.createTempDir();
+    public void testCopyMultiple() throws IOException {
+        File tempdir = Files.createTempDirectory("overthere-util-test").toFile();
         try {
             OverthereConnection srcHost = LocalConnection.getLocalConnection();
             OverthereConnection dstHost = LocalConnection.getLocalConnection();
 
             OverthereUtil.copyFiles(srcHost, dstHost,
-                Lists.newArrayList("src/test/resources/copyFilesTest/1", "src/test/resources/copyFilesTest/2", tempdir.getAbsolutePath()));
+                    Arrays.asList("src/test/resources/copyFilesTest/1", "src/test/resources/copyFilesTest/2", tempdir.getAbsolutePath()));
 
             File dstFiles[] = new File[] { new File(tempdir, "file"), new File(tempdir, "file2") };
             for (File dstFile : dstFiles) {

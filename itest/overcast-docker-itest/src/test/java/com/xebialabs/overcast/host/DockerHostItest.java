@@ -18,7 +18,7 @@ package com.xebialabs.overcast.host;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Arrays;
 import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -38,7 +38,6 @@ import com.spotify.docker.client.messages.ContainerInfo;
 import com.xebialabs.overcast.support.docker.Config;
 import com.xebialabs.overcast.support.docker.DockerDriver;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -157,7 +156,7 @@ public class DockerHostItest {
             assertThat(containerInfo.config().env(), hasItem("MYVAR1=AAA"));
             assertThat(containerInfo.config().env(), hasItem("MYVAR2=BBB"));
             assertThat(containerInfo.config().env(), hasItem("MYVAR3=CCC"));
-            assertThat(containerInfo.config().cmd(), Matchers.equalTo((List<String>) newArrayList("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")));
+            assertThat(containerInfo.config().cmd(), Matchers.equalTo(Arrays.asList("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")));
             assertFalse(containerInfo.config().tty());
 
         } finally {

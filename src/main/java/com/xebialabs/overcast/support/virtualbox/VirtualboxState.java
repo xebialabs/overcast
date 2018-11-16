@@ -15,11 +15,7 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import java.util.Arrays;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-
-import static com.google.common.collect.Collections2.*;
+import java.util.regex.Pattern;
 
 public enum VirtualboxState {
     POWEROFF, ABORTED, SAVED, RUNNING;
@@ -27,12 +23,8 @@ public enum VirtualboxState {
 
     public static VirtualboxState fromStatusString(String s) {
 
-        String stateString = Iterables.getOnlyElement(filter(Arrays.asList(s.split("\n")), new Predicate<String>() {
-            @Override
-            public boolean apply(final String input) {
-                return input.startsWith("State:");
-            }
-        }));
+        String stateString = Pattern.compile("\n").splitAsStream(s).filter(l -> l.startsWith("State:")).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Expected 'State:...' but was: '" + s + "'."));
 
 
         if (stateString.contains("powered off")) {

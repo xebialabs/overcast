@@ -15,15 +15,13 @@
  */
 package com.xebialabs.overcast;
 
-import java.io.File;
-import java.net.URISyntaxException;
-
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.Resources;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import java.io.File;
+import java.net.URISyntaxException;
 
 public class PropertiesLoader {
 
@@ -52,9 +50,7 @@ public class PropertiesLoader {
             // resource.toURI().getPath() so path gets URL decoded so spaces are no issue
             // using resource.getPath() runs into a bug with guava
             return loadOvercastConfigFromFile(Resources.getResource(path).toURI().getPath());
-        } catch (IllegalArgumentException e) {
-            logger.warn("File '{}' not found on classpath.", path);
-        } catch (URISyntaxException e) {
+        } catch (IllegalArgumentException | NullPointerException | URISyntaxException e) {
             logger.warn("File '{}' not found on classpath.", path);
         }
         return ConfigFactory.empty();
