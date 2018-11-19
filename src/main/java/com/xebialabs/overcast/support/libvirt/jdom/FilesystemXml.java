@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.support.libvirt.jdom;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,8 +26,6 @@ import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-
-import com.google.common.collect.Maps;
 
 import com.xebialabs.overcast.support.libvirt.Filesystem;
 import com.xebialabs.overcast.support.libvirt.Filesystem.AccessMode;
@@ -64,7 +63,7 @@ public final class FilesystemXml {
      * filesystems of type 'mount'.
      */
     public static Map<String, Filesystem> getFilesystems(Document domainXml) {
-        Map<String, Filesystem> ret = Maps.newHashMap();
+        Map<String, Filesystem> ret = new HashMap<>();
         XPathFactory xpf = XPathFactory.instance();
         XPathExpression<Element> fsExpr = xpf.compile(XPATH_FILESYSTEM, Filters.element());
         List<Element> filesystems = fsExpr.evaluate(domainXml);

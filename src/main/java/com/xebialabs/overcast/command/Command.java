@@ -17,12 +17,8 @@ package com.xebialabs.overcast.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import com.google.common.base.Splitter;
-
-import static com.google.common.base.Joiner.on;
-import static com.google.common.base.Predicates.notNull;
-import static com.google.common.collect.Collections2.filter;
 
 public class Command {
 
@@ -44,7 +40,11 @@ public class Command {
             return this;
         }
 
-        command.addAll(filter(Arrays.asList(part), notNull()));
+        for (String p : part) {
+            if (p != null) {
+                command.add(p);
+            }
+        }
         return this;
     }
 
@@ -66,14 +66,22 @@ public class Command {
 
     @Override
     public String toString() {
-        return on(" ").join(command);
+        StringBuilder builder = new StringBuilder();
+        Iterator<String> iterator = command.iterator();
+        if (iterator.hasNext()) {
+            builder.append(iterator.next());
+        }
+        while (iterator.hasNext()) {
+            builder.append(' ').append(iterator.next());
+        }
+        return builder.toString();
     }
 
     public static Command fromString(String s) {
         Command c = new Command();
 
-        for (String o : Splitter.on(" ").split(s)) {
-            c.getCommand().add(o);
+        for (String part : s.split("\\s")) {
+            c.getCommand().add(part);
         }
 
         return c;

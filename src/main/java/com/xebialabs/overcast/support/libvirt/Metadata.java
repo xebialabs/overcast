@@ -19,11 +19,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import com.xebialabs.overcast.Preconditions;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 
 import static com.xebialabs.overcast.support.libvirt.JDomUtil.getElementText;
 
@@ -207,10 +207,11 @@ public class Metadata {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("parentDomain", parentDomain)
-            .add("creationTime", creationTime)
-            .add("provisionedChecksum", provisionedChecksum)
-            .add("provisionedWith", provisionedWith).toString();
+        return "Metadata{" +
+                "parentDomain='" + parentDomain + '\'' +
+                ", creationTime=" + creationTime +
+                ", provisionedChecksum='" + provisionedChecksum + '\'' +
+                ", provisionedWith='" + provisionedWith + '\'' +
+                '}';
     }
 }

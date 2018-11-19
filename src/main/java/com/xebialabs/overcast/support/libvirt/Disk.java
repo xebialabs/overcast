@@ -22,12 +22,11 @@ import org.libvirt.StorageVol;
 import org.libvirt.StorageVolInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.MoreObjects;
 
 import com.xebialabs.overcast.support.libvirt.jdom.DiskXml;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.emptyToNull;
+import static com.xebialabs.overcast.Preconditions.checkNotNull;
+import static com.xebialabs.overcast.Preconditions.checkNotNullOrEmpty;
 
 public class Disk {
     private static final Logger log = LoggerFactory.getLogger(Disk.class);
@@ -38,10 +37,10 @@ public class Disk {
     private StorageVol volume;
 
     public Disk(String device, String file, StorageVol volume, String format) {
-        checkNotNull(emptyToNull(device));
-        checkNotNull(emptyToNull(file));
+        checkNotNullOrEmpty(device);
+        checkNotNullOrEmpty(file);
         checkNotNull(volume);
-        checkNotNull(emptyToNull(format));
+        checkNotNullOrEmpty(format);
 
         this.device = device;
         this.file = file;
@@ -101,10 +100,11 @@ public class Disk {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("name", getName())
-                .add("format", format)
-                .add("device", device)
-                .add("file", file).toString();
+        return "Disk{" +
+                "name=" + getName() +
+                ", format='" + format + '\'' +
+                ", file='" + file + '\'' +
+                ", device='" + device + '\'' +
+                '}';
     }
 }

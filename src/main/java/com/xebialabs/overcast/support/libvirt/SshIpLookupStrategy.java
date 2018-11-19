@@ -15,22 +15,20 @@
  */
 package com.xebialabs.overcast.support.libvirt;
 
+import com.xebialabs.overthere.CmdLine;
+import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-
-import com.xebialabs.overthere.CmdLine;
-import com.xebialabs.overthere.OverthereConnection;
-import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
-
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
 import static com.xebialabs.overcast.OverthereUtil.overthereConnectionFromURI;
+import static com.xebialabs.overcast.Preconditions.checkNotNull;
 import static com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler.capturingHandler;
 
 /**
@@ -67,7 +65,7 @@ public class SshIpLookupStrategy implements IpLookupStrategy {
 
     @Override
     public String lookup(String mac) {
-        Preconditions.checkNotNull(mac, "Need a MAC to lookup the IP of a host.");
+        checkNotNull(mac, "Need a MAC to lookup the IP of a host.");
 
         CmdLine cmdLine = new CmdLine();
         String fragment = MessageFormat.format(command, mac);

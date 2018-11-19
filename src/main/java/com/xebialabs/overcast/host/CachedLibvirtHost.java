@@ -47,8 +47,8 @@ import com.xebialabs.overthere.RuntimeIOException;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.xebialabs.overcast.OverthereUtil.overthereConnectionFromURI;
+import static com.xebialabs.overcast.Preconditions.checkArgument;
 import static com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler.capturingHandler;
 import static com.xebialabs.overthere.util.MultipleOverthereExecutionOutputHandler.multiHandler;
 

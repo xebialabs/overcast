@@ -15,11 +15,10 @@
  */
 package com.xebialabs.overcast.support.libvirt.jdom;
 
+import com.xebialabs.overcast.Resources;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Test;
-
-import com.google.common.io.Resources;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;

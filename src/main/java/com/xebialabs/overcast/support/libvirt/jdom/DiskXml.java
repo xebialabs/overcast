@@ -16,6 +16,7 @@
 package com.xebialabs.overcast.support.libvirt.jdom;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,8 +29,6 @@ import org.jdom2.xpath.XPathFactory;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.libvirt.StorageVol;
-
-import com.google.common.collect.Lists;
 
 import com.xebialabs.overcast.support.libvirt.Disk;
 import com.xebialabs.overcast.support.libvirt.JDomUtil;
@@ -65,7 +64,7 @@ public final class DiskXml {
     /** Get the disks connected to the domain. */
     public static List<Disk> getDisks(Connect connect, Document domainXml) {
         try {
-            List<Disk> ret = Lists.newArrayList();
+            List<Disk> ret = new ArrayList<>();
             XPathFactory xpf = XPathFactory.instance();
             XPathExpression<Element> diskExpr = xpf.compile(XPATH_DISK, Filters.element());
             XPathExpression<Attribute> typeExpr = xpf.compile(XPATH_DISK_TYPE, Filters.attribute());

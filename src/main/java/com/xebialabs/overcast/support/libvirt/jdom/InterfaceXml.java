@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.support.libvirt.jdom;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jdom2.Document;
@@ -24,8 +25,6 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 public final class InterfaceXml {
     private static final Logger logger = LoggerFactory.getLogger(InterfaceXml.class);
@@ -39,7 +38,7 @@ public final class InterfaceXml {
      * bridged network device connected to 'br0' then you will find it's MAC address with the key 'br0'.
      */
     public static Map<String, String> getMacs(Document domainXml) {
-        Map<String, String> macs = Maps.newHashMap();
+        Map<String, String> macs = new HashMap<>();
         XPathFactory xpf = XPathFactory.instance();
         XPathExpression<Element> interfaces = xpf.compile("/domain/devices/interface", Filters.element());
         for (Element iface : interfaces.evaluate(domainXml)) {

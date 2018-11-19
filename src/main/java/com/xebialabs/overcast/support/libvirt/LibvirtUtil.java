@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.support.libvirt;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,8 +28,6 @@ import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 public final class LibvirtUtil {
     private static final Logger log = LoggerFactory.getLogger(LibvirtUtil.class);
@@ -88,7 +87,7 @@ public final class LibvirtUtil {
     /** Get list of the inactive domains. */
     public static List<Domain> getDefinedDomains(Connect libvirt) {
         try {
-            List<Domain> domains = newArrayList();
+            List<Domain> domains = new ArrayList<>();
             String[] domainNames = libvirt.listDefinedDomains();
             for (String name : domainNames) {
                 domains.add(libvirt.domainLookupByName(name));
@@ -102,7 +101,7 @@ public final class LibvirtUtil {
     /** Get list of the active domains. */
     public static List<Domain> getRunningDomains(Connect libvirt) {
         try {
-            List<Domain> domains = newArrayList();
+            List<Domain> domains = new ArrayList<>();
             int[] ids = libvirt.listDomains();
             for (int id : ids) {
                 domains.add(libvirt.domainLookupByID(id));

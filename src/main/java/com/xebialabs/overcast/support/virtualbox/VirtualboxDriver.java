@@ -15,17 +15,10 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import java.util.Map;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-
 import com.xebialabs.overcast.command.CommandProcessor;
 
-import static com.google.common.base.Splitter.on;
-import static com.google.common.collect.Collections2.filter;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
+import java.util.EnumSet;
+
 import static com.xebialabs.overcast.command.Command.aCommand;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.POWEROFF;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.SAVED;
@@ -49,19 +42,19 @@ public class VirtualboxDriver {
      * Checks if VM exists. Accepts UUID or VM name as an argument.
      */
     public boolean vmExists(final String vmOrUuid) {
-        return filter(newArrayList(on("\n").split(execute("list", "vms"))), new Predicate<String>() {
-            @Override
-            public boolean apply(final String i) {
-                return i.endsWith("{" + vmOrUuid + "}") || i.startsWith("\"" + vmOrUuid + "\"");
-            }
-        }).size() == 1;
+        String[] lines = execute("list", "vms").split("\\s");
+        for (String line : lines) {
+            if (line.endsWith("{" + vmOrUuid + "}") || line.startsWith("\"" + vmOrUuid + "\""))
+                return true;
+        }
+        return false;
     }
 
     /**
      * Shuts down if running, restores the snapshot and starts VM.
      */
     public void loadSnapshot(String vm, String snapshotUuid) {
-        if (!newHashSet(POWEROFF, SAVED).contains(vmState(vm))) {
+        if (!EnumSet.of(POWEROFF, SAVED).contains(vmState(vm))) {
             powerOff(vm);
         }
         execute("snapshot", vm, "restore", snapshotUuid);
@@ -72,10 +65,16 @@ public class VirtualboxDriver {
      * Shuts down if running, restores the latest snapshot and starts VM.
      */
     public void loadLatestSnapshot(final String vm) {
-        Map<String,String> split = Splitter.on('\n').omitEmptyStrings()
-                .withKeyValueSeparator("=")
-                .split(execute("snapshot", vm, "list", "--machinereadable"));
-        String quotedId = split.get("CurrentSnapshotUUID");
+        String quotedId = null;
+        String[] lines = execute("snapshot", vm, "list", "--machinereadable").split("\n");
+        for (String line : lines) {
+            if (!line.isEmpty()) {
+                String[] parts = line.split("=");
+                if (parts[0].equals("CurrentSnapshotUUID")) {
+                    quotedId = parts[1];
+                }
+            }
+        }
 
         loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));
     }
