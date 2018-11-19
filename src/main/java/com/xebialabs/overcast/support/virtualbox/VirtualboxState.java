@@ -15,16 +15,13 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import java.util.regex.Pattern;
-
 public enum VirtualboxState {
     POWEROFF, ABORTED, SAVED, RUNNING;
 
 
     public static VirtualboxState fromStatusString(String s) {
 
-        String stateString = Pattern.compile("\n").splitAsStream(s).filter(l -> l.startsWith("State:")).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Expected 'State:...' but was: '" + s + "'."));
+        String stateString = findState(s);
 
 
         if (stateString.contains("powered off")) {
@@ -44,5 +41,15 @@ public enum VirtualboxState {
         }
 
         throw new IllegalStateException("Can not detect state for state string: " + stateString);
+    }
+
+    private static String findState(String s) {
+        String[] lines = s.split("\n");
+        for (String line : lines) {
+            if (line.startsWith("State:")) {
+                return line;
+            }
+        }
+        throw new IllegalArgumentException("Expected 'State:...' but was: '" + s + "'.");
     }
 }

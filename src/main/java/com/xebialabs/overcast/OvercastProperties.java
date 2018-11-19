@@ -18,11 +18,11 @@ package com.xebialabs.overcast;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigUtil;
+import com.typesafe.config.ConfigValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.xebialabs.overcast.Preconditions.checkArgument;
 import static com.xebialabs.overcast.Preconditions.checkState;
@@ -57,8 +57,12 @@ public class OvercastProperties {
         }
 
         Config cfg = overcastConfig.getConfig(path);
-        return cfg.entrySet().stream().map((entry) -> ConfigUtil.splitPath(entry.getKey()).get(0)).collect(Collectors.toSet());
 
+        Set<String> result = new HashSet<>();
+        for (Map.Entry<String, ConfigValue> e : cfg.entrySet()) {
+            result.add(ConfigUtil.splitPath(e.getKey()).get(0));
+        }
+        return result;
     }
 
 
@@ -103,7 +107,7 @@ public class OvercastProperties {
     }
 
     public static List<String> getOvercastListProperty(String key) {
-        return getOvercastListProperty(key, new ArrayList<>());
+        return getOvercastListProperty(key, new ArrayList<String>());
     }
 
     public static List<String> getOvercastListProperty(String key, List<String> defaultValue) {

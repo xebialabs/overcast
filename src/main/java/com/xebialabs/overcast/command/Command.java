@@ -17,9 +17,8 @@ package com.xebialabs.overcast.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class Command {
 
@@ -41,7 +40,11 @@ public class Command {
             return this;
         }
 
-        command.addAll(Arrays.stream(part).filter(Objects::nonNull).collect(Collectors.toList()));
+        for (String p : part) {
+            if (p != null) {
+                command.add(p);
+            }
+        }
         return this;
     }
 
@@ -63,7 +66,15 @@ public class Command {
 
     @Override
     public String toString() {
-        return String.join(" ", command);
+        StringBuilder builder = new StringBuilder();
+        Iterator<String> iterator = command.iterator();
+        if (iterator.hasNext()) {
+            builder.append(iterator.next());
+        }
+        while (iterator.hasNext()) {
+            builder.append(' ').append(iterator.next());
+        }
+        return builder.toString();
     }
 
     public static Command fromString(String s) {

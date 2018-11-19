@@ -16,7 +16,6 @@
 package com.xebialabs.overcast;
 
 import java.net.URL;
-import java.util.stream.Stream;
 
 import static com.xebialabs.overcast.Preconditions.checkArgument;
 
@@ -24,9 +23,10 @@ public final class Resources {
     private Resources() {}
 
     public static URL getResource(String resourceName) {
-        ClassLoader loader =
-                Stream.of(
-                        Thread.currentThread().getContextClassLoader(), Resources.class.getClassLoader()).findFirst().get();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {
+            loader = Resources.class.getClassLoader();
+        }
         URL url = loader.getResource(resourceName);
         checkArgument(url != null, "resource %s not found.", resourceName);
         return url;

@@ -15,13 +15,9 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import com.xebialabs.overcast.Strings;
 import com.xebialabs.overcast.command.CommandProcessor;
 
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.EnumSet;
 
 import static com.xebialabs.overcast.command.Command.aCommand;
 import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.POWEROFF;
@@ -46,16 +42,19 @@ public class VirtualboxDriver {
      * Checks if VM exists. Accepts UUID or VM name as an argument.
      */
     public boolean vmExists(final String vmOrUuid) {
-        return  Pattern.compile("\\s").splitAsStream(execute("list", "vms")).filter(s ->
-            s.endsWith("{" + vmOrUuid + "}") || s.startsWith("\"" + vmOrUuid + "\"")
-        ).count() == 1;
+        String[] lines = execute("list", "vms").split("\\s");
+        for (String line : lines) {
+            if (line.endsWith("{" + vmOrUuid + "}") || line.startsWith("\"" + vmOrUuid + "\""))
+                return true;
+        }
+        return false;
     }
 
     /**
      * Shuts down if running, restores the snapshot and starts VM.
      */
     public void loadSnapshot(String vm, String snapshotUuid) {
-        if (!Stream.of(POWEROFF, SAVED).collect(Collectors.toSet()).contains(vmState(vm))) {
+        if (!EnumSet.of(POWEROFF, SAVED).contains(vmState(vm))) {
             powerOff(vm);
         }
         execute("snapshot", vm, "restore", snapshotUuid);
@@ -66,12 +65,16 @@ public class VirtualboxDriver {
      * Shuts down if running, restores the latest snapshot and starts VM.
      */
     public void loadLatestSnapshot(final String vm) {
-        Map<String,String> split = Pattern.compile("\n")
-                .splitAsStream(execute("snapshot", vm, "list", "--machinereadable"))
-                .filter(Strings::nonEmpty)
-                .map(s -> s.split("="))
-                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
-        String quotedId = split.get("CurrentSnapshotUUID");
+        String quotedId = null;
+        String[] lines = execute("snapshot", vm, "list", "--machinereadable").split("\n");
+        for (String line : lines) {
+            if (!line.isEmpty()) {
+                String[] parts = line.split("=");
+                if (parts[0].equals("CurrentSnapshotUUID")) {
+                    quotedId = parts[1];
+                }
+            }
+        }
 
         loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));
     }

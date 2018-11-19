@@ -30,12 +30,7 @@ import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
@@ -100,10 +95,11 @@ public class LibVirtHostItest {
     public static void checkKvm() throws LibvirtException {
         logger.info("Checking if KVM host is 'clean'");
         final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("itest.libvirtUrl");
-        final String basebox = OvercastProperties.getRequiredOvercastProperty("itest.basebox");
-        final String staticBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.staticbasebox");
-        final String windowsBaseBox = OvercastProperties.getRequiredOvercastProperty("itest.windowsbasebox");
-        Set<String> baseBoxes = Stream.of(basebox, staticBaseBox, windowsBaseBox).collect(Collectors.toSet());
+
+        Set<String> baseBoxes = new LinkedHashSet<>(3);
+        baseBoxes.add(OvercastProperties.getRequiredOvercastProperty("itest.basebox"));
+        baseBoxes.add(OvercastProperties.getRequiredOvercastProperty("itest.staticbasebox"));
+        baseBoxes.add(OvercastProperties.getRequiredOvercastProperty("itest.windowsbasebox"));
 
         Connect libvirt = null;
 
@@ -116,13 +112,14 @@ public class LibVirtHostItest {
             all.addAll(running);
             List<Domain> cached = findCachedDomains(all, baseBoxes);
             if (!cached.isEmpty()) {
-                List<String> names = cached.stream().map(d -> {
+                List<String> names = new ArrayList<>(cached.size());
+                for (Domain d : cached) {
                     try {
-                        return d.getName();
+                        names.add(d.getName());
                     } catch (LibvirtException e) {
                         throw new RuntimeException("Error getting domain names.", e);
                     }
-                }).collect(Collectors.toList());
+                }
                 throw new RuntimeException("Still cached domains present: " + names);
             }
         } finally {

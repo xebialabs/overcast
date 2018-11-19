@@ -86,8 +86,8 @@ dependencies {
 allprojects {
     configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 
     if (JavaVersion.current().isJava8Compatible()) {
         tasks.withType(Javadoc) {
