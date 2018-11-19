@@ -254,7 +254,7 @@ uploadArchives {
     }
 }
 
-task dumpVersion {
+task dumpVersion << {
     file(buildDir).mkdirs()
     def out = file("$buildDir/version.dump")
     out.write("version=$project.version")
