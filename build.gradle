@@ -32,9 +32,6 @@ group = 'com.xebialabs.cloud'
 apply plugin: 'signing'
 apply plugin: 'io.codearte.nexus-staging'
 
-version = '2.5.2'
-//version = '2.5.1' // Last released version
-
 ext {
     slf4jVersion = '1.7.16'
     hamcrestVersion = '1.3'
