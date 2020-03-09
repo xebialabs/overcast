@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2018 XebiaLabs B.V.
+ *    Copyright 2012-2020 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -106,10 +106,10 @@ public class OvercastPropertiesTest {
         System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
         System.clearProperty("precedenceTestValue");
         System.setProperty("overcast.conf.file", "src/test/resources/property-path/overcast.conf");
-        
+
         File cfg = new File("overcast.conf");
         File bkp = new File("backup.conf");
-        
+
         try {
             FileUtils.moveFile(cfg, bkp);
             OvercastProperties.reloadOvercastProperties();
@@ -125,7 +125,7 @@ public class OvercastPropertiesTest {
         System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
         System.clearProperty("precedenceTestValue");
         System.setProperty("overcast.conf.file", "src/test/resources/property-path/overcast.conf");
-        
+
         OvercastProperties.reloadOvercastProperties();
 
         assertThat(OvercastProperties.getOvercastProperty("precedenceTestValue"), is("valueFromWork"));

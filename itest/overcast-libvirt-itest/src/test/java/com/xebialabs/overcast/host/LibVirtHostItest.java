@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2018 XebiaLabs B.V.
+ *    Copyright 2012-2020 XebiaLabs B.V.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
 import com.xebialabs.overcast.support.libvirt.Metadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import static org.hamcrest.Matchers.containsString;
 import org.jdom2.Document;
 import org.junit.*;
 import org.libvirt.Connect;
@@ -143,7 +144,7 @@ public class LibVirtHostItest {
         }
     }
 
-    public List<Domain> findCached(String base) throws LibvirtException {
+    public List<Domain> findCached(String base) {
         List<Domain> defined = LibvirtUtil.getDefinedDomains(libvirt);
         List<Domain> cached = findCachedDomains(defined, Collections.singleton(base));
         return cached;
