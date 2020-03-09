@@ -95,7 +95,9 @@ dependencies {
 
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile 'junit:junit:4.11'
+    testCompile('junit:junit:4.11') {
+        exclude group: 'org.hamcrest'
+    }
     testCompile 'org.mockito:mockito-core:1.9.0'
 
     testRuntime 'ch.qos.logback:logback-classic:1.0.9'
