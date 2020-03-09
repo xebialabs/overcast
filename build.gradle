@@ -100,7 +100,7 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
     testCompile "junit:junit:${jUnitVersion}"
     testCompile("org.mockito:mockito-core:${mockitoCoreVersion}") {
-        exclude group: 'org.hamcrest', artifactId: 'hamcrest-core'
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
 
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
