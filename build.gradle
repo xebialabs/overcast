@@ -98,7 +98,9 @@ dependencies {
 
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile "junit:junit:${jUnitVersion}"
+    testCompile("junit:junit:${jUnitVersion}") {
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+    }
     testCompile("org.mockito:mockito-core:${mockitoCoreVersion}") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }

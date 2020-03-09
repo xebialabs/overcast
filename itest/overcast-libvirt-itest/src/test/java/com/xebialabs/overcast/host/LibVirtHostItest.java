@@ -21,7 +21,6 @@ import com.xebialabs.overcast.support.libvirt.LibvirtUtil;
 import com.xebialabs.overcast.support.libvirt.Metadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import static org.hamcrest.Matchers.containsString;
 import org.jdom2.Document;
 import org.junit.*;
 import org.libvirt.Connect;
@@ -35,6 +34,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
 /* NOTE: there should only be one of this test running on a KVM instance. */
