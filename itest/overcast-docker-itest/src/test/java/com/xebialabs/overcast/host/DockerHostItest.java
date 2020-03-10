@@ -77,30 +77,6 @@ public class DockerHostItest {
         }
     }
 
-    @Ignore("relies on the default host being http://localhost:2375")
-    @Test
-    public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
-        DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_MINIMAL_CONFIG);
-        assertThat(itestHost, notNullValue());
-
-        DockerClient dockerClient = createDockerClient(DOCKER_MINIMAL_CONFIG);
-        String containerId = null;
-
-        try {
-            itestHost.setup();
-            assertThat(itestHost.getHostName(), equalTo("localhost"));
-
-            dockerClient = new DefaultDockerClient(itestHost.getUri());
-            containerId = itestHost.getDockerDriver().getContainerId();
-            dockerClient.inspectContainer(containerId);
-        } finally {
-            itestHost.teardown();
-        }
-
-        thrown.expect(ContainerNotFoundException.class);
-        dockerClient.inspectContainer(containerId);
-    }
-
     @Test
     public void shouldRunLinksConfig() throws DockerException, InterruptedException {
         DockerHost greeter = (DockerHost) CloudHostFactory.getCloudHost("greeterConfig");
