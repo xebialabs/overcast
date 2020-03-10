@@ -24,14 +24,11 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerClient.LogsParam;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.ContainerNotFoundException;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerInfo;
 
@@ -82,7 +79,7 @@ public class DockerHostItest {
 
     @Ignore("relies on the default host being http://localhost:2375")
     @Test
-    public void shouldRunMinimalConfig() throws DockerException, InterruptedException, DockerCertificateException {
+    public void shouldRunMinimalConfig() throws DockerException, InterruptedException {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_MINIMAL_CONFIG);
         assertThat(itestHost, notNullValue());
 
@@ -105,7 +102,7 @@ public class DockerHostItest {
     }
 
     @Test
-    public void shouldRunLinksConfig() throws DockerException, InterruptedException, DockerCertificateException {
+    public void shouldRunLinksConfig() throws DockerException, InterruptedException {
         DockerHost greeter = (DockerHost) CloudHostFactory.getCloudHost("greeterConfig");
         assertThat(greeter, notNullValue());
 
@@ -134,12 +131,12 @@ public class DockerHostItest {
     }
 
     @Test
-    public void shouldRunAdvancedConfig() throws DockerException, InterruptedException, DockerCertificateException {
+    public void shouldRunAdvancedConfig() throws DockerException, InterruptedException {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_ADVANCED_CONFIG);
         assertThat(itestHost, notNullValue());
 
         DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG);
-        String containerId = null;
+        String containerId ;
 
         try {
             itestHost.setup();
@@ -168,12 +165,12 @@ public class DockerHostItest {
     }
 
     @Test
-    public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException, DockerCertificateException {
+    public void shouldRunAdvancedConfigWithTty() throws DockerException, InterruptedException {
         DockerHost itestHost = (DockerHost) CloudHostFactory.getCloudHost(DOCKER_ADVANCED_CONFIG_TTY);
         assertThat(itestHost, notNullValue());
 
         DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG_TTY);
-        String containerId = null;
+        String containerId;
 
         try {
             itestHost.setup();
@@ -189,6 +186,4 @@ public class DockerHostItest {
         thrown.expect(ContainerNotFoundException.class);
         dockerClient.inspectContainer(containerId);
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(DockerHostItest.class);
 }
