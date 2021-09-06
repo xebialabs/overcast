@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.xebialabs.overcast.host;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;

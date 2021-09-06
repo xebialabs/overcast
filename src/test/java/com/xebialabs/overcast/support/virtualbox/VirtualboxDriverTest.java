@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,25 +15,19 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import org.junit.Before;
-import org.junit.Test;
+import com.xebialabs.overcast.command.Command;
+import com.xebialabs.overcast.command.CommandProcessor;
+import com.xebialabs.overcast.command.CommandResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.xebialabs.overcast.command.Command;
-import com.xebialabs.overcast.command.CommandProcessor;
-import com.xebialabs.overcast.command.CommandResponse;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class VirtualboxDriverTest {
 
@@ -63,7 +57,7 @@ public class VirtualboxDriverTest {
     private static final Command getExtraData = Command.fromString("VBoxManage getextradata windows12 someKey");
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(commandProcessor.run(Command.fromString("VBoxManage list vms"))).thenReturn(listResponse);

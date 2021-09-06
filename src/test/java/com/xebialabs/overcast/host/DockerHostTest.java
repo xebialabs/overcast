@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,19 +15,21 @@
  */
 package com.xebialabs.overcast.host;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DockerHostTest {
     @Test
     public void shouldReturnLocalhostForUnixSocket() {
         DockerHost dh = new DockerHost("image", "unix:///var/run/docker", null);
-        Assert.assertEquals("localhost", dh.getHostName());
+        assertThat("localhost", is(dh.getHostName()));
     }
 
     @Test
     public void shouldReturnOtherHostForUrl() {
         DockerHost dh = new DockerHost("image", "http://remotehost", null);
-        Assert.assertEquals("remotehost", dh.getHostName());
+        assertThat("remotehost", is(dh.getHostName()));
     }
 }

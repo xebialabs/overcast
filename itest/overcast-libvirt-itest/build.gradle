@@ -1,18 +1,19 @@
-
 dependencies {
-    testCompile project(":")
+    testImplementation project(":")
 
-    testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
-    testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile("junit:junit:${jUnitVersion}") {
+    testImplementation "org.hamcrest:hamcrest-core:${hamcrestVersion}"
+    testImplementation "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+    testImplementation 'org.jdom:jdom2:2.0.5'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    testImplementation 'org.libvirt:libvirt:0.5.1'
+    testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    testImplementation("org.mockito:mockito-core:${mockitoCoreVersion}") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-    testCompile("org.mockito:mockito-core:${mockitoCoreVersion}") {
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-    }
 
-    testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
-    testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
-    testRuntime "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
+    testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
+    testRuntimeOnly "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    testRuntimeOnly "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
 }
 

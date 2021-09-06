@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,11 +15,6 @@
  */
 package com.xebialabs.overcast.host;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.command.CommandResponse;
@@ -30,15 +25,16 @@ import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
 
 import static com.xebialabs.overcast.host.CachedVagrantCloudHost.EXPIRATION_TAG_PROPERTY_KEY;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.POWEROFF;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class CachedVagrantCloudHostTest {
@@ -69,7 +65,7 @@ public class CachedVagrantCloudHostTest {
 
     private Command myCommand;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
 
@@ -79,10 +75,12 @@ public class CachedVagrantCloudHostTest {
         cloudHost = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor, cb);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void shouldFailIfExpirationCommandFails() {
-        when(commandProcessor.run(myCommand)).thenThrow(new NonZeroCodeException(myCommand, FAILED_RESPONSE));
-        cloudHost.setup();
+        assertThrows(RuntimeException.class, () -> {
+            when(commandProcessor.run(myCommand)).thenThrow(new NonZeroCodeException(myCommand, FAILED_RESPONSE));
+            cloudHost.setup();
+        });
     }
 
     @Test

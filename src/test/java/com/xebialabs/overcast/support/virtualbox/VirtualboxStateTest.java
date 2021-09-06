@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.xebialabs.overcast.support.virtualbox;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.Test;
 
-import org.junit.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class VirtualboxStateTest {
 

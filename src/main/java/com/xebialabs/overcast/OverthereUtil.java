@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,23 +15,20 @@
  */
 package com.xebialabs.overcast;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.Overthere;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.OverthereFile;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
-import static com.xebialabs.overthere.ConnectionOptions.ADDRESS;
-import static com.xebialabs.overthere.ConnectionOptions.PASSWORD;
-import static com.xebialabs.overthere.ConnectionOptions.PORT;
-import static com.xebialabs.overthere.ConnectionOptions.USERNAME;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.xebialabs.overthere.ConnectionOptions.*;
 
 public final class OverthereUtil {
 
@@ -57,7 +54,7 @@ public final class OverthereUtil {
             }
         }
         options.set(USERNAME, user);
-        List<NameValuePair> nvps = URLEncodedUtils.parse(url, "UTF-8");
+        List<NameValuePair> nvps = URLEncodedUtils.parse(url, StandardCharsets.UTF_8);
         for (NameValuePair nvp : nvps) {
             options.set(nvp.getName(), nvp.getValue());
         }
@@ -74,8 +71,7 @@ public final class OverthereUtil {
 
     public static OverthereConnection overthereConnectionFromURI(URI url) {
         ConnectionOptions options = fromQuery(url);
-        OverthereConnection connection = Overthere.getConnection(url.getScheme(), options);
-        return connection;
+        return Overthere.getConnection(url.getScheme(), options);
     }
 
     /**
@@ -99,9 +95,8 @@ public final class OverthereUtil {
             List<String> srcFiles = copySpec.subList(0, copySpec.size() - 1);
             OverthereFile dst = dstHost.getFile(copySpec.get(copySpec.size() - 1));
 
-            Iterator<String> toCopy = srcFiles.iterator();
-            while (toCopy.hasNext()) {
-                OverthereFile src = srcHost.getFile(toCopy.next());
+            for (String srcFile : srcFiles) {
+                OverthereFile src = srcHost.getFile(srcFile);
                 src.copyTo(dst);
             }
         }

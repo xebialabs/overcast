@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import com.xebialabs.overthere.OperatingSystemFamily;
 import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.ssh.SshConnectionType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import static com.xebialabs.overthere.OperatingSystemFamily.UNIX;
 import static com.xebialabs.overthere.ssh.SshConnectionBuilder.*;
 import static com.xebialabs.overthere.ssh.SshConnectionType.SFTP;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class OverthereUtilTest {
 
@@ -53,11 +53,11 @@ public class OverthereUtilTest {
 
         assertThat(options.getEnum(OPERATING_SYSTEM, OperatingSystemFamily.class), equalTo(UNIX));
         assertThat(options.getEnum(CONNECTION_TYPE, SshConnectionType.class), equalTo(SFTP));
-        assertThat(options.<String> get(PRIVATE_KEY_FILE), equalTo("privateKey"));
-        assertThat(options.<String> get(PASSPHRASE), equalTo("mypass"));
-        assertThat(options.<String> get(ADDRESS), equalTo("localhost"));
-        assertThat(options.<String> get(USERNAME), equalTo("user"));
-        assertThat(options.<String> get(PASSWORD), equalTo("secret"));
+        assertThat(options.<String>get(PRIVATE_KEY_FILE), equalTo("privateKey"));
+        assertThat(options.<String>get(PASSPHRASE), equalTo("mypass"));
+        assertThat(options.<String>get(ADDRESS), equalTo("localhost"));
+        assertThat(options.<String>get(USERNAME), equalTo("user"));
+        assertThat(options.<String>get(PASSWORD), equalTo("secret"));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class OverthereUtilTest {
             OverthereUtil.copyFiles(srcHost, dstHost,
                     Arrays.asList("src/test/resources/copyFilesTest/1", "src/test/resources/copyFilesTest/2", tempdir.getAbsolutePath()));
 
-            File dstFiles[] = new File[] { new File(tempdir, "file"), new File(tempdir, "file2") };
+            File dstFiles[] = new File[]{new File(tempdir, "file"), new File(tempdir, "file2")};
             for (File dstFile : dstFiles) {
                 assertThat(dstFile.toString() + " should exist", dstFile.exists(), equalTo(true));
             }

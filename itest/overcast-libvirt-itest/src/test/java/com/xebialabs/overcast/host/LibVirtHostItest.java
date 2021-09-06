@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.xebialabs.overcast.support.libvirt.Metadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jdom2.Document;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
@@ -33,9 +33,10 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /* NOTE: there should only be one of this test running on a KVM instance. */
 public class LibVirtHostItest {
@@ -92,7 +93,7 @@ public class LibVirtHostItest {
     }
 
     // check that nothing is running/defined
-    @BeforeClass
+    @BeforeAll
     public static void checkKvm() throws LibvirtException {
         logger.info("Checking if KVM host is 'clean'");
         final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("itest.libvirtUrl");
@@ -131,13 +132,13 @@ public class LibVirtHostItest {
         logger.info("KVM host is ok for tests!");
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws LibvirtException {
         final String libvirtUrl = OvercastProperties.getRequiredOvercastProperty("itest.libvirtUrl");
         libvirt = new Connect(libvirtUrl);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws LibvirtException {
         if (libvirt != null) {
             libvirt.close();
@@ -214,7 +215,7 @@ public class LibVirtHostItest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldCreateHostWithFsMapping() throws LibvirtException {
         CachedLibvirtHost itestHost = (CachedLibvirtHost) getCloudHost("overcastLibVirtItestHostWithFsMapping");
         assertThat(itestHost, notNullValue());
@@ -259,7 +260,7 @@ public class LibVirtHostItest {
 
         try {
             itestHost.setup();
-            Assert.fail("Host should have failed setup!");
+            fail("Host should have failed setup!");
         } catch (RuntimeException e) {
             // bad style... have to clean up exceptions coming out of the library
             assertThat(e.getMessage(), containsString(expectedMessage));

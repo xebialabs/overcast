@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
  */
 package com.xebialabs.overcast.host;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CachedVagrantCloudHostItest {
 
@@ -34,14 +33,14 @@ public class CachedVagrantCloudHostItest {
     private VagrantDriver vagrant;
     private CommandProcessor cmd;
 
-    @Before
+    @BeforeEach
     public void before() {
         cmd = CommandProcessor.atLocation("./box");
         vagrant = new VagrantDriver(VM, cmd);
         vbox = new VirtualboxDriver(cmd);
     }
 
-    @After
+    @AfterEach
     public void after() {
         vagrant.doVagrant(VM, "destroy", "-f");
     }

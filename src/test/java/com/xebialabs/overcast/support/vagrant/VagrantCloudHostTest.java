@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.xebialabs.overcast.support.vagrant;
 
 import com.xebialabs.overcast.command.CommandResponse;
 import com.xebialabs.overcast.host.VagrantCloudHost;
-
-import org.junit.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 public class VagrantCloudHostTest {
@@ -30,7 +31,7 @@ public class VagrantCloudHostTest {
     @Mock
     private VagrantDriver vagrantDriver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
@@ -45,30 +46,33 @@ public class VagrantCloudHostTest {
         vagrantCloudHost.setup();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void shouldThrowAnExceptionWhenExitCodeIsNot0() {
-        when(vagrantDriver.doVagrant("vm", "status")).thenReturn(new CommandResponse(0, "", "not created"));
-        when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(3, "", ""));
+        assertThrows(RuntimeException.class, () -> {
+            when(vagrantDriver.doVagrant("vm", "status")).thenReturn(new CommandResponse(0, "", "not created"));
+            when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(3, "", ""));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
-        vagrantCloudHost.setup();
+            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
+            vagrantCloudHost.setup();
+        });
     }
 
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void shouldThrowAnExceptionWhenOutputContainsPuppetErrors() {
-
-        String outputWithPuppetErrors = "\u001B[0;36mnotice: /Stage[main]/Deployit-mw::blablabla\n" +
+        assertThrows(RuntimeException.class, () -> {
+            String outputWithPuppetErrors = "\u001B[0;36mnotice: /Stage[main]/Deployit-mw::blablabla\n" +
                     "\u001B[1;35merr: /Stage[main]/Was::Config/Exec[call url]/returns: blablabla[0m\n" +
                     "\u001B[0;36mnotice: /Stage[main]/Was::Config/Exec[configure-was]: Dependency blablabla[0m\n" +
                     "\u001B[0;33mwarning: /Stage[main]/Was::Config/Exec[configure-was]: Skipping because of blablabla[0m\n" +
                     "\u001B[0;36mnotice: Finished catalog run in 593.85 seconds[0m";
 
-        when(vagrantDriver.doVagrant("status")).thenReturn(new CommandResponse(0, "", "not created"));
-        when(vagrantDriver.doVagrant("up")).thenReturn(new CommandResponse(0, "", outputWithPuppetErrors));
+            when(vagrantDriver.doVagrant("status")).thenReturn(new CommandResponse(0, "", "not created"));
+            when(vagrantDriver.doVagrant("up")).thenReturn(new CommandResponse(0, "", outputWithPuppetErrors));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
-        vagrantCloudHost.setup();
+            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
+            vagrantCloudHost.setup();
+        });
     }
 
 }

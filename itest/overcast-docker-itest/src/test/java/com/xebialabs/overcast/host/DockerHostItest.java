@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,38 +15,31 @@
  */
 package com.xebialabs.overcast.host;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerClient.LogsParam;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerInfo;
-
 import com.xebialabs.overcast.support.docker.Config;
 import com.xebialabs.overcast.support.docker.DockerDriver;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DockerHostItest {
     // port range can be system specific e.g.
@@ -60,9 +53,6 @@ public class DockerHostItest {
     public static final String DOCKER_MINIMAL_CONFIG = "dockerMinimalConfig";
     public static final String DOCKER_ADVANCED_CONFIG_TTY = "dockerAdvancedConfigTty";
     public static final String DOCKER_LINKS_CONFIG = "dockerLinksConfig";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     public DockerClient createDockerClient(String label) {
         try {
@@ -112,32 +102,31 @@ public class DockerHostItest {
         assertThat(itestHost, notNullValue());
 
         DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG);
-        String containerId ;
 
         try {
             itestHost.setup();
-            assertThat(itestHost.getHostName(), equalTo("localhost"));
-            assertThat(itestHost.getPort(12345), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
-            assertThat(itestHost.getPort(23456), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
-            assertThat(itestHost.getPort(34567), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+            assertThrows(ContainerNotFoundException.class, () -> {
+                assertThat(itestHost.getHostName(), equalTo("localhost"));
+                assertThat(itestHost.getPort(12345), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+                assertThat(itestHost.getPort(23456), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+                assertThat(itestHost.getPort(34567), allOf(greaterThanOrEqualTo(DOCKER_PORT_RANGE_MIN), lessThanOrEqualTo(DOCKER_PORT_RANGE_MAX)));
+                String containerId = itestHost.getDockerDriver().getContainerId();
 
-            containerId = itestHost.getDockerDriver().getContainerId();
-            ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+                ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
 
-            assertThat(containerInfo.config().image(), equalTo("busybox"));
-            assertThat(containerInfo.name(), equalTo("/mycontainer"));
-            assertThat(containerInfo.config().env(), hasItem("MYVAR1=AAA"));
-            assertThat(containerInfo.config().env(), hasItem("MYVAR2=BBB"));
-            assertThat(containerInfo.config().env(), hasItem("MYVAR3=CCC"));
-            assertThat(containerInfo.config().cmd(), Matchers.equalTo(Arrays.asList("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")));
-            assertFalse(containerInfo.config().tty());
+                assertThat(containerInfo.config().image(), equalTo("busybox"));
+                assertThat(containerInfo.name(), equalTo("/mycontainer"));
+                assertThat(containerInfo.config().env(), hasItem("MYVAR1=AAA"));
+                assertThat(containerInfo.config().env(), hasItem("MYVAR2=BBB"));
+                assertThat(containerInfo.config().env(), hasItem("MYVAR3=CCC"));
+                assertThat(containerInfo.config().cmd(), Matchers.equalTo(Arrays.asList("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")));
+                assertFalse(containerInfo.config().tty());
 
+                dockerClient.inspectContainer(containerId);
+            });
         } finally {
             itestHost.teardown();
         }
-
-        thrown.expect(ContainerNotFoundException.class);
-        dockerClient.inspectContainer(containerId);
     }
 
     @Test
@@ -146,20 +135,18 @@ public class DockerHostItest {
         assertThat(itestHost, notNullValue());
 
         DockerClient dockerClient = createDockerClient(DOCKER_ADVANCED_CONFIG_TTY);
-        String containerId;
 
         try {
-            itestHost.setup();
-            containerId = itestHost.getDockerDriver().getContainerId();
-            ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
+            assertThrows(ContainerNotFoundException.class, () -> {
+                itestHost.setup();
+                String containerId = itestHost.getDockerDriver().getContainerId();
+                ContainerInfo containerInfo = dockerClient.inspectContainer(containerId);
 
-            assertTrue(containerInfo.config().tty());
-
+                assertTrue(containerInfo.config().tty());
+                dockerClient.inspectContainer(containerId);
+            });
         } finally {
             itestHost.teardown();
         }
-
-        thrown.expect(ContainerNotFoundException.class);
-        dockerClient.inspectContainer(containerId);
     }
 }

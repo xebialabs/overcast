@@ -1,44 +1,19 @@
-// build.gradle for the overcast project
-
-/*
- * Release and publish instructions:
- *
- * Overcast can be automatically "closed" and "released" on maven central by calling gradle tasks
- * closeRepository, releaseRepository or closeAndReleaseRepository. Archives need to be uploaded manually.
- *
- * For example:
- * gradle clean build signArchives uploadArchives closeAndPromoteRepository
- *
- * prerequisites: Published PGP key installed and configured, authorised sonatype username and password configured
- */
-
-buildscript {
- repositories {
-   mavenCentral()
- }
- dependencies {
-   classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-   classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
- }
-}
-
 plugins {
-   id "org.ajoberstar.release-opinion" version "1.5.1"
+    id "com.github.hierynomus.license" version "0.15.0"
+    id "com.github.node-gradle.node" version "3.1.0"
+    id 'groovy'
+    id 'idea'
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+    id 'maven-publish'
+    id 'nebula.release' version '15.3.1'
+    id 'signing'
 }
-defaultTasks 'build'
 
 group = 'com.xebialabs.cloud'
+defaultTasks 'build'
 
-apply plugin: 'signing'
-apply plugin: 'io.codearte.nexus-staging'
-
-ext {
-    slf4jVersion = '1.7.16'
-    hamcrestVersion = '1.3'
-    mockitoCoreVersion = '2.25.1'
-    jUnitVersion = '4.12'
-    logbackVersion = '1.0.9'
-}
+def releasedVersion = "10.3.0-${(new Date().format('Mdd.Hmm'))}"
+project.ext.set("releasedVersion", releasedVersion)
 
 allprojects {
     apply plugin: 'java'
@@ -50,86 +25,66 @@ allprojects {
 
     license {
         header rootProject.file("${rootProject.projectDir}/gradle/license-header")
-        ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        ext.name = 'XebiaLabs B.V.'
+        ext.year = '2021'
+        ext.name = 'Digital.ai'
     }
-}
-
-release {
-  grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
-  tagStrategy {
-    toTagString = { vs -> "v$vs" }
-    parseTag = { org.ajoberstar.grgit.Tag tag ->
-      if (tag.name.startsWith("v")) {
-        try {
-          com.github.zafarkhaja.semver.Version.valueOf(tag.name[1..-1])
-        } catch (Exception e) {
-          null
-        }
-      } else {
-        null
-      }
-    }
-  }
 }
 
 dependencies {
-    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation gradleApi()
+    implementation localGroovy()
 
-    compile 'com.amazonaws:aws-java-sdk:1.3.30'
-
-    compile 'commons-io:commons-io:2.4'
-    compile 'org.apache.httpcomponents:httpcore:4.4.6'
-    compile 'org.apache.httpcomponents:httpclient:4.5.3'
-    compile 'com.hierynomus:sshj:0.26.0'
-    compile 'com.xebialabs.overthere:overthere:5.0.3'
-
-    compile 'org.libvirt:libvirt:0.5.1'
-    // JNA version is pretty important only 3.3.0 seen working so far
-    compile 'net.java.dev.jna:jna:3.3.0'
-    compile 'org.jdom:jdom2:2.0.5'
-
+    implementation 'com.amazonaws:aws-java-sdk:1.3.30'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.6.0'
+    implementation 'com.hierynomus:sshj:0.26.0'
     // docker-client and friends
-    compile "com.spotify:docker-client:8.16.0"
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.0'  // appease annotation warnings in docker-client
-    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'                     // appease annotation warnings in docker-client
+    implementation "com.spotify:docker-client:8.16.0"
+    // appease annotation warnings in docker-client
+    implementation 'com.typesafe:config:1.2.1'
+    implementation 'com.xebialabs.overthere:overthere:5.0.3'
+    // appease annotation warnings in docker-client
+    implementation 'commons-io:commons-io:2.4'
+    implementation 'javax.ws.rs:javax.ws.rs-api:2.0.1'
 
-    compile 'com.typesafe:config:1.2.1'
+    // JNA version is pretty important only 3.3.0 seen working so far
+    implementation 'net.java.dev.jna:jna:3.3.0'
 
-    testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
-    testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile("junit:junit:${jUnitVersion}") {
+    implementation 'org.apache.httpcomponents:httpclient:4.5.3'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.6'
+    testImplementation "org.hamcrest:hamcrest-core:${hamcrestVersion}"
+    testImplementation "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+    implementation 'org.jdom:jdom2:2.0.5'
+    implementation 'org.libvirt:libvirt:0.5.1'
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+
+    testImplementation(platform("org.junit:junit-bom:${jUnitVersion}"))
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    testImplementation("org.mockito:mockito-core:${mockitoCoreVersion}") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-    testCompile("org.mockito:mockito-core:${mockitoCoreVersion}") {
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-    }
 
-    testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
-    testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
-    testRuntime "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
+    testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
+    testRuntimeOnly "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    testRuntimeOnly "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 allprojects {
     configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-
-    if (JavaVersion.current().isJava8Compatible()) {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-        }
-    }
-
-    configurations {
-        compile {
-            transitive = false
-        }
-    }
+    sourceCompatibility = languageLevel
+    targetCompatibility = languageLevel
 
     repositories {
         mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
         maven {
             url 'http://download.java.net/maven/2/'
         }
@@ -153,112 +108,156 @@ allprojects {
     }
 }
 
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    archiveClassifier.set('sources')
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
     from javadoc.destinationDir
+    archiveClassifier.set('javadoc')
 }
 
-artifacts {
-    archives sourcesJar, javadocJar
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
-signing {
-    required { gradle.taskGraph.hasTask('uploadArchives') }
-    sign configurations.archives
-}
+if (project.hasProperty("sonatypeUsername") && project.hasProperty("public")) {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from(components.java)
 
-nexusStaging {
-    packageGroup = "com.xebialabs"
-}
+                groupId = 'com.xebialabs.cloud'
+                artifactId = 'overcast'
+                version = releasedVersion
 
-uploadArchives {
-    if(project.hasProperty('sonatypeUsername')) {
-        repositories.mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                pom {
+                    name = 'Overcast'
+                    description = 'A Java library to test against hosts in the cloud.'
+                    url = 'https://github.com/xebialabs/overcast.git'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
 
-            configuration = configurations.archives
+                    scm {
+                        url = 'https://github.com/xebialabs/overcast'
+                    }
 
-            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            pom.project {
-                name 'Cloudtest'
-                description 'A Java library to test against hosts in the cloud. '
-                packaging 'jar'
-                url 'https://github.com/xebialabs/overcast'
-                inceptionYear '2012'
-
-                scm {
-                    url 'https://github.com/xebialabs/overcast'
+                    developers {
+                        developer {
+                            id = 'vpartington'
+                            name = 'Vincent Partington'
+                            email = 'vpartington@digital.ai'
+                        }
+                        developer {
+                            id = 'hierynomus'
+                            name = 'Jeroen van Erp'
+                            email = 'jvanerp@digital.ai'
+                        }
+                        developer {
+                            id = 'mkotsur'
+                            name = 'Mike Kotsur'
+                            email = 'mkotsur@digital.ai'
+                        }
+                        developer {
+                            id = 'rklaren'
+                            name = 'Ric Klaren'
+                            email = 'rklaren@digital.ai'
+                        }
+                        developer {
+                            id = 'pvanderende'
+                            name = 'Paul van der Ende'
+                            email = 'pvanderende@digital.ai'
+                        }
+                    }
                 }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
                     }
-                }
-
-                developers {
-                    developer {
-                        id 'vpartington'
-                        name 'Vincent Partington'
-                        url 'http://www.xebialabs.com/'
-                        email 'vpartington@xebialabs.com'
-                        roles {
-                            role 'Developer'
-                        }
-                    }
-                    developer {
-                        id 'hierynomus'
-                        name 'Jeroen van Erp'
-                        url 'http://www.xebialabs.com/'
-                        email 'jvanerp@xebialabs.com'
-                        roles {
-                            role 'Developer'
-                        }
-                    }
-                    developer {
-                        id 'mkotsur'
-                        name 'Mike Kotsur'
-                        url 'http://www.xebialabs.com/'
-                        email 'mkotsur@xebialabs.com'
-                        roles {
-                            role 'Developer'
-                        }
-                    }
-                    developer {
-                        id 'rklaren'
-                        name 'Ric Klaren'
-                        url 'http://www.xebialabs.com/'
-                        email 'rklaren@xebialabs.com'
-                        roles {
-                            role 'Developer'
-                        }
-                    }
-                    developer {
-                        id 'pvanderende'
-                        name 'Paul van der Ende'
-                        url 'http://www.xebialabs.com/'
-                        email 'pvanderende@xebialabs.com'
-                        roles {
-                            role 'Developer'
-                        }
+                    usage('java-runtime') {
+                        fromResolutionResult()
                     }
                 }
             }
         }
+        repositories {
+            maven {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                credentials {
+                    username = project.property("sonatypeUsername")
+                    password = project.property("sonatypePassword")
+                }
+            }
+            maven {
+                url "https://oss.sonatype.org/content/repositories/snapshots"
+                credentials {
+                    username = project.property("sonatypeUsername")
+                    password = project.property("sonatypePassword")
+                }
+            }
+        }
     }
+} else {
+    publishing {
+        publications {
+            myLibrary(MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+            maven {
+                url "${project.property("nexusBaseUrl")}/repositories/releases"
+                credentials {
+                    username = project.property("nexusUserName")
+                    password = project.property("nexusPassword")
+                }
+            }
+        }
+    }
+}
+
+jar {
+    from sourceSets.main.allSource
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+
+if (project.hasProperty("sonatypeUsername") && project.hasProperty("public")) {
+    signing {
+        sign publishing.publications.mavenJava
+    }
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                username = project.property("sonatypeUsername")
+                password = project.property("sonatypePassword")
+            }
+        }
+    }
+}
+
+import com.xebialabs.gradle.release.NebulaRelease
+
+task nebulaRelease(type: NebulaRelease)
+
+task uploadArchives {
+    dependsOn publish
 }
 
 task dumpVersion {

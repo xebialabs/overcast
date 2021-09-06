@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,47 +15,44 @@
  */
 package com.xebialabs.overcast;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.typesafe.config.Config;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PropertiesLoaderTest {
 
     @Test
-    public void shouldLoadPropertiesFromPathWithSpace() throws IOException {
+    public void shouldLoadPropertiesFromPathWithSpace() {
         Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/with space/test.conf").resolve();
         assertThat(cfg.getString("foo"), is("bar"));
     }
 
     @Test
-    public void shouldLoadPropertiesFromClassPathWithSpace() throws IOException {
+    public void shouldLoadPropertiesFromClassPathWithSpace() {
         Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("with space/test.conf").resolve();
         assertThat(cfg.getString("foo"), is("bar"));
     }
 
     @Test
-    public void shouldLoadPropertiesFromPath() throws IOException {
+    public void shouldLoadPropertiesFromPath() {
         Config cfg = PropertiesLoader.loadOvercastConfigFromFile("src/test/resources/overcast.conf").resolve();
         assertThat(cfg.getString("unittestHost.someProp"), is("someValue"));
     }
 
     @Test
-    public void shouldLoadEmptyPropertiesFromNull() throws IOException {
+    public void shouldLoadEmptyPropertiesFromNull() {
         Config cfg = PropertiesLoader.loadOvercastConfigFromFile(null).resolve();
         assertNotNull(cfg);
         assertTrue(cfg.isEmpty());
     }
 
     @Test
-    public void shouldLoadPropertiesFromClassPath() throws IOException {
+    public void shouldLoadPropertiesFromClassPath() {
         Config cfg = PropertiesLoader.loadOvercastConfigFromClasspath("overcast.conf").resolve();
         assertThat(cfg.getString("unittestHost.someProp"), is("someValue"));
     }
@@ -71,7 +68,7 @@ public class PropertiesLoaderTest {
         assertThat(config.getInt("some.intprop"), is(42));
         assertThat(config.getInt("another.namespace.copiedValue"), is(42));
         if (isWin) {
-            assertThat(config.getString("another.namespace.winHome"), is(System.getenv("HOMEDRIVE")+System.getenv("HOMEPATH")));
+            assertThat(config.getString("another.namespace.winHome"), is(System.getenv("HOMEDRIVE") + System.getenv("HOMEPATH")));
             assertThat(config.hasPath("another.namespace.unixHome"), is(false));
         } else {
             assertThat(config.getString("another.namespace.unixHome"), is(System.getenv("HOME")));

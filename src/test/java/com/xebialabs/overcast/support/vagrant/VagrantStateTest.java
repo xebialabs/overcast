@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,46 +15,40 @@
  */
 package com.xebialabs.overcast.support.vagrant;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static com.xebialabs.overcast.support.vagrant.VagrantState.ABORTED;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.POWEROFF;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.RUNNING;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.SAVED;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.fromStatusString;
-import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
-import static org.junit.Assert.assertEquals;
+import static com.xebialabs.overcast.support.vagrant.VagrantState.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class VagrantStateTest {
 
-	@Test
-	public void shouldTranslateStatusStringToTest() {
-		assertEquals(
-				RUNNING,
-				fromStatusString("Current VM states:\n" +
-						"\n" +
-						"default                  running\n" +
-						"\n" +
-						"The VM is running. To stop this VM, you can run `vagrant halt` to\n" +
-						"shut it down forcefully, or you can run `vagrant suspend` to simply\n" +
-						"suspend the virtual machine. In either case, to restart it again,\n" +
-						"simply run `vagrant up`.")
-		);
+    @Test
+    public void shouldTranslateStatusStringToTest() {
+        assertEquals(
+                RUNNING,
+                fromStatusString("Current VM states:\n" +
+                        "\n" +
+                        "default                  running\n" +
+                        "\n" +
+                        "The VM is running. To stop this VM, you can run `vagrant halt` to\n" +
+                        "shut it down forcefully, or you can run `vagrant suspend` to simply\n" +
+                        "suspend the virtual machine. In either case, to restart it again,\n" +
+                        "simply run `vagrant up`.")
+        );
 
-		assertEquals(NOT_CREATED, fromStatusString("default                  not created\n"));
-		assertEquals(POWEROFF, fromStatusString("default                  poweroff\n"));
-		assertEquals(ABORTED, fromStatusString("default                  aborted\n"));
-		assertEquals(SAVED, fromStatusString("default                  saved\n"));
-	}
+        assertEquals(NOT_CREATED, fromStatusString("default                  not created\n"));
+        assertEquals(POWEROFF, fromStatusString("default                  poweroff\n"));
+        assertEquals(ABORTED, fromStatusString("default                  aborted\n"));
+        assertEquals(SAVED, fromStatusString("default                  saved\n"));
+    }
 
-	@Test
-	public void shouldGiveATransitionCommand() {
-		assertEquals("up", getTransitionCommand(RUNNING)[0]);
-		assertEquals("halt", getTransitionCommand(POWEROFF)[0]);
-		assertEquals("suspend", getTransitionCommand(SAVED)[0]);
-		assertEquals("destroy", getTransitionCommand(NOT_CREATED)[0]);
-		assertEquals("-f", getTransitionCommand(NOT_CREATED)[1]);
-	}
+    @Test
+    public void shouldGiveATransitionCommand() {
+        assertEquals("up", getTransitionCommand(RUNNING)[0]);
+        assertEquals("halt", getTransitionCommand(POWEROFF)[0]);
+        assertEquals("suspend", getTransitionCommand(SAVED)[0]);
+        assertEquals("destroy", getTransitionCommand(NOT_CREATED)[0]);
+        assertEquals("-f", getTransitionCommand(NOT_CREATED)[1]);
+    }
 
 }

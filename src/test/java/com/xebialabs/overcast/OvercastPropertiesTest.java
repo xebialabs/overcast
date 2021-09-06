@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,50 +15,50 @@
  */
 package com.xebialabs.overcast;
 
+import com.typesafe.config.Config;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.typesafe.config.Config;
-
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import static com.xebialabs.overcast.OvercastProperties.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OvercastPropertiesTest {
 
-    @Before
-    public void setup() {
+    @BeforeAll
+    static void setup() {
         System.setProperty("user.home", new File("src/test/resources/fake-home").getAbsolutePath());
     }
 
-    @After
-    public void teardown() {
+    @AfterAll
+    static void teardown() {
         System.clearProperty("overcast.conf.file");
     }
 
     @Test
-    public void testGetOvercastProperty() throws Exception {
+    public void testGetOvercastProperty() {
         assertThat(getOvercastProperty("unittestHost.vagrantDir"), is("/httpd"));
         assertThat(getOvercastProperty("unittestHost.doesNotExist", "default"), is("default"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetRequiredOvercastProperty() throws Exception {
-        getRequiredOvercastProperty("unittestHost.doesNotExist");
+    @Test
+    public void testGetRequiredOvercastProperty() {
+        assertThrows(IllegalStateException.class, () -> {
+            getRequiredOvercastProperty("unittestHost.doesNotExist");
+        });
     }
 
     @Test
-    public void testParsePortsProperty() throws Exception {
-        Map<Integer,Integer> integerIntegerMap = parsePortsProperty("2222:22,1445:445");
+    public void testParsePortsProperty() {
+        Map<Integer, Integer> integerIntegerMap = parsePortsProperty("2222:22,1445:445");
 
         assertThat(integerIntegerMap.size(), is(2));
         assertThat(integerIntegerMap.get(22), is(2222));
@@ -120,7 +120,7 @@ public class OvercastPropertiesTest {
     }
 
     @Test
-    public void testWorkDirHasPrecedenceOverProperty() throws IOException {
+    public void testWorkDirHasPrecedenceOverProperty() {
 
         System.setProperty("user.home", new File("src/test/resources/dir-without-conf").getAbsolutePath());
         System.clearProperty("precedenceTestValue");

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2012-2020 XebiaLabs B.V.
+ *    Copyright 2012-2021 Digital.ai
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,28 +15,31 @@
  */
 package com.xebialabs.overcast.command;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.xebialabs.overcast.command.Command.aCommand;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class CommandProcessorTest {
 
-
-    @Test(expected = NonZeroCodeException.class)
-    public void shouldThrowExceptionWhenCommandFailed() throws Exception {
+    @Test
+    public void shouldThrowExceptionWhenCommandFailed() {
         //Test only for UNIX
-        assumeThat(System.getenv().containsKey("PATH"), is(true));
-        atLocation("/tmp").run(aCommand("ls").withArguments("-wrong-argument"));
+        assumeTrue(System.getenv().containsKey("PATH"));
+
+        assertThrows(NonZeroCodeException.class, () -> {
+            atLocation("/tmp").run(aCommand("ls").withArguments("-wrong-argument"));
+        });
     }
 
     @Test
     public void shouldStoreOutput() {
         //Test only for UNIX
-        assumeThat(System.getenv().containsKey("PATH"), is(true));
+        assumeTrue(System.getenv().containsKey("PATH"));
         CommandResponse ls = atLocation("/tmp").run(aCommand("ls"));
         assertThat(ls.getReturnCode(), is(0));
         assertThat(ls.getOutput().length() > 0, is(true));
