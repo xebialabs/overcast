@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--name", "overcast_itest"]
   end
 
-  config.vm.box = "ubuntu/precise32"
+  config.vm.box = "ubuntu/trusty64"
 
   config.vm.define "overcast_itest" do |oi|
     oi.vm.network :private_network, ip: "10.10.200.200"
