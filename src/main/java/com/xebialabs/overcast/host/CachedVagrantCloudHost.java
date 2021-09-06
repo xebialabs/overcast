@@ -34,15 +34,15 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
     public static final int CONNECTION_ATTEMPTS = 100;
     public static final int CONNECTION_RETRY_DELAY = 2000;
 
-    private Command expirationCmd;
+    private final Command expirationCmd;
 
-    private VirtualboxDriver virtualboxDriver;
+    private final VirtualboxDriver virtualboxDriver;
 
-    private CommandProcessor commandProcessor;
+    private final CommandProcessor commandProcessor;
 
-    private OverthereConnectionBuilder connectionBuilder;
+    private final OverthereConnectionBuilder connectionBuilder;
 
-    private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
+    private static final Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
     public CachedVagrantCloudHost(String vm, String ip, Command cmd, VagrantDriver vagrantDriver, VirtualboxDriver vboxDriver, CommandProcessor commandProcessor, final OverthereConnectionBuilder cb) {
         super(vm, ip, vagrantDriver);

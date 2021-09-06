@@ -51,9 +51,7 @@ public class OvercastPropertiesTest {
 
     @Test
     public void testGetRequiredOvercastProperty() {
-        assertThrows(IllegalStateException.class, () -> {
-            getRequiredOvercastProperty("unittestHost.doesNotExist");
-        });
+        assertThrows(IllegalStateException.class, () -> getRequiredOvercastProperty("unittestHost.doesNotExist"));
     }
 
     @Test
@@ -66,20 +64,20 @@ public class OvercastPropertiesTest {
     }
 
     @Test
-    public void testHaveSystemProperties() throws IOException {
+    public void testHaveSystemProperties() {
         Config cfg = PropertiesLoader.loadOvercastConfig();
         assertThat(cfg.getString("user.dir"), is(System.getProperty("user.dir")));
     }
 
     @Test
-    public void testSubstitution() throws Exception {
+    public void testSubstitution() {
         assertThat(getOvercastProperty("some.bar"), is("foo"));
         // to document that no substitution is done inside a string...
         assertThat(getOvercastProperty("some.boz"), is("${value}"));
     }
 
     @Test
-    public void testReplaceEnvVariables() throws Exception {
+    public void testReplaceEnvVariables() {
         assertThat(getOvercastProperty("unittestHost.home"), is(notNullValue()));
         assertThat(getOvercastProperty("unittestHost.home").contains("${"), is(false));
     }

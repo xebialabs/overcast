@@ -77,17 +77,15 @@ public class CommandProcessor {
     }
 
     private Thread showProcessOutput(final InputStream from, final PrintStream to) {
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    for (; ; ) {
-                        int c = from.read();
-                        if (c == -1)
-                            break;
-                        to.write((char) c);
-                    }
-                } catch (IOException ignore) {
+        Thread t = new Thread(() -> {
+            try {
+                for (; ; ) {
+                    int c = from.read();
+                    if (c == -1)
+                        break;
+                    to.write((char) c);
                 }
+            } catch (IOException ignore) {
             }
         });
         t.start();

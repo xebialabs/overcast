@@ -18,6 +18,7 @@ package com.xebialabs.overcast.support.libvirt;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -46,10 +47,8 @@ public final class JDomUtil {
     public static Document stringToDocument(String xml) {
         try {
             SAXBuilder sax = new SAXBuilder();
-            return sax.build(new ByteArrayInputStream(xml.getBytes("UTF-8")));
-        } catch (JDOMException e) {
-            throw new IllegalArgumentException("Unable to parse xml", e);
-        } catch (IOException e) {
+            return sax.build(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        } catch (JDOMException | IOException e) {
             throw new IllegalArgumentException("Unable to parse xml", e);
         }
     }

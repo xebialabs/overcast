@@ -21,9 +21,9 @@ package com.xebialabs.overcast.command;
 @SuppressWarnings("serial")
 public class NonZeroCodeException extends RuntimeException {
 
-    private Command command;
+    private final Command command;
 
-    private CommandResponse response;
+    private final CommandResponse response;
 
     public NonZeroCodeException(final Command command, final CommandResponse response) {
         super("Command " + command.toString() + " returned non-zero code " + response.getReturnCode());

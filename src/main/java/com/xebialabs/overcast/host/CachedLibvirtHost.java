@@ -69,13 +69,13 @@ public class CachedLibvirtHost extends LibvirtHost {
     private final String provisionUrl;
     private final String cacheExpirationUrl;
     private final String cacheExpirationCmd;
-    private CommandProcessor cmdProcessor;
+    private final CommandProcessor cmdProcessor;
     private final List<String> copySpec;
 
     private DomainWrapper provisionedClone;
     private String provisionedCloneIp;
-    private int provisionedbootDelay;
-    private int provisionStartTimeout;
+    private final int provisionedbootDelay;
+    private final int provisionStartTimeout;
 
     CachedLibvirtHost(String hostLabel, Connect libvirt,
         String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName,
@@ -268,9 +268,7 @@ public class CachedLibvirtHost extends LibvirtHost {
     }
 
     private String getRemoteExpirationTag() {
-        OverthereConnection connection = null;
-        try {
-            connection = overthereConnectionFromURI(cacheExpirationUrl);
+        try (OverthereConnection connection = overthereConnectionFromURI(cacheExpirationUrl)) {
 
             CapturingOverthereExecutionOutputHandler stdOutCapture = capturingHandler();
             CapturingOverthereExecutionOutputHandler stdErrCapture = capturingHandler();
@@ -279,13 +277,9 @@ public class CachedLibvirtHost extends LibvirtHost {
             int exitCode = connection.execute(stdOutCapture, stdErrCapture, cmd);
             if (exitCode != 0) {
                 throw new RuntimeException(String.format("Error getting expiration tag exit code %d, stdout=%s, stderr=%s", exitCode,
-                    stdOutCapture.getOutput(), stdErrCapture.getOutput()));
+                        stdOutCapture.getOutput(), stdErrCapture.getOutput()));
             }
             return stdOutCapture.getOutput();
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
         }
     }
 

@@ -34,7 +34,7 @@ public class Disk {
     public String device;
     public String file;
     public String format;
-    private StorageVol volume;
+    private final StorageVol volume;
 
     public Disk(String device, String file, StorageVol volume, String format) {
         checkNotNullOrEmpty(device);
@@ -91,9 +91,7 @@ public class Disk {
             log.debug("Creating volume with xml={}", volumeXml);
             StorageVol vol = getStoragePool().storageVolCreateXML(volumeXml, 0);
             return vol;
-        } catch (LibvirtException e) {
-            throw new LibvirtRuntimeException(e);
-        } catch (IOException e) {
+        } catch (LibvirtException | IOException e) {
             throw new LibvirtRuntimeException(e);
         }
     }

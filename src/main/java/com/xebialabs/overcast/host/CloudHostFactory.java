@@ -161,8 +161,8 @@ public class CloudHostFactory {
 
         Connect libvirt = LibvirtUtil.getConnection(libvirtURL, false);
 
-        int startTimeout = Integer.valueOf(getOvercastProperty(label + LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX, LIBVIRT_START_TIMEOUT_DEFAULT));
-        int bootDelay = Integer.valueOf(getOvercastProperty(label + LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX, LIBVIRT_BOOT_DELAY_DEFAULT));
+        int startTimeout = Integer.parseInt(getOvercastProperty(label + LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX, LIBVIRT_START_TIMEOUT_DEFAULT));
+        int bootDelay = Integer.parseInt(getOvercastProperty(label + LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX, LIBVIRT_BOOT_DELAY_DEFAULT));
         String networkName = getOvercastProperty(label + LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX);
 
         List<Filesystem> fsMappings = new ArrayList<>();
@@ -181,9 +181,9 @@ public class CloudHostFactory {
             String provisionUrl = getRequiredOvercastProperty(label + PROVISION_URL);
             String cacheExpirationUrl = getOvercastProperty(label + CACHE_EXPIRATION_URL);
             String cacheExpirationCmd = getRequiredOvercastProperty(label + CACHE_EXPIRATION_CMD);
-            int provisionStartTimeout = Integer.valueOf(getOvercastProperty(label + PROVISION_START_TIMEOUT, PROVISION_START_TIMEOUT_DEFAULT));
-            int provisionedBootDelay = Integer.valueOf(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
-            List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.<String> emptyList());
+            int provisionStartTimeout = Integer.parseInt(getOvercastProperty(label + PROVISION_START_TIMEOUT, PROVISION_START_TIMEOUT_DEFAULT));
+            int provisionedBootDelay = Integer.parseInt(getOvercastProperty(label + PROVISIONED_BOOT_DELAY, LIBVIRT_BOOT_DELAY_DEFAULT));
+            List<String> copySpec = getOvercastListProperty(label + COPY_SPEC, Collections.emptyList());
             CommandProcessor cmdProcessor = atCurrentDir();
 
             return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl,
@@ -194,7 +194,7 @@ public class CloudHostFactory {
     private static Filesystem createFilesystem(String target, String path) {
         String source = getRequiredOvercastProperty(path + ".hostPath");
         AccessMode accessMode = AccessMode.valueOf(getOvercastProperty(path + ".accessMode", AccessMode.PASSTHROUGH.toString()));
-        boolean readOnly = Boolean.valueOf(getOvercastProperty(path + ".readOnly", "true"));
+        boolean readOnly = Boolean.parseBoolean(getOvercastProperty(path + ".readOnly", "true"));
         return new Filesystem(source, target, accessMode, readOnly);
     }
 
@@ -229,7 +229,7 @@ public class CloudHostFactory {
             options.set(ConnectionOptions.USERNAME, "vagrant");
             options.set(ConnectionOptions.PASSWORD, "vagrant");
 
-            OverthereConnectionBuilder cb = null;
+            OverthereConnectionBuilder cb;
             if (OperatingSystemFamily.WINDOWS.toString().equals(vagrantOs)) {
                 options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.WINDOWS);
                 options.set(SshConnectionBuilder.CONNECTION_TYPE, CifsConnectionType.WINRM_INTERNAL);

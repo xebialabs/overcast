@@ -33,7 +33,7 @@ import static com.xebialabs.overcast.Preconditions.checkState;
 public class OvercastProperties {
     public static final String PASSWORD_PROPERTY_SUFFIX = ".password";
 
-    private static Logger logger = LoggerFactory.getLogger(OvercastProperties.class);
+    private static final Logger logger = LoggerFactory.getLogger(OvercastProperties.class);
 
     private static Config overcastProperties;
 

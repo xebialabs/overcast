@@ -77,9 +77,7 @@ public final class LibvirtUtil {
     public static Document loadDomainXml(Domain domain) {
         try {
             return JDomUtil.stringToDocument(domain.getXMLDesc(0));
-        } catch (IllegalArgumentException e) {
-            throw new LibvirtRuntimeException("Unable to parse domain xml", e);
-        } catch (LibvirtException e) {
+        } catch (IllegalArgumentException | LibvirtException e) {
             throw new LibvirtRuntimeException("Unable to parse domain xml", e);
         }
     }

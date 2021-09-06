@@ -15,6 +15,7 @@
  */
 package com.xebialabs.overcast.host;
 
+import java.util.Collections;
 import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ class Ec2CloudHost implements CloudHost {
     private final String amiKeyName;
     private final int amiBootSeconds;
 
-    private AmazonEC2Client ec2;
+    private final AmazonEC2Client ec2;
     private String instanceId;
     private String publicDnsAddress;
 
@@ -66,7 +67,7 @@ class Ec2CloudHost implements CloudHost {
         this.amiInstanceType = getRequiredOvercastProperty(hostLabel + AMI_INSTANCE_TYPE_PROPERTY_SUFFIX);
         this.amiSecurityGroup = getRequiredOvercastProperty(hostLabel + AMI_SECURITY_GROUP_PROPERTY_SUFFIX);
         this.amiKeyName = getRequiredOvercastProperty(hostLabel + AMI_KEY_NAME_PROPERTY_SUFFIX);
-        this.amiBootSeconds = Integer.valueOf(getRequiredOvercastProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
+        this.amiBootSeconds = Integer.parseInt(getRequiredOvercastProperty(hostLabel + AMI_BOOT_SECONDS_PROPERTY_SUFFIX));
 
         ec2 = new AmazonEC2Client(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
         ec2.setEndpoint(awsEndpointURL);
@@ -85,7 +86,7 @@ class Ec2CloudHost implements CloudHost {
 
     @Override
     public void teardown() {
-        ec2.terminateInstances(new TerminateInstancesRequest(asList(instanceId)));
+        ec2.terminateInstances(new TerminateInstancesRequest(Collections.singletonList(instanceId)));
     }
 
     @Override
@@ -164,7 +165,7 @@ class Ec2CloudHost implements CloudHost {
     }
 
     protected void setInstanceName() {
-        ec2.createTags(new CreateTagsRequest(asList(instanceId), asList(new Tag("Name", hostLabel + " started at " + new Date()))));
+        ec2.createTags(new CreateTagsRequest(Collections.singletonList(instanceId), Collections.singletonList(new Tag("Name", hostLabel + " started at " + new Date()))));
     }
 
     public String waitUntilRunningAndGetPublicDnsName() {
@@ -172,7 +173,7 @@ class Ec2CloudHost implements CloudHost {
         sleep(5);
 
         for (; ; ) {
-            DescribeInstancesRequest describe = new DescribeInstancesRequest().withInstanceIds(asList(instanceId));
+            DescribeInstancesRequest describe = new DescribeInstancesRequest().withInstanceIds(Collections.singletonList(instanceId));
             Instance instance = ec2.describeInstances(describe).getReservations().get(0).getInstances().get(0);
             if (instance.getState().getName().equals("running")) {
                 return instance.getPublicDnsName();

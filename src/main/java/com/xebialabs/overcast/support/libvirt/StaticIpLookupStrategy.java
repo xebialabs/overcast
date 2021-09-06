@@ -23,7 +23,7 @@ import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastPrope
 public class StaticIpLookupStrategy implements IpLookupStrategy {
     private static final String STATIC_IP_SUFFIX = ".static.ip";
 
-    private String ip;
+    private final String ip;
 
     public StaticIpLookupStrategy(String ip) {
         this.ip = ip;

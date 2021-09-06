@@ -17,11 +17,11 @@ package com.xebialabs.overcast.command;
 
 public class CommandResponse {
 
-    private int returnCode;
+    private final int returnCode;
 
-    private String errors;
+    private final String errors;
 
-    private String output;
+    private final String output;
 
     public CommandResponse(int returnCode, String errors, String output) {
         this.returnCode = returnCode;

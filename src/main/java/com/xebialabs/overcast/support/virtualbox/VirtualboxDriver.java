@@ -25,7 +25,7 @@ import static com.xebialabs.overcast.support.virtualbox.VirtualboxState.SAVED;
 
 public class VirtualboxDriver {
 
-    private CommandProcessor commandProcessor;
+    private final CommandProcessor commandProcessor;
 
     public VirtualboxDriver(final CommandProcessor commandProcessor) {
         this.commandProcessor = commandProcessor;
@@ -76,7 +76,9 @@ public class VirtualboxDriver {
             }
         }
 
-        loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));
+        if (quotedId != null) {
+            loadSnapshot(vm, quotedId.substring(1, quotedId.length() - 1));
+        }
     }
 
     /**

@@ -172,11 +172,7 @@ public class Metadata {
     }
 
     private static Element getMetadataElement(Document domainXml) {
-        Element metadata = domainXml.getRootElement().getChild(METADATA);
-        if (metadata == null) {
-            return null;
-        }
-        return metadata;
+        return domainXml.getRootElement().getChild(METADATA);
     }
 
     public static void updateProvisioningMetadata(Document domainXml, String baseDomainName, String provisionCmd, String expirationTag, Date creationTime) {

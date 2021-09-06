@@ -22,7 +22,7 @@ import java.util.List;
 
 public class Command {
 
-    private List<String> command = new ArrayList<String>();
+    private final List<String> command = new ArrayList<String>();
 
     private Command() {}
 

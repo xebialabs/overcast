@@ -51,8 +51,8 @@ class LibvirtHost implements CloudHost {
     public static final String LIBVIRT_URL_DEFAULT = "qemu:///system";
     public static final String LIBVIRT_BOOT_SECONDS_DEFAULT = "60";
 
-    private int startTimeout;
-    private int bootDelay;
+    private final int startTimeout;
+    private final int bootDelay;
 
     private final String networkName;
 
@@ -62,9 +62,9 @@ class LibvirtHost implements CloudHost {
 
     private DomainWrapper clone;
     private String hostIp;
-    private IpLookupStrategy ipLookupStrategy;
+    private final IpLookupStrategy ipLookupStrategy;
 
-    private List<Filesystem> filesystemMappings;
+    private final List<Filesystem> filesystemMappings;
 
     public LibvirtHost(Connect libvirt, String baseDomainName, IpLookupStrategy ipLookupStrategy, String networkName, int startTimeout, int bootDelay, List<Filesystem> filesystemMappings) {
         this.libvirt = libvirt;
@@ -156,7 +156,7 @@ class LibvirtHost implements CloudHost {
                 String msg = String.format("Clone '%s' not running after %d seconds (state=%s)", name, startTimeout, state);
                 throw new RuntimeException(msg);
             }
-            logger.info("Clone '{}' running determining IP", name, startTimeout, state);
+            logger.info("Clone '{}' running determining IP at {}, state is {}", name, startTimeout, state);
 
             String mac = clone.getMac(networkName);
             return ipLookupStrategy.lookup(mac);

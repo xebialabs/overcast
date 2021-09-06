@@ -34,7 +34,7 @@ public class VagrantCloudHost implements CloudHost {
 
     private VagrantState initialState;
 
-    private static Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
+    private static final Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
     public VagrantCloudHost(String vagrantVm, String vagrantIp, VagrantDriver vagrantDriver) {
         this.vagrantIp = vagrantIp;

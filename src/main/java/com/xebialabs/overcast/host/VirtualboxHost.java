@@ -20,7 +20,9 @@ import com.xebialabs.overcast.support.virtualbox.VirtualboxDriver;
 
 public class VirtualboxHost implements CloudHost {
 
-    private String ip, uuid, snapshot;
+    private final String ip;
+    private final String uuid;
+    private final String snapshot;
 
     public VirtualboxHost(final String ip, final String uuid, final String snapshot) {
         this.ip = ip;

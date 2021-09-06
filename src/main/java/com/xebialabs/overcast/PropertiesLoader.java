@@ -25,7 +25,7 @@ import java.net.URISyntaxException;
 
 public class PropertiesLoader {
 
-    private static Logger logger = LoggerFactory.getLogger(PropertiesLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesLoader.class);
 
     public static final String OVERCAST_CONF_FILE = "overcast.conf";
     public static final String OVERCAST_USER_DIR = ".overcast";

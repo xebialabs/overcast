@@ -22,8 +22,8 @@ import static com.xebialabs.overcast.command.Command.aCommand;
 
 public class VagrantDriver {
 
-    private String hostLabel;
-    private CommandProcessor commandProcessor;
+    private final String hostLabel;
+    private final CommandProcessor commandProcessor;
 
     public VagrantDriver(String hostLabel, CommandProcessor commandProcessor) {
         this.hostLabel = hostLabel;

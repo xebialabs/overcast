@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import static com.xebialabs.overcast.Preconditions.checkArgument;
 
 class TunneledCloudHost implements CloudHost {
-    private static Logger logger = LoggerFactory.getLogger(TunneledCloudHost.class);
+    private static final Logger logger = LoggerFactory.getLogger(TunneledCloudHost.class);
 
     private final CloudHost actualHost;
     private final String username;
@@ -67,13 +67,10 @@ class TunneledCloudHost implements CloudHost {
             ss.bind(new InetSocketAddress(localHost, localPort));
 
             final LocalPortForwarder forwarder = client.newLocalPortForwarder(params, ss);
-            Thread forwarderThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        forwarder.listen();
-                    } catch (IOException ignore) {
-                    }
+            Thread forwarderThread = new Thread(() -> {
+                try {
+                    forwarder.listen();
+                } catch (IOException ignore) {
                 }
             }, "SSH port forwarder thread from local port " + localPort + " to " + remoteHostName + ":" + remotePort);
             forwarderThread.setDaemon(true);
