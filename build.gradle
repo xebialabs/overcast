@@ -17,7 +17,7 @@ project.ext.set("releasedVersion", releasedVersion)
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
 
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -69,10 +69,6 @@ dependencies {
     testRuntimeOnly "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
 }
 
-test {
-    useJUnitPlatform()
-}
-
 allprojects {
     configurations.all*.exclude group: 'commons-logging', module: 'commons-logging'
 
@@ -86,25 +82,41 @@ allprojects {
             url "https://plugins.gradle.org/m2/"
         }
         maven {
-            url 'http://download.java.net/maven/2/'
+            url 'https://download.java.net/maven/2/'
         }
         maven {
             url 'https://oss.sonatype.org/content/repositories/releases'
         }
         maven {
-            url 'http://www.libvirt.org/maven2/'
+            url 'https://www.libvirt.org/maven2/'
         }
     }
 
-    project.tasks.create("itest", Test).configure {
-        description = "Run the integration tests."
-        group = 'Test'
-        includes = ["**/*Itest.*"]
-        reports.junitXml.destination = project.file("${project.buildDir}/itest-results")
-    }
+    tasks.register("itest", Test).configure {
+        useJUnitPlatform()
 
-    project.tasks.getByName("test").configure {
-        excludes = ["**/*Itest.*", "**/*ItestSuite.*"]
+        description = "Run the integration tests."
+        group = 'Integration tests'
+
+        filter {
+            includeTestsMatching '*Itest'
+        }
+
+        reports {
+            junitXml.outputLocation.set(layout.buildDirectory.dir("itest-results"))
+        }
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+
+    reports {
+        junitXml.outputLocation.set(layout.buildDirectory.dir("itest-results"))
+    }
+    filter {
+        includeTestsMatching 'com.xebialabs.overcast.*'
+        excludeTestsMatching '*Itest'
     }
 }
 
