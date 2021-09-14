@@ -20,29 +20,31 @@ import java.util.stream.Collectors;
 public class VmWareApiClient {
 
     private final String apiHost;
-    private final Boolean instantClone;
-    private final Boolean ignoreBadCertificate;
-    private final String securityAlgorithm;
-    private final HttpClient httpClient;
     private final int connectionTimeout;
-
-    private static final String CREATE_SESSION_URL_PATH = "api/session";
-
-    private static final String LIST_VM_URL_PATH = "api/vcenter/vm";
-
-    private static final String DELETE_VM_URL_PATH = "api/vcenter/vm/{0}";
+    private final HttpClient httpClient;
+    private final Boolean ignoreBadCertificate;
+    private final Boolean instantClone;
+    private final String securityAlgorithm;
 
     private static final String CLONE_VM_URL_PATH = "api/vcenter/vm?action=clone";
 
-    private static final String INSTANT_CLONE_VM_URL_PATH = "api/vcenter/vm?action=instant-clone";
+    private static final String CREATE_SESSION_URL_PATH = "api/session";
 
-    private static final String GUEST_IDENTITY_URL_PATH = "api/vcenter/vm/{0}/guest/identity";
+    private static final String DELETE_VM_URL_PATH = "api/vcenter/vm/{0}";
 
     private static final String GET_POWER_URL_PATH = "api/vcenter/vm/{0}/power";
 
-    private static final String STOP_POWER_URL_PATH = "api/vcenter/vm/{0}/power?action=stop";
+    private static final String GUEST_IDENTITY_URL_PATH = "api/vcenter/vm/{0}/guest/identity";
+
+    private static final String INSTANT_CLONE_VM_URL_PATH = "api/vcenter/vm?action=instant-clone";
+
+    private static final String LIST_VM_URL_PATH = "api/vcenter/vm";
+
+    private static final String SESSION_ID_HEADER = "vmware-api-session-id";
 
     private static final String START_POWER_URL_PATH = "api/vcenter/vm/{0}/power?action=start";
+
+    private static final String STOP_POWER_URL_PATH = "api/vcenter/vm/{0}/power?action=stop";
 
     public VmWareApiClient(String apiHost,
                            Boolean instantClone,
@@ -73,12 +75,7 @@ public class VmWareApiClient {
     }
 
     public List<VMWareVM> listVMs(String sessionId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(toUri(apiHost, LIST_VM_URL_PATH))
-                .header("vmware-api-session-id", sessionId)
-                .GET()
-                .timeout(Duration.ofSeconds(connectionTimeout))
-                .build();
+        HttpRequest request = createGetRequest(sessionId, LIST_VM_URL_PATH);
 
         HttpResponse<Supplier<List>> response = send(request, new JsonBodyHandler<>(List.class));
         List<Map<String, Object>> result = response.body().get();
@@ -97,12 +94,7 @@ public class VmWareApiClient {
     }
 
     public boolean isPowerVmOn(String sessionId, String vmId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(toUri(apiHost, MessageFormat.format(GET_POWER_URL_PATH, vmId)))
-                .header("vmware-api-session-id", sessionId)
-                .GET()
-                .timeout(Duration.ofSeconds(connectionTimeout))
-                .build();
+        HttpRequest request = createGetRequest(sessionId, MessageFormat.format(GET_POWER_URL_PATH, vmId));
 
         HttpResponse<Supplier<Map>> response = send(request, new JsonBodyHandler<>(Map.class));
         Map<String, Object> result = response.body().get();
@@ -113,7 +105,7 @@ public class VmWareApiClient {
     public void startPowerVm(String sessionId, String vmId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(toUri(apiHost, MessageFormat.format(START_POWER_URL_PATH, vmId)))
-                .header("vmware-api-session-id", sessionId)
+                .header(SESSION_ID_HEADER, sessionId)
                 .POST(HttpRequest.BodyPublishers.ofString(""))
                 .timeout(Duration.ofSeconds(connectionTimeout))
                 .build();
@@ -124,7 +116,7 @@ public class VmWareApiClient {
     public void stopPowerVm(String sessionId, String vmId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(toUri(apiHost, MessageFormat.format(STOP_POWER_URL_PATH, vmId)))
-                .header("vmware-api-session-id", sessionId)
+                .header(SESSION_ID_HEADER, sessionId)
                 .POST(HttpRequest.BodyPublishers.ofString(""))
                 .timeout(Duration.ofSeconds(connectionTimeout))
                 .build();
@@ -133,12 +125,7 @@ public class VmWareApiClient {
     }
 
     public Map<String, Object> getGuestIdentity(String sessionId, String vmId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(toUri(apiHost, MessageFormat.format(GUEST_IDENTITY_URL_PATH, vmId)))
-                .header("vmware-api-session-id", sessionId)
-                .GET()
-                .timeout(Duration.ofSeconds(connectionTimeout))
-                .build();
+        HttpRequest request = createGetRequest(sessionId, MessageFormat.format(GUEST_IDENTITY_URL_PATH, vmId));
 
         HttpResponse<Supplier<Map>> response = send(request, new JsonBodyHandler<>(Map.class));
         Map<String, Object> body = response.body().get();
@@ -150,13 +137,26 @@ public class VmWareApiClient {
         return body;
     }
 
+    private HttpRequest createGetRequest(String sessionId, String relativeUrlPath) {
+        return HttpRequest.newBuilder()
+                .uri(toUri(apiHost, relativeUrlPath))
+                .header(SESSION_ID_HEADER, sessionId)
+                .GET()
+                .timeout(Duration.ofSeconds(connectionTimeout))
+                .build();
+    }
+
     public String cloneVm(String sessionId, String vmBaseImage, String vmId) {
         String clonedVmName = String.format("%s-%s", vmBaseImage, RandomStringUtils.randomAlphanumeric(8));
+
+        if (!isPowerVmOn(sessionId, vmId) && instantClone) {
+            throw new IllegalStateException(String.format("You can't instant clone from VM [%s] which is powered off", vmBaseImage));
+        }
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(toUri(apiHost, instantClone ? INSTANT_CLONE_VM_URL_PATH : CLONE_VM_URL_PATH))
                 .header("Content-Type", "application/json")
-                .header("vmware-api-session-id", sessionId)
+                .header(SESSION_ID_HEADER, sessionId)
                 .POST(HttpRequest.BodyPublishers.ofString(
                         String.format("{\"name\": \"%s\", \"source\": \"%s\"}", clonedVmName, vmId)))
                 .timeout(Duration.ofSeconds(connectionTimeout))
@@ -169,7 +169,7 @@ public class VmWareApiClient {
     public void deleteVm(String sessionId, String vmId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(toUri(apiHost, MessageFormat.format(DELETE_VM_URL_PATH, vmId)))
-                .header("vmware-api-session-id", sessionId)
+                .header(SESSION_ID_HEADER, sessionId)
                 .DELETE()
                 .timeout(Duration.ofSeconds(connectionTimeout))
                 .build();
