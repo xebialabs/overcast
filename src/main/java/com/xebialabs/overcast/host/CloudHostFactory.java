@@ -212,7 +212,7 @@ public class CloudHostFactory {
         boolean instanceClone = Boolean.parseBoolean(getOvercastProperty(hostLabel + VMWARE_INSTANCE_CLONE_SUFFIX,
                 VMWARE_INSTANCE_CLONE_DEFAULT));
 
-        Integer maxRetries = Integer.parseInt(
+        int maxRetries = Integer.parseInt(
                 getOvercastProperty(hostLabel + VMWARE_MAX_RETRIES_SUFFIX, VMWARE_MAX_RETRIES_DEFAULT));
 
         return new VMWareHost(vmwareApiHost,
