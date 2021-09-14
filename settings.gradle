@@ -1,6 +1,7 @@
 rootProject.name = 'overcast'
 
+include 'itest:overcast-docker-itest'
 include 'itest:overcast-libvirt-itest'
 include 'itest:overcast-vagrant-itest'
-include 'itest:overcast-docker-itest'
+include 'itest:overcast-vmware-itest'
 
