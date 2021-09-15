@@ -1,0 +1,17 @@
+dependencies {
+    testImplementation project(":")
+
+    testImplementation "org.hamcrest:hamcrest-core:${hamcrestVersion}"
+    testImplementation "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    testImplementation("org.mockito:mockito-core:${mockitoCoreVersion}")
+
+    testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
+    testRuntimeOnly "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    testRuntimeOnly "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
+}
+
+test.doFirst {
+    println properties
+}

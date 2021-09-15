@@ -51,13 +51,15 @@ dependencies {
 
     implementation 'org.apache.httpcomponents:httpclient:4.5.3'
     implementation 'org.apache.httpcomponents:httpcore:4.4.6'
-    testImplementation "org.hamcrest:hamcrest-core:${hamcrestVersion}"
-    testImplementation "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+
     implementation 'org.jdom:jdom2:2.0.5'
     implementation 'org.libvirt:libvirt:0.5.1'
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
 
     testImplementation(platform("org.junit:junit-bom:${jUnitVersion}"))
+
+    testImplementation "org.hamcrest:hamcrest-core:${hamcrestVersion}"
+    testImplementation "org.hamcrest:hamcrest-library:${hamcrestVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
     testImplementation("org.mockito:mockito-core:${mockitoCoreVersion}") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
@@ -114,6 +116,7 @@ tasks.test {
     reports {
         junitXml.outputLocation.set(layout.buildDirectory.dir("itest-results"))
     }
+
     filter {
         includeTestsMatching 'com.xebialabs.overcast.*'
         excludeTestsMatching '*Itest'

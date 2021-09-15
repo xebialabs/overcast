@@ -15,13 +15,6 @@
  */
 package com.xebialabs.overcast.host;
 
-import java.nio.file.Paths;
-import java.util.*;
-
-import org.libvirt.Connect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.xebialabs.overcast.OvercastProperties;
 import com.xebialabs.overcast.command.Command;
 import com.xebialabs.overcast.command.CommandProcessor;
@@ -40,32 +33,19 @@ import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionBuilder;
 import com.xebialabs.overthere.ssh.SshConnectionType;
 import com.xebialabs.overthere.util.DefaultAddressPortMapper;
+import org.libvirt.Connect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.xebialabs.overcast.OvercastProperties.getOvercastBooleanProperty;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastListProperty;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.getOvercastPropertyNames;
-import static com.xebialabs.overcast.OvercastProperties.getRequiredOvercastProperty;
-import static com.xebialabs.overcast.OvercastProperties.parsePortsProperty;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static com.xebialabs.overcast.OvercastProperties.*;
 import static com.xebialabs.overcast.Strings.isNullOrEmpty;
 import static com.xebialabs.overcast.command.CommandProcessor.atCurrentDir;
 import static com.xebialabs.overcast.command.CommandProcessor.atLocation;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_CMD;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.CACHE_EXPIRATION_URL;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.COPY_SPEC;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISIONED_BOOT_DELAY;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_CMD;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_START_TIMEOUT_DEFAULT;
-import static com.xebialabs.overcast.host.CachedLibvirtHost.PROVISION_URL;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_DEFAULT;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_BOOT_DELAY_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_FS_MAPPING_SUFFIX;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_NETWORK_DEVICE_ID_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_DEFAULT;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_START_TIMEOUT_PROPERTY_SUFFIX;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_DEFAULT;
-import static com.xebialabs.overcast.host.LibvirtHost.LIBVIRT_URL_PROPERTY_SUFFIX;
+import static com.xebialabs.overcast.host.CachedLibvirtHost.*;
+import static com.xebialabs.overcast.host.VMWareHost.*;
 
 public class CloudHostFactory {
 
@@ -76,6 +56,8 @@ public class CloudHostFactory {
     public static final String TUNNEL_PORTS_PROPERTY_SUFFIX = ".tunnel.ports";
     public static final String TUNNEL_SETUP_TIMEOUT = ".tunnel.setupTimeout";
     public static final String TUNNEL_DEFAULT_SETUP_TIMEOUT = "0";
+
+    private static final String VMWARE_AUTH_HASHED_CREDENTIALS = ".vmwareAuthHashCredentials";
 
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
@@ -106,6 +88,11 @@ public class CloudHostFactory {
         String hostName = getOvercastProperty(label + HOSTNAME_PROPERTY_SUFFIX);
         if (hostName != null) {
             return createExistingCloudHost(label);
+        }
+
+        String vmwareBaseDomain = getOvercastProperty(label + VMWareHost.VMWARE_VM_BASE_IMAGE_PROPERTY_SUFFIX);
+        if (vmwareBaseDomain != null) {
+            return createVmWareCloudHost(label, vmwareBaseDomain);
         }
 
         String vagrantDir = getOvercastProperty(label + VAGRANT_DIR_PROPERTY_SUFFIX);
@@ -187,7 +174,7 @@ public class CloudHostFactory {
             CommandProcessor cmdProcessor = atCurrentDir();
 
             return new CachedLibvirtHost(label, libvirt, kvmBaseDomain, ipLookupStrategy, networkName, provisionUrl, provisionCmd, cacheExpirationUrl,
-                cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
+                    cacheExpirationCmd, cmdProcessor, startTimeout, bootDelay, provisionStartTimeout, provisionedBootDelay, fsMappings, copySpec);
         }
     }
 
@@ -207,6 +194,35 @@ public class CloudHostFactory {
     private static CloudHost createExistingCloudHost(final String label) {
         logger.info("Using existing host for {}", label);
         return new ExistingCloudHost(label);
+    }
+
+    private static CloudHost createVmWareCloudHost(final String hostLabel, final String vmBaseImage) {
+        int connectionTimeout = Integer.parseInt(
+                getOvercastProperty(hostLabel + VMWARE_TIMEOUT_PROPERTY_SUFFIX, VMWARE_TIMEOUT_DEFAULT));
+        String authHash = getOvercastProperty(hostLabel + VMWARE_AUTH_HASHED_CREDENTIALS);
+
+        boolean ignoreBadCertificate = Boolean.parseBoolean(getOvercastProperty(hostLabel + VMWARE_IGNORE_BAD_CERTIFICATE_SUFFIX,
+                VMWARE_IGNORE_BAD_CERTIFICATE_DEFAULT));
+
+        String securityAlgorithm = getOvercastProperty(hostLabel + VMWARE_SECURITY_ALGORITHM_SUFFIX,
+                VMWARE_SECURITY_ALGORITHM_DEFAULT);
+
+        String vmwareApiHost = getOvercastProperty(hostLabel + VMWARE_API_HOST_SUFFIX);
+
+        boolean instanceClone = Boolean.parseBoolean(getOvercastProperty(hostLabel + VMWARE_INSTANCE_CLONE_SUFFIX,
+                VMWARE_INSTANCE_CLONE_DEFAULT));
+
+        int maxRetries = Integer.parseInt(
+                getOvercastProperty(hostLabel + VMWARE_MAX_RETRIES_SUFFIX, VMWARE_MAX_RETRIES_DEFAULT));
+
+        return new VMWareHost(vmwareApiHost,
+                authHash,
+                vmBaseImage,
+                ignoreBadCertificate,
+                instanceClone,
+                securityAlgorithm,
+                connectionTimeout,
+                maxRetries);
     }
 
     private static CloudHost createVagrantCloudHost(final String hostLabel, final String vagrantDir) {
@@ -248,7 +264,7 @@ public class CloudHostFactory {
     private static CloudHost createEc2CloudHost(final String label, final String amiId, final boolean disableEc2) {
         if (disableEc2) {
             throw new IllegalStateException("Only an AMI ID (" + amiId + ") has been specified for host label " + label
-                + ", but EC2 hosts are not available.");
+                    + ", but EC2 hosts are not available.");
         }
         logger.info("Using Amazon EC2 for {}", label);
         return new Ec2CloudHost(label, amiId);

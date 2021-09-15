@@ -12,6 +12,7 @@ sidebar_position: 2
    - Libvirt managed KVM hosts (Fast clones using backing store, provisioning)
    - Docker containers
    - Tunneled cloud hosts (Reaching target host via ssh tunnel)
+   - VMWare hosts (Instant clones, start/destroy VMs)
 
 * Provides hostname and port mapping of created host (@see Ec2CloudHost)
 * Caching of provisioned hosts (vagrant and KVM) with expiration checks
