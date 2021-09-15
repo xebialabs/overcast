@@ -228,18 +228,20 @@ if (project.hasProperty("sonatypeUsername") && project.hasProperty("public")) {
         }
     }
 } else {
-    publishing {
-        publications {
-            myLibrary(MavenPublication) {
-                from components.java
+    if (project.hasProperty("nexusBaseUrl")) {
+        publishing {
+            publications {
+                myLibrary(MavenPublication) {
+                    from components.java
+                }
             }
-        }
-        repositories {
-            maven {
-                url "${project.property("nexusBaseUrl")}/repositories/releases"
-                credentials {
-                    username = project.property("nexusUserName")
-                    password = project.property("nexusPassword")
+            repositories {
+                maven {
+                    url "${project.property("nexusBaseUrl")}/repositories/releases"
+                    credentials {
+                        username = project.property("nexusUserName")
+                        password = project.property("nexusPassword")
+                    }
                 }
             }
         }
@@ -281,4 +283,37 @@ task dumpVersion {
         def out = file("$buildDir/version.dump")
         out.write("version=$project.version")
     }
+}
+
+yarn_install {
+    args = ['--mutex', 'network']
+    workingDir = file("${rootDir}/documentation")
+}
+
+node {
+    version = '14.17.5'
+    yarnVersion = '1.22.11'
+    download = true
+}
+
+task yarnRunStart(type: YarnTask, dependsOn: [yarn_install]) {
+    args = ["run", "start"]
+    workingDir = file("${rootDir}/documentation")
+}
+
+task yarnRunBuild(type: YarnTask, dependsOn: [yarn_install]) {
+    args = ["run", "build"]
+    workingDir = file("${rootDir}/documentation")
+}
+
+task docCleanUp(type: Delete) {
+    delete file("${rootDir}/docs")
+    delete file("${rootDir}/documentation/build")
+    delete file("${rootDir}/documentation/.docusaurus")
+    delete file("${rootDir}/documentation/node_modules")
+}
+
+task docBuild(type: Copy, dependsOn: [yarnRunBuild, docCleanUp]) {
+    from file("${rootDir}/documentation/build")
+    into file("${rootDir}/docs")
 }
