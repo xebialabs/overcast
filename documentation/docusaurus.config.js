@@ -4,7 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 module.exports = {
   title: 'Overcast',
   tagline: 'Cloud test -- Java helper classes to write your tests against hosts in the cloud',
-  url: 'https://github.com/xebialabs/overcast',
+  url: 'https://xebialabs.github.io',
   baseUrl: '/overcast/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

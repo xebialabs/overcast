@@ -17,7 +17,7 @@ which is served on GitHub Pages.
 
 `./gradlew yarnRunStart`
 
-The site will be opened automatically in your default browser on page: [http://localhost:3000/integration-server-gradle-plugin/](http://localhost:3000/integration-server-gradle-plugin/) 
+The site will be opened automatically in your default browser on page: [http://localhost:3001/overcast/](http://localhost:3001/overcast/) 
 
 ## How to generate the documentation for GitHub
 
