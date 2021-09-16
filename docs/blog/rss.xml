@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Overcast Blog</title>
+        <link>https://xebialabs.github.io/overcast/blog</link>
+        <description>Overcast Blog</description>
+        <lastBuildDate>Wed, 15 Sep 2021 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[How to run integration tests against VM Ware]]></title>
+            <link>https://xebialabs.github.io/overcast/blog/2021/09/15/how-to-run-integration-tests-against-vmware</link>
+            <guid>How to run integration tests against VM Ware</guid>
+            <pubDate>Wed, 15 Sep 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[This article is for you, if you have to run VMs for your integration tests, and you use as a hypervisor - VM Ware 7.0]]></description>
+        </item>
+    </channel>
+</rss>

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocumentation=self.webpackChunkdocumentation||[]).push([[5],{8893:function(a){a.exports=JSON.parse('{"allTagsPath":"/overcast/blog/tags","slug":"/overcast/blog/tags/overcast","name":"overcast","count":1,"permalink":"/overcast/blog/tags/overcast"}')}}]);

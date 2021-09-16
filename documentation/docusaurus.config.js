@@ -30,6 +30,11 @@ module.exports = {
           href: 'https://github.com/xebialabs/overcast',
           label: 'GitHub',
           position: 'right',
+        },
+        {
+          to: 'blog',
+          label: 'Blog',
+          position: 'left'
         }
       ],
     },
@@ -42,6 +47,10 @@ module.exports = {
             {
               label: 'Tutorial',
               to: '/docs/intro',
+            },
+            {
+              label: 'Blog',
+              to: '/blog',
             },
             {
               label: 'GitHub',
@@ -63,6 +72,9 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js')
+        },
+        blog: {
+          showReadingTime: true
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

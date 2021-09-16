@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocumentation=self.webpackChunkdocumentation||[]).push([[535],{5641:function(t){t.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"How to run integration tests against VM Ware","permalink":"/overcast/blog/2021/09/15/how-to-run-integration-tests-against-vmware"}]}')}}]);
