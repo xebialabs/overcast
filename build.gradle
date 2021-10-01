@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath("com.xebialabs.gradle.plugins:gradle-commit:$gradleCommitPluginVersion")
+    }
+}
+
 plugins {
     id "com.github.hierynomus.license" version "0.15.0"
     id "com.github.node-gradle.node" version "3.1.0"
@@ -9,15 +15,16 @@ plugins {
     id 'signing'
 }
 
-group = 'com.xebialabs.cloud'
 defaultTasks 'build'
+group = 'com.xebialabs.cloud'
 
-def releasedVersion = "10.3.0-${(new Date().format('Mdd.Hmm'))}"
+def releasedVersion = "10.4.0-${(new Date().format('Mdd.Hmm'))}"
 project.ext.set("releasedVersion", releasedVersion)
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+    apply plugin: "ai.digital.gradle-commit"
 
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -269,10 +276,6 @@ if (project.hasProperty("sonatypeUsername") && project.hasProperty("public")) {
     }
 }
 
-import com.xebialabs.gradle.release.NebulaRelease
-
-task nebulaRelease(type: NebulaRelease)
-
 task uploadArchives {
     dependsOn publish
 }
@@ -317,3 +320,7 @@ task docBuild(type: Copy, dependsOn: [yarnRunBuild, docCleanUp]) {
     from file("${rootDir}/documentation/build")
     into file("${rootDir}/docs")
 }
+
+task updateDocs(type: GenerateDocumentation, dependsOn: ['docBuild'])
+
+task nebulaRelease(type: NebulaRelease, dependsOn: ['updateDocs'])

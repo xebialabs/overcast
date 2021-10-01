@@ -1,5 +1,3 @@
-package com.xebialabs.gradle.release
-
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -17,7 +15,7 @@ class NebulaRelease extends DefaultTask {
 
                 execSpec.executable('./gradlew')
                 execSpec.args('build', 'uploadArchives', "-Prelease.version=$version", "final",
-                "-Prelease.ignoreSuppliedVersionVerification=true")
+                        "-Prelease.ignoreSuppliedVersionVerification=true")
             }
         })
     }
