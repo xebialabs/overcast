@@ -18,6 +18,7 @@ package com.xebialabs.overcast.host;
 import com.xebialabs.overcast.command.CommandProcessor;
 import com.xebialabs.overcast.support.libvirt.DomainWrapper;
 import com.xebialabs.overcast.support.libvirt.IpLookupStrategy;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.libvirt.Connect;
 import org.libvirt.Domain;

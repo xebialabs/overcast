@@ -17,6 +17,9 @@ package com.xebialabs.overcast.support.vagrant;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.xebialabs.overcast.support.vagrant.VagrantState.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -44,11 +47,18 @@ public class VagrantStateTest {
 
     @Test
     public void shouldGiveATransitionCommand() {
-        assertEquals("up", getTransitionCommand(RUNNING)[0]);
-        assertEquals("halt", getTransitionCommand(POWEROFF)[0]);
-        assertEquals("suspend", getTransitionCommand(SAVED)[0]);
-        assertEquals("destroy", getTransitionCommand(NOT_CREATED)[0]);
-        assertEquals("-f", getTransitionCommand(NOT_CREATED)[1]);
+        Map<String, String> vagrantParameters = new HashMap<>() {{
+            put("key1", "value1");
+            put("key2", "value2");
+        }};
+        assertEquals("up", getTransitionCommand(RUNNING, null)[0]);
+        assertEquals("--key1=value1", getTransitionCommand(RUNNING, vagrantParameters)[0]);
+        assertEquals("--key2=value2", getTransitionCommand(RUNNING, vagrantParameters)[1]);
+        assertEquals("up", getTransitionCommand(RUNNING, vagrantParameters)[2]);
+        assertEquals("halt", getTransitionCommand(POWEROFF, null)[0]);
+        assertEquals("suspend", getTransitionCommand(SAVED, null)[0]);
+        assertEquals("destroy", getTransitionCommand(NOT_CREATED, null)[0]);
+        assertEquals("-f", getTransitionCommand(NOT_CREATED, null)[1]);
     }
 
 }

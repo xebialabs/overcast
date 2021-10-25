@@ -38,10 +38,20 @@ sidebar_position: 3
 | :---: | :---: |
 |{my-host-label}.vagrantDir|Directory with Vagrantfile|
 |{my-host-label}.vagrantIp|IP address of the Vagrant host|
+|{my-host-label}.vagrantParameters|Additional parameters to pass for vagrant up command.|
 |{my-host-label}.vagrantVm|Name of the Vagrant host|
 |{my-host-label}.vagrantOs|OS type of the Vagrant host (WINDOWS, UNIX)|
 |{my-host-label}.vagrantSnapshotExpirationCmd|Command used to expire the snapshot image of the Vagrant host, it will be executed in the `vagrantDir`.|
 
+For example, to pass additional parameters for vagrant up command, something like `vagrant --param1=value1 --param2=value2 up`
+```
+my-host-label {
+    vagrantParameters {
+        param1="value1"
+        param2="value2"
+    }
+}
+```
 ## VirtualBox host properties
 
 |Name|Description|

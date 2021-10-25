@@ -15,6 +15,10 @@
  */
 package com.xebialabs.overcast.support.vagrant;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 public enum VagrantState {
     NOT_CREATED, POWEROFF, ABORTED, SAVED, RUNNING;
 
@@ -28,7 +32,7 @@ public enum VagrantState {
         throw new RuntimeException("Unknown status: " + s);
     }
 
-    public static String[] getTransitionCommand(VagrantState newState) {
+    public static String[] getTransitionCommand(VagrantState newState, Map<String, String> vagrantParameters) {
 
         switch (newState) {
             case NOT_CREATED:
@@ -38,12 +42,25 @@ public enum VagrantState {
             case SAVED:
                 return new String[]{"suspend"};
             case RUNNING:
-                return new String[]{"up", "--provision"};
+                if(isNullOrEmpty(vagrantParameters)) {
+                    return new String[]{"up", "--provision"};
+                } else {
+                    ArrayList<String> arr = new ArrayList<>();
+                    for (var entry : vagrantParameters.entrySet()) {
+                        arr.add("--" + entry.getKey() + "=" + entry.getValue());
+                    }
+                    arr.add("up");
+                    arr.add("--provision");
+                    return arr.toArray(new String[0]);
+                }
             case ABORTED:
                 break; // ignore
             default:
                 throw new IllegalArgumentException(String.format("The state %s is not known", newState));
         }
         throw new RuntimeException("Unexpected state in getTransitionCommand "+newState.name());
+    }
+    private static boolean isNullOrEmpty(final Map< ?, ? > m) {
+        return m == null || m.isEmpty();
     }
 }

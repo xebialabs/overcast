@@ -128,6 +128,31 @@ public class OvercastProperties {
         return value;
     }
 
+    public static Map<String, String> getOvercastMapProperty(String key) {
+        return getOvercastMapProperty(key, new LinkedHashMap<>());
+    }
+
+    public static Map<String, String> getOvercastMapProperty(String key, Map<String, String> defaultValue) {
+        Map<String, String> value;
+        Config overcastConfig = getOvercastConfig();
+        if (overcastConfig.hasPath(key)) {
+            value = new LinkedHashMap<>();
+            for( Map.Entry<String, ConfigValue> element : overcastConfig.getConfig(key).entrySet()) {
+                value.put(element.getKey(), element.getValue().unwrapped().toString());
+            }
+        } else {
+            value = defaultValue;
+        }
+        if (logger.isTraceEnabled()) {
+            if (value == null) {
+                logger.trace("Overcast property {} is null", key);
+            } else {
+                logger.trace("Overcast property {}={}", key, key.endsWith(PASSWORD_PROPERTY_SUFFIX) ? "********" : value);
+            }
+        }
+        return value;
+    }
+
     public static String getRequiredOvercastProperty(String key) {
         String value = getOvercastProperty(key);
         checkState(value != null, "Required property %s is not specified as a system property or in " + PropertiesLoader.OVERCAST_CONF_FILE

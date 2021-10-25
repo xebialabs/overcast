@@ -28,6 +28,8 @@ import com.xebialabs.overcast.support.virtualbox.VirtualboxState;
 import com.xebialabs.overthere.*;
 import com.xebialabs.overthere.spi.OverthereConnectionBuilder;
 
+import java.util.Map;
+
 class CachedVagrantCloudHost extends VagrantCloudHost {
 
     public final static String EXPIRATION_TAG_PROPERTY_KEY = "overcastExpirationTag";
@@ -44,8 +46,10 @@ class CachedVagrantCloudHost extends VagrantCloudHost {
 
     private static final Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
-    public CachedVagrantCloudHost(String vm, String ip, Command cmd, VagrantDriver vagrantDriver, VirtualboxDriver vboxDriver, CommandProcessor commandProcessor, final OverthereConnectionBuilder cb) {
-        super(vm, ip, vagrantDriver);
+    public CachedVagrantCloudHost(String vm, String ip, Command cmd, VagrantDriver vagrantDriver,
+                                  VirtualboxDriver vboxDriver, CommandProcessor commandProcessor,
+                                  final OverthereConnectionBuilder cb, Map<String, String> vagrantParameters) {
+        super(vm, ip, vagrantDriver, vagrantParameters);
         this.virtualboxDriver = vboxDriver;
         this.expirationCmd = cmd;
         this.commandProcessor = commandProcessor;

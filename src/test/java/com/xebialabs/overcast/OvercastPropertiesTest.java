@@ -50,6 +50,14 @@ public class OvercastPropertiesTest {
     }
 
     @Test
+    public void testGetOvercastMapProperty() {
+        Map<String, String> overcastPropertyMap = getOvercastMapProperty("unittestHost.vagrantParameters");
+        assertThat(overcastPropertyMap.size(), is(2));
+        assertThat(overcastPropertyMap.get("param1"), is("value1"));
+        assertThat(overcastPropertyMap.get("param2"), is("value2"));
+    }
+
+    @Test
     public void testGetRequiredOvercastProperty() {
         assertThrows(IllegalStateException.class, () -> getRequiredOvercastProperty("unittestHost.doesNotExist"));
     }

@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import com.xebialabs.overcast.support.vagrant.VagrantDriver;
 import com.xebialabs.overcast.support.vagrant.VagrantState;
 
+import java.util.Map;
+
 import static com.xebialabs.overcast.support.vagrant.VagrantState.NOT_CREATED;
 import static com.xebialabs.overcast.support.vagrant.VagrantState.getTransitionCommand;
 
@@ -34,19 +36,23 @@ public class VagrantCloudHost implements CloudHost {
 
     private VagrantState initialState;
 
+    private Map<String, String> vagrantParameters;
+
     private static final Logger logger = LoggerFactory.getLogger(VagrantCloudHost.class);
 
-    public VagrantCloudHost(String vagrantVm, String vagrantIp, VagrantDriver vagrantDriver) {
+    public VagrantCloudHost(String vagrantVm, String vagrantIp, VagrantDriver vagrantDriver,
+                            Map<String, String> vagrantParameters) {
         this.vagrantIp = vagrantIp;
         this.vagrantDriver = vagrantDriver;
         this.vagrantVm = vagrantVm;
+        this.vagrantParameters = vagrantParameters;
     }
 
     @Override
     public void setup() {
         initialState = vagrantDriver.state(vagrantVm);
         logger.info("Vagrant host is in state {}.", initialState.toString());
-        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(VagrantState.RUNNING));
+        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(VagrantState.RUNNING, vagrantParameters));
     }
 
     @Override
@@ -59,7 +65,7 @@ public class VagrantCloudHost implements CloudHost {
             logger.warn("No initial state was captured. Destroying the VM.");
             nextState = NOT_CREATED;
         }
-        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(nextState));
+        vagrantDriver.doVagrant(vagrantVm, getTransitionCommand(nextState, vagrantParameters));
     }
 
     @Override
