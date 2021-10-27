@@ -41,7 +41,7 @@ public class VagrantCloudHostTest {
         when(vagrantDriver.state("vm")).thenReturn(NOT_CREATED);
         when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(0, "", ""));
 
-        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
+        VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver, null);
 
         vagrantCloudHost.setup();
     }
@@ -52,7 +52,7 @@ public class VagrantCloudHostTest {
             when(vagrantDriver.doVagrant("vm", "status")).thenReturn(new CommandResponse(0, "", "not created"));
             when(vagrantDriver.doVagrant("vm", "up")).thenReturn(new CommandResponse(3, "", ""));
 
-            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
+            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver, null);
             vagrantCloudHost.setup();
         });
     }
@@ -70,7 +70,7 @@ public class VagrantCloudHostTest {
             when(vagrantDriver.doVagrant("status")).thenReturn(new CommandResponse(0, "", "not created"));
             when(vagrantDriver.doVagrant("up")).thenReturn(new CommandResponse(0, "", outputWithPuppetErrors));
 
-            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver);
+            VagrantCloudHost vagrantCloudHost = new VagrantCloudHost("vm", "127.0.0.1", vagrantDriver, null);
             vagrantCloudHost.setup();
         });
     }

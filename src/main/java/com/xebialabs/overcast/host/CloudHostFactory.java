@@ -62,8 +62,10 @@ public class CloudHostFactory {
     private static final String VAGRANT_DIR_PROPERTY_SUFFIX = ".vagrantDir";
     private static final String VAGRANT_VM_PROPERTY_SUFFIX = ".vagrantVm";
     private static final String VAGRANT_IP_PROPERTY_SUFFIX = ".vagrantIp";
+    private static final String VAGRANT_PARAMETERS_SUFFIX = ".vagrantParameters";
     private static final String VAGRANT_SNAPSHOT_EXPIRATION_CMD = ".vagrantSnapshotExpirationCmd";
     private static final String VAGRANT_OS_PROPERTY_SUFFIX = ".vagrantOs";
+
 
     private static final String VBOX_UUID_PROPERTY_SUFFIX = ".vboxUuid";
     private static final String VBOX_IP = ".vboxBoxIp";
@@ -228,6 +230,7 @@ public class CloudHostFactory {
     private static CloudHost createVagrantCloudHost(final String hostLabel, final String vagrantDir) {
         String vagrantVm = getOvercastProperty(hostLabel + VAGRANT_VM_PROPERTY_SUFFIX);
         String vagrantIp = getOvercastProperty(hostLabel + VAGRANT_IP_PROPERTY_SUFFIX);
+        Map<String, String> vagrantParameters = getOvercastMapProperty(hostLabel + VAGRANT_PARAMETERS_SUFFIX);
         String vagrantExpirationCmd = getOvercastProperty(hostLabel + VAGRANT_SNAPSHOT_EXPIRATION_CMD);
         String vagrantOs = getOvercastProperty(hostLabel + VAGRANT_OS_PROPERTY_SUFFIX, OperatingSystemFamily.UNIX.toString());
 
@@ -238,7 +241,7 @@ public class CloudHostFactory {
         VirtualboxDriver vboxDriver = new VirtualboxDriver(cmdProcessor);
 
         if (vagrantExpirationCmd == null) {
-            return new VagrantCloudHost(vagrantVm, vagrantIp, vagrantDriver);
+            return new VagrantCloudHost(vagrantVm, vagrantIp, vagrantDriver, vagrantParameters);
         } else {
             ConnectionOptions options = new ConnectionOptions();
             options.set(ConnectionOptions.ADDRESS, vagrantIp);
@@ -257,7 +260,8 @@ public class CloudHostFactory {
 
                 cb = new SshConnectionBuilder("ssh", options, new DefaultAddressPortMapper());
             }
-            return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd), vagrantDriver, vboxDriver, cmdProcessor, cb);
+            return new CachedVagrantCloudHost(vagrantVm, vagrantIp, Command.fromString(vagrantExpirationCmd),
+                    vagrantDriver, vboxDriver, cmdProcessor, cb, vagrantParameters);
         }
     }
 

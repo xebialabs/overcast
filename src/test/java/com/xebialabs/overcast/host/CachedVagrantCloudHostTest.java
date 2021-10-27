@@ -72,7 +72,8 @@ public class CachedVagrantCloudHostTest {
         when(cb.connect()).thenReturn(connection);
 
         myCommand = Command.fromString("my-command");
-        cloudHost = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor, cb);
+        cloudHost = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver,
+                commandProcessor, cb, null);
     }
 
     @Test
@@ -170,7 +171,8 @@ public class CachedVagrantCloudHostTest {
         when(virtualboxDriver.getExtraData("myvm", EXPIRATION_TAG_PROPERTY_KEY)).thenReturn(null);
         when(vagrantDriver.state("myvm")).thenReturn(VagrantState.RUNNING);
 
-        VagrantCloudHost ch = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver, virtualboxDriver, commandProcessor, cb);
+        VagrantCloudHost ch = new CachedVagrantCloudHost("myvm", "127.0.0.1", myCommand, vagrantDriver,
+                virtualboxDriver, commandProcessor, cb, null);
         ch.teardown();
 
         verify(vagrantDriver).doVagrant("myvm", "destroy", "-f");
